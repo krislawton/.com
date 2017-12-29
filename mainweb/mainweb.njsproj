@@ -28,9 +28,54 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="common\jquery-3.2.1.min.js" />
+    <Compile Include="common\socket.io.js" />
+    <Compile Include="datastore.js">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="model.js">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="server.js" />
+    <Compile Include="views\mcm\leaderboard.js">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="views\mcm\player.js">
+      <SubType>Code</SubType>
+    </Compile>
+    <Content Include="common\FiraSans-Regular.ttf" />
+    <Content Include="common\socket.io.js.map" />
+    <Content Include="includes\htmlHead.pug">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="includes\mcmHtmlHead.pug">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="includes\mcmPageHead.pug">
+      <SubType>Code</SubType>
+    </Content>
     <Content Include="package.json" />
-    <Content Include="README.md" />
+    <Content Include="views\homepage.pug">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="views\KrisCiv.pug">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="views\mcm\common.css">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="views\mcm\leaderboard.pug">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="views\mcm\player.pug">
+      <SubType>Code</SubType>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="common\" />
+    <Folder Include="includes\" />
+    <Folder Include="views\" />
+    <Folder Include="views\mcm\" />
   </ItemGroup>
   <!-- Do not delete the following Import Project.  While this appears to do nothing it is a marker for setting TypeScript properties before our import that depends on them. -->
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="False" />

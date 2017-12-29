@@ -1,0 +1,64 @@
+﻿doctype html
+html
+  head
+    title MCM Player Profile
+    include /includes/htmlHead.pug
+    include /includes/mcmHtmlHead.pug
+    script(src="/u/mcm/player.js")
+    - var playerId = params
+    meta#playerId(data-playerid=playerId)
+  body.mcm
+    include /includes/mcmPageHead.pug
+      h1 Player
+      div#error
+      section#stats
+        h2 Stats
+        p Is player good?
+        div.stat#leaderboard
+          div.title Global rank
+          div.description ...
+        div.stat#mmr
+          div.title MMR
+          div.description ...
+        div.stat#played
+          div.title Matches played
+          div.description ...
+        div.stat#won
+          div.title Won
+          div.description ...
+        div.stat#lost
+          div.title Lost
+          div.description ...
+        div.stat#winpercent
+          div.title Win %
+          div.description ...
+        div.stat#scored
+          div.title Goals scored
+          div.description ...
+        div.stat#conceeded
+          div.title Goals conceeded
+          div.description ...
+        div.stat#diff
+          div.title Goal difference
+          div.description ...
+        div.stat#created
+          div.title Created
+          div.description ...
+        div.stat#first
+          div.title First match
+          div.description ...
+        div.stat#last
+          div.title Most recent match
+          div.description ...
+      section#matches
+        h2 Matches
+        p Recent matches
+        table.grid
+          tbody
+            tr.nondata
+              each val, key in model
+                if (val.show)
+                  th #{(val.title !== null ? val.title : key)}
+      section#inventory
+        h2 Inventory
+        p Inventory of items
