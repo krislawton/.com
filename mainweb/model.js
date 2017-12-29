@@ -33,5 +33,5 @@ module.exports = {
 		this.NewMMR = new dataField({ show: true, title: "MMR" })
 		this.MMRDifferential = new dataField({ show: true, title: "Diff" })
 		this.MMRChange = new dataField({ show: true, title: "Change" })
-	}
+	},
 }

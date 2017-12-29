@@ -222,11 +222,32 @@ io.on('connection', function (socket) {
 					model: response.model,
 					params: params
 				}
+				console.log("Emitting data response for input")
+				console.log(input)
 				socket.emit('grid response', ret)
 			})
 		}
 		catch (e) {
 			socket.emit('grid response', e)
+		}
+	})
+	socket.on('data request', (input) => {
+		try {
+			var params = (typeof input.params === "object" ? input.params : null)
+			datastore.data[input.request](params, (err, response) => {
+				var ret = {
+					input: input,
+					err: err,
+					recordset: response.recordset,
+					params: params
+				}
+				console.log("Emitting data response for input")
+				console.log(input)
+				socket.emit('data response', ret)
+			})
+		}
+		catch (e) {
+			socket.emit('data response', e)
 		}
 	})
 })

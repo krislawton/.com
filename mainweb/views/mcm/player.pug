@@ -5,6 +5,7 @@ html
     include /includes/htmlHead.pug
     include /includes/mcmHtmlHead.pug
     script(src="/u/mcm/player.js")
+    link(rel="stylesheet", href="/u/mcm/player.css")
     - var playerId = params
     meta#playerId(data-playerid=playerId)
   body.mcm
@@ -62,3 +63,4 @@ html
       section#inventory
         h2 Inventory
         p Inventory of items
+        div#invItemContainer

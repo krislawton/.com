@@ -33,10 +33,9 @@ const dbmcm = new sql.ConnectionPool(dbconstrmcm, err => {
 // Data model
 const model = require('./model.js')
 
-// Database results helper: Returns errors 
+// Database results helper: Returns errors and formats results object
+function helperResult(iErr, iResult, iModel) {
 
-// Grid helper: Process results in to a return
-function helperGrid(iModel, iErr, iResult) {
 	var err = iErr
 	var modelPassback = {}
 	var resultProper = []
@@ -56,29 +55,13 @@ function helperGrid(iModel, iErr, iResult) {
 			if (resultProper.length === 0) {
 				err = "Results came back empty"
 			} else {
-				// RESULTS OKAY, put in to model
-				// Put only relevant model fields in to a passback model
-				for (c in iModel) {
-					if (iModel[c].show || iModel[c].loadAnyway) {
-						var building = {
-							hidden: iModel[c].loadAnyway,
-							format: iModel[c].format
-						}
-						modelPassback[c] = building
-					}
-				}
-
-				// Iterate through rows of resultset
-				for (r in resultProper) {
-					// Building block for this row
-					var building = {}
-					for (c in iModel) {
-						if (iModel[c].show || iModel[c].loadAnyway) {
-							building[c] = resultProper[r][c]
-						}
-					}
-					resultPassback.push(building)
-				}
+				if (typeof iModel !== "undefined") {
+					var helpedGrid = helperGrid(resultProper, iModel)
+					resultPassback = helpedGrid.result
+					modelPassback = helpedGrid.model
+				} else {
+					resultPassback = iResult
+				}				
 			}
 		}
 	}
@@ -86,8 +69,43 @@ function helperGrid(iModel, iErr, iResult) {
 	if (err !== null) {
 		resultPassback = null
 	}
-	var fret = { recordset: resultPassback, err: err, model: modelPassback }
 
+	var fret = { recordset: resultPassback, err: err }
+	if (typeof iModel !== "undefined") {
+		fret.model = modelPassback
+	}
+	return fret
+}
+
+// Grid helper: Filter data based on model.js
+function helperGrid(iResult, iModel) {
+	var modelPassback = {}
+	var resultPassback = []
+	
+	// Put only relevant model fields in to a passback model
+	for (c in iModel) {
+		if (iModel[c].show || iModel[c].loadAnyway) {
+			var building = {
+				hidden: iModel[c].loadAnyway,
+				format: iModel[c].format
+			}
+			modelPassback[c] = building
+		}
+	}
+
+	// Iterate through rows of resultset
+	for (r in iResult) {
+		// Building block for this row
+		var building = {}
+		for (c in iModel) {
+			if (iModel[c].show || iModel[c].loadAnyway) {
+				building[c] = iResult[r][c]
+			}
+		}
+		resultPassback.push(building)
+	}
+
+	var fret = { result: resultPassback, model: modelPassback }
 	return fret
 }
 
@@ -97,7 +115,7 @@ module.exports = {
 		mcmLeaderboard: (params, callback) => {
 			dbmcm.request()
 				.query("select * from vwPlayerSummary", (err, result) => {
-					var helped = helperGrid(new model.mcmLeaderboard(), err, result)
+					var helped = helperResult(err, result, new model.mcmLeaderboard())
 					callback(helped.err, { model: helped.model, recordset: helped.recordset })
 				})
 		},
@@ -105,8 +123,26 @@ module.exports = {
 			dbmcm.request()
 				.input("PlayerId", sql.VarChar, params.PlayerId)
 				.execute("PlayerMatches", (err, result) => {
-					var helped = helperGrid(new model.mcmPlayerMatches(), err, result)
+					var helped = helperResult(err, result, new model.mcmPlayerMatches())
 					callback(helped.err, { model: helped.model, recordset: helped.recordset })
+				})
+		}
+	},
+	data: {
+		mcmPlayerInventory: (params, callback) => {
+			dbmcm.request()
+				.input("PlayerId", sql.VarChar, params.PlayerId)
+				.execute("PlayerInventory", (err, result) => {
+					var helped = helperResult(err, result)
+					callback(helped.err, { recordset: helped.recordset })
+				})
+		},
+		mcmPlayerInfo: (params, callback) => {
+			dbmcm.request()
+				.input("PlayerId", sql.VarChar, params.PlayerId)
+				.query("select * from vwPlayerSummary where PlayerId = @PlayerId", (err, result) => {
+					var helped = helperResult(err, result)
+					callback(helped.err, { recordset: helped.recordset })
 				})
 		}
 	}

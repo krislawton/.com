@@ -6,16 +6,9 @@
 	var playerId = $('meta#playerId').attr('data-playerid')
 
 	// Emit a request for the match history
+	socket.emit('data request', { request: "mcmPlayerInfo", params: { PlayerId: playerId } })
 	socket.emit('grid request', { load: "mcmPlayerMatches", params: { PlayerId: playerId } })
-	socket.emit('single request', { request: "playerInfo", params: { PlayerId: playerId } })
-
-	// Format helper: Zero pad number
-	function zeroPad(input) {
-		if (input < 10) {
-			input = "0" + input
-		}
-		return input
-	}
+	socket.emit('data request', { request: "mcmPlayerInventory", params: { PlayerId: playerId } })
 
 	// Grid helper: Build table of maximum #{limit} rows
 	function rebuildGrid(limit, response) {
@@ -50,17 +43,7 @@
 		for (c in model) {
 			if (!model[c].hidden) {
 				var field = inputRow[c]
-				if (model[c].format === "datetime short") {
-					var dateinfo = new Date(field)
-					var year = zeroPad(dateinfo.getFullYear()).toString().slice()
-					var month = zeroPad(dateinfo.getMonth() + 1) //0-11
-					var day = zeroPad(dateinfo.getDate())
-					var hour = zeroPad(dateinfo.getHours())
-					var minute = zeroPad(dateinfo.getMinutes())
-
-					field = day + '/' + month + '/' + year + ' ' + hour + ':' + minute
-				}
-
+				field = dataTransformer(model[c].format, field)
 				building += '<td>' + field + '</td>'
 			}
 		}
@@ -84,6 +67,53 @@
 			// Rebuild grid with first 100 records
 			//console.log(response)
 			rebuildGrid(10, gridResponse)
+		}
+	})
+	socket.on('data response', (response) => {
+		console.log(response)
+
+		// Received response for player info
+		if (response.input.request === "mcmPlayerInfo") {
+			var pinfo = response.recordset.recordset[0]
+			// Name at top
+			$('h1').html(pinfo.Name)
+
+			// Stat boxes
+			$('#leaderboard .description').html(pinfo.Leaderboard)
+			$('#mmr .description').html(pinfo.MMR)
+			$('#played .description').html(pinfo.Played)
+			$('#won .description').html(pinfo.Won)
+			$('#lost .description').html(pinfo.Lost)
+			$('#winpercent .description').html(pinfo.WinPercent)
+			$('#scored .description').html(pinfo.GoalsScored)
+			$('#conceeded .description').html(pinfo.GoalsConceeded)
+			$('#diff .description').html(pinfo.GoalDifference)
+			var createdDate = dataTransformer('datetime short', pinfo.CreatedDate)
+			$('#created .description').html(createdDate)
+			var firstMatch = dataTransformer('datetime short', pinfo.FirstMatch)
+			$('#first .description').html(firstMatch)
+			var lastMatch = dataTransformer('datetime short', pinfo.LastMatch)
+			$('#last .description').html(lastMatch)
+		}
+		// Received response for inventory
+		if (response.input.request === "mcmPlayerInventory") {
+			var inventory = response.recordset.recordset
+			$('#invItemContainer').html('')
+
+			var toAppend = ''
+			for (i in inventory) {
+				var rarity = inventory[i].Rarity
+				var color = (inventory[i].Color === null ? '' : inventory[i].Color)
+				toAppend += '<div class="itemBox rarity-' + rarity.toLowerCase() + '">'
+				toAppend += '<div class="rarity">' + rarity + '</div>'
+				toAppend += '<div class="main">'
+				if (color !== "") {
+					toAppend += '<div class="colorBorder ' + color.toLowerCase().replace(' ', '') + '"></div>'
+				}
+				toAppend += '<div class="name">' + inventory[i].Item + '</div>'
+				toAppend += '</div></div>'
+			}
+			$('#invItemContainer').append(toAppend)
 		}
 	})
 })

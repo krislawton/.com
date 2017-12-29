@@ -1,0 +1,56 @@
+﻿/* Stats box */
+#stats div.stat {
+	display: inline-block;
+	min-width: 150px;
+	margin: 0 10px 10px 0;
+	text-align: center;
+	padding: 1px;
+	background: hsl(185, 85%, 65%);
+	background: linear-gradient(110deg, hsl(170, 80%, 60%), hsl(200, 90%, 70%));
+}
+#stats div.stat > * {
+	padding: 6px 3px;
+}
+#stats div.stat .title {
+	text-transform: uppercase;
+	font-size: small;
+}
+#stats div.stat .description {
+	background: white;
+}
+
+/* Inventory item boxes */
+.itemBox {
+	display: inline-block;
+	margin: 0 10px 10px 0;
+	width: 150px;
+	background: black;
+	padding: 1px;
+	text-align: center;
+}
+.itemBox .rarity {
+	text-transform: uppercase;
+	font-size: small;
+	padding: 5px;
+}
+.itemBox .main {
+	overflow: auto;
+	background: white;
+	height: 90px;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+}
+.itemBox.rarity-common {
+	background: hsl(210, 45%, 78%);
+	background: linear-gradient(110deg, hsl(220, 40%, 70%), hsl(200, 50%, 86%));
+}
+.itemBox.rarity-occassional {
+	background: hsl(275, 60%, 75%);
+	background: linear-gradient(110deg, hsl(300, 60%, 70%), hsl(250, 60%, 80%));
+}
+.itemBox.rarity-rare {
+	background: hsl(15, 90%, 60%);
+	background: linear-gradient(110deg, hsl(0, 80%, 60%), hsl(30, 100%, 60%));
+	box-shadow: 0 0 5px 0 hsla(15, 90%, 60%, 0.5);
+}

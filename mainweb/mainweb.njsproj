@@ -28,6 +28,9 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="common\dataTransformers.js">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="common\jquery-3.2.1.min.js" />
     <Compile Include="common\socket.io.js" />
     <Compile Include="datastore.js">
@@ -65,6 +68,9 @@
       <SubType>Code</SubType>
     </Content>
     <Content Include="views\mcm\leaderboard.pug">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="views\mcm\player.css">
       <SubType>Code</SubType>
     </Content>
     <Content Include="views\mcm\player.pug">
