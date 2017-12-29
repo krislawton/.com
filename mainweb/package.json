@@ -1,0 +1,9 @@
+{
+  "name": "mainweb",
+  "version": "0.0.0",
+  "description": "mainweb",
+  "main": "server.js",
+  "author": {
+    "name": "krisl"
+  }
+}
