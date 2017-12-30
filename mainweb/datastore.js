@@ -144,6 +144,14 @@ module.exports = {
 					var helped = helperResult(err, result)
 					callback(helped.err, { recordset: helped.recordset })
 				})
-		}
+		},
+		mcmMatchInfo: (params, callback) => {
+			dbmcm.request()
+				.input("MatchId", sql.VarChar, params.MatchId)
+				.execute("MatchInfo", (err, result) => {
+					var helped = helperResult(err, result)
+					callback(helped.err, { recordset: helped.recordset })
+				})
+		},
 	}
 }

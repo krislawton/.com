@@ -43,6 +43,9 @@
     <Compile Include="views\mcm\leaderboard.js">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="views\mcm\match.js">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="views\mcm\player.js">
       <SubType>Code</SubType>
     </Compile>
@@ -68,6 +71,10 @@
       <SubType>Code</SubType>
     </Content>
     <Content Include="views\mcm\leaderboard.pug">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="views\mcm\match.css" />
+    <Content Include="views\mcm\match.pug">
       <SubType>Code</SubType>
     </Content>
     <Content Include="views\mcm\player.css">

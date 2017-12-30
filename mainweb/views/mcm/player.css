@@ -33,13 +33,21 @@
 	font-size: small;
 	padding: 5px;
 }
-.itemBox .main {
-	overflow: auto;
+.itemBox .colorBox {
 	background: white;
 	height: 90px;
+	padding: 5px;
+	box-sizing: border-box;
+}
+.itemBox .nameContainer {
+	height: 100%;
+	background: white;
+	background: linear-gradient(200deg, hsla(0, 0%, 100%, 0.), white 20%);
+	box-shadow: 2px -2px 3px white;
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
+	overflow: auto;
 }
 .itemBox.rarity-common {
 	background: hsl(210, 45%, 78%);
@@ -50,7 +58,67 @@
 	background: linear-gradient(110deg, hsl(300, 60%, 70%), hsl(250, 60%, 80%));
 }
 .itemBox.rarity-rare {
-	background: hsl(15, 90%, 60%);
-	background: linear-gradient(110deg, hsl(0, 80%, 60%), hsl(30, 100%, 60%));
+	background: hsl(10, 90%, 60%);
+	background: linear-gradient(110deg, hsl(350, 80%, 60%), hsl(30, 100%, 60%));
 	box-shadow: 0 0 5px 0 hsla(15, 90%, 60%, 0.5);
+}
+.itemBox .color-white { background: linear-gradient(200deg, #ffffff, white 40%) }
+.itemBox .color-white .nameContainer { color: white; text-shadow: 0 0 5px black }
+.itemBox .color-slate { background: linear-gradient(200deg, #bbc0ca, white 40%) }
+.itemBox .color-slate .nameContainer { box-shadow: 1px -1px 2px white }
+.itemBox .color-grey { background: linear-gradient(200deg, #808080, white 40%) }
+.itemBox .color-charcoal { background: linear-gradient(200deg, #4b4b4b, white 40%) }
+.itemBox .color-black { background: linear-gradient(200deg, #000000, white 40%) }
+.itemBox .color-wbvdkt { background: linear-gradient(200deg, #455d82, white 40%) }
+.itemBox .color-blueviolet { background: linear-gradient(200deg, #8a2be2, white 40%) }
+.itemBox .color-purple { background: linear-gradient(200deg, #800080, white 40%) }
+.itemBox .color-ultramarine { background: linear-gradient(200deg, #140aae, white 40%) }
+.itemBox .color-azure { background: linear-gradient(200deg, #00aaff, white 40%) }
+.itemBox .color-spring { background: linear-gradient(200deg, #66cdaa, white 40%) }
+.itemBox .color-forest { background: linear-gradient(200deg, #269926, white 40%) }
+.itemBox .color-lime { background: linear-gradient(200deg, #00ff00, white 40%) }
+.itemBox .color-yellow { background: linear-gradient(200deg, #ffff00, white 40%) }
+.itemBox .color-orange { background: linear-gradient(200deg, #ff9500, white 40%) }
+.itemBox .color-red { background: linear-gradient(200deg, #ff0000, white 40%) }
+.itemBox .color-magenta { background: linear-gradient(200deg, #ff00ff, white 40%) }
+.itemBox .color-babypink { background: linear-gradient(200deg, #ffb3ff, white 40%) }
+.itemBox .color-hotpink { background: linear-gradient(200deg, #ff69b4, white 40%) }
+.itemBox .color-golden {
+	background:		
+		radial-gradient(ellipse farthest-corner at right bottom, 
+			hsl(49, 99%, 61%) 0%, 
+			hsl(40, 98%, 59%) 8%, 
+			hsl(41, 60%, 39%) 30%, 
+			hsl(42, 49%, 36%) 40%, 
+			hsla(0, 0%, 0%, 0) 80%),
+		radial-gradient(ellipse farthest-corner at left top, 
+			hsl(0, 0%, 100%) 0%, 
+			hsl(60, 100%, 84%) 8%, 
+			hsl(44, 54%, 61%) 25%, 
+			hsl(42, 50%, 24%) 62.5%, 
+			hsl(42, 50%, 24%) 100%);
+}
+.itemBox .color-golden .nameContainer { color: hsl(50, 50%, 90%); }
+.itemBox .color-silver {
+	background:		
+		radial-gradient(ellipse farthest-corner at right bottom, 
+			hsl(230, 56%, 95%) 0%, 
+			hsl(230, 49%, 91%) 8%, 
+			hsl(230, 32%, 81%) 30%, 
+			hsl(230, 12%, 70%) 40%, 
+			hsla(0, 0%, 0%, 0) 80%),
+		radial-gradient(ellipse farthest-corner at left top, 
+			hsl(0, 0%, 100%) 0%, 
+			hsl(230, 25%, 93%) 8%, 
+			hsl(230, 15%, 81%) 25%, 
+			hsl(230, 12%, 70%) 62.5%, 
+			hsl(230, 8%, 70%) 100%);
+}
+.itemBox .color-silver .nameContainer { color: hsl(230, 30%, 90%); }
+.itemBox .color-golden .nameContainer, .itemBox .color-chrome .nameContainer, .itemBox .color-silver .nameContainer, .itemBox .color-bronze .nameContainer { 
+	background: transparent; 
+	box-shadow: 0 0; 
+	font-weight: bold; 
+	text-transform: uppercase; 
+	text-shadow: 1px 1px 1px hsl(0, 0%, 30%);
 }

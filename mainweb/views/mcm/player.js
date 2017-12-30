@@ -44,6 +44,9 @@
 			if (!model[c].hidden) {
 				var field = inputRow[c]
 				field = dataTransformer(model[c].format, field)
+				if (c === "MatchDate") {
+					field = '<a href="/mcm/match/' + inputRow.MatchId + '">' + field + '</a>'
+				}
 				building += '<td>' + field + '</td>'
 			}
 		}
@@ -103,15 +106,16 @@
 			var toAppend = ''
 			for (i in inventory) {
 				var rarity = inventory[i].Rarity
-				var color = (inventory[i].Color === null ? '' : inventory[i].Color)
+				var color = (inventory[i].Color === null ? 'none' : inventory[i].Color)
 				toAppend += '<div class="itemBox rarity-' + rarity.toLowerCase() + '">'
 				toAppend += '<div class="rarity">' + rarity + '</div>'
-				toAppend += '<div class="main">'
-				if (color !== "") {
-					toAppend += '<div class="colorBorder ' + color.toLowerCase().replace(' ', '') + '"></div>'
-				}
+				toAppend += '<div class="colorBox color-' + color.toLowerCase().replace(' ', '') + '">'
+				//if (color !== "") {
+				//	toAppend += '<div class="colorBorder ' + color.toLowerCase().replace(' ', '') + '"></div>'
+				//}
+				toAppend += '<div class="nameContainer">'
 				toAppend += '<div class="name">' + inventory[i].Item + '</div>'
-				toAppend += '</div></div>'
+				toAppend += '</div></div></div>'
 			}
 			$('#invItemContainer').append(toAppend)
 		}

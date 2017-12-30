@@ -17,12 +17,32 @@ header#topBanter {
 }
 header#topBanter div.inner {
 	color: white;
-	font-size: 35px;
-	letter-spacing: 5px;
 	max-width: 1000px;
 	margin: auto;
 	box-sizing: border-box;
 	padding: 10px;
+}
+header#topBanter .inner > div {
+	display: inline-block;
+	vertical-align: middle;
+}
+header#topBanter .header {
+	font-size: 35px;
+	letter-spacing: 5px;
+}
+header#topBanter .links a {
+	font-weight: bold;
+	color: white;
+	text-decoration: none;
+	margin-left: 10px;
+	padding: 10px 5px;
+}
+header#topBanter .links a:hover {
+	background: white;
+	color: hsl(185, 85%, 65%);
+}
+header#topBanter .links a:active {
+	color: white;
 }
 main {
 	position: relative;

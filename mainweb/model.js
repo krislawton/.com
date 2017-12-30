@@ -23,12 +23,14 @@ module.exports = {
 		this.LastMatch = new dataField()
 	},
 	mcmPlayerMatches: function () {
+		this.MatchId = new dataField({ loadAnyway: true })
 		this.PlayerId = new dataField()
 		this.MatchDate = new dataField({ show: true, format: "datetime short" })
 		this.Team1 = new dataField()
 		this.Goals1 = new dataField({ show: true })
 		this.Goals2 = new dataField({ show: true })
-		this.Team2 = new dataField({ show: true, title: "Opponent" })
+		this.Team2 = new dataField()
+		this.Team2Link = new dataField({ show: true, title: "Opponent" })
 		this.Result = new dataField({ show: true })
 		this.NewMMR = new dataField({ show: true, title: "MMR" })
 		this.MMRDifferential = new dataField({ show: true, title: "Diff" })
