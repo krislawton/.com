@@ -10,14 +10,17 @@ html
     meta#matchId(data-matchid=matchId)
   body.mcm
     include /includes/mcmPageHead.pug
-      h1 Match summary
-      div#error
-      div#matchDate Date
-      div#matchType Type
-      div#matchLength Length
-      table#matchup
-        tbody
-          tr
-            td#side1head Side 1
-            td#scoreline ?–?
-            td#side2head Side 2
+      div.central
+        h1 Match summary
+        div#error
+        div#matchDate Date
+        div#matchType Type
+        div#matchLength Length
+        table#matchup
+          tbody
+            tr
+              td#side1head Side 1
+              td#scoreline ?–?
+              td#side2head Side 2
+      div.border
+      div#notes

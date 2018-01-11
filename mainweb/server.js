@@ -146,8 +146,9 @@ app.get('/', (request, response) => {
 		passedData = request.params.par
 	} else if (request.params.sub === "match" && typeof request.params.par !== "undefined") {
 		toRender = "mcm/match"
-		passedModel = new model.mcmPlayerMatches()
 		passedData = request.params.par
+	} else if (request.params.sub === "summary") {
+		toRender = "mcm/summary"
 	} else {
 		redirect = true
 		redirTo = "/"

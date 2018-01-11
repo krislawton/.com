@@ -149,8 +149,13 @@ module.exports = {
 			dbmcm.request()
 				.input("MatchId", sql.VarChar, params.MatchId)
 				.execute("MatchInfo", (err, result) => {
-					var helped = helperResult(err, result)
-					callback(helped.err, { recordset: helped.recordset })
+					callback(err, { recordset: result })
+				})
+		},
+		mcmSummary: (params, callback) => {
+			dbmcm.request()
+				.execute("SummaryReport", (err, result) => {
+					callback(err, { recordset: result })
 				})
 		},
 	}

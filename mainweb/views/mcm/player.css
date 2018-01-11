@@ -38,9 +38,12 @@
 	height: 90px;
 	padding: 5px;
 	box-sizing: border-box;
+	position: relative; /* This and namecontainer's absolute are needed things become misaligned when linebreaks */
 }
 .itemBox .nameContainer {
-	height: 100%;
+	position: absolute;
+	height: 80px;
+	width: 140px;
 	background: white;
 	background: linear-gradient(200deg, hsla(0, 0%, 100%, 0.), white 20%);
 	box-shadow: 2px -2px 3px white;
@@ -61,6 +64,26 @@
 	background: hsl(10, 90%, 60%);
 	background: linear-gradient(110deg, hsl(350, 80%, 60%), hsl(30, 100%, 60%));
 	box-shadow: 0 0 5px 0 hsla(15, 90%, 60%, 0.5);
+}
+@keyframes treasure {
+	0% {
+		background-position: 0 50%;
+		box-shadow: 0 0 10px 0 hsl(260, 100%, 50%);
+	}
+	50% {
+		background-position: 100% 50%;
+		box-shadow: 0 0 10px 0 hsl(170, 100%, 60%);
+	}
+	100% {
+		background-position: 0 50%;
+		box-shadow: 0 0 10px 0 hsl(260, 100%, 50%);
+	}
+}
+.itemBox.rarity-treasure {
+	background: linear-gradient(110deg, hsl(270, 100%, 60%), hsl(250, 100%, 65%), 20%, hsl(220, 100%, 70%) 30%, hsl(150, 100%, 60%) 80%, hsl(140, 100%, 90%));
+	box-shadow: 0 0 10px 0 hsl(220, 100%, 50%);
+	animation: treasure 11s ease infinite;
+	background-size: 200%;
 }
 .itemBox .color-white { background: linear-gradient(200deg, #ffffff, white 40%) }
 .itemBox .color-white .nameContainer { color: white; text-shadow: 0 0 5px black }

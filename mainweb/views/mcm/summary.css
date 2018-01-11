@@ -1,0 +1,45 @@
+﻿/* Date picker */
+.datePickerContainer {
+	margin: 10px 0;
+}
+.datePicker, .dpSep {
+	font-family: "Fira Code", monospace;
+	display: inline-block;
+}
+.dpSepSpace {
+	margin-left: 1em;
+}
+input.datePicker {
+	border: inherit;
+	background: inherit;
+	padding: inherit;
+	margin: inherit;
+	width: 13pt
+}
+input.dpYear {
+	width: 26pt;
+}
+
+/* Stats box */
+div.stat {
+	display: inline-block;
+	min-width: 150px;
+	margin: 0 10px 10px 0;
+	text-align: center;
+	padding: 1px;
+	background: hsl(185, 85%, 65%);
+	background: linear-gradient(110deg, hsl(170, 80%, 60%), hsl(200, 90%, 70%));
+}
+
+div.stat > * {
+	padding: 6px 3px;
+}
+
+div.stat .title {
+	text-transform: uppercase;
+	font-size: small;
+}
+
+div.stat .description {
+	background: white;
+}

@@ -1,0 +1,51 @@
+﻿doctype html
+html
+  head
+    title MCM Summary Report
+    include /includes/htmlHead.pug
+    include /includes/mcmHtmlHead.pug
+    script(src="/u/mcm/summary.js")
+    link(rel="stylesheet", href="/u/mcm/summary.css")
+  body.mcm
+    include /includes/mcmPageHead.pug
+      h1 Summary report
+      div.datePickerContainer
+        | "Recent" data as of: 
+        input.datePicker.dpYear
+        div.dpSep /
+        input.datePicker.dpMonth
+        div.dpSep /
+        input.datePicker.dpDay
+        div.dpSep.dpSepSpace  
+        input.datePicker.dpHour
+        div.dpSep :
+        input.datePicker.dpMinute
+      div.stat#players
+        div.title Players
+        div.description ...
+      div.stat#active
+        div.title Active players
+        div.description ...
+      div.stat#lastMatch
+        div.title Most recent match
+        div.description ...
+      div.stat#hmrcBalance
+        div.title HMRC balance
+        div.description ...
+      div.stat#hmrcRecent
+        div.title Recent change
+        div.description ...
+      h2 MMR
+      div.stat#minMMR
+        div.title Smallest MMR
+        div.description ...
+      div.stat#lower10
+        div.title 10th percentile
+        div.description ...
+      div.stat#upper90
+        div.title 90th percentile
+        div.description ...
+      div.stat#maxMMR
+        div.title Largest MMR
+        div.description ...
+      h2 Match makeage
