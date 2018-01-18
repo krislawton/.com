@@ -162,6 +162,26 @@ app.get('/', (request, response) => {
 }).get('/u/mcm/:file', (request, response) => {
 	var file = request.params.file
 	response.sendFile(file, { root: __dirname + '/views/mcm' })
+}).get('/nomic/:sub/:par*?', (request, response) => {
+	var passedData = null
+	var toRender = null
+	var redirect = false
+	var redirTo = null
+	if (request.params.sub === "rules") {
+		toRender = "nomic/rules"
+	} else {
+		redirect = true
+		redirTo = "/"
+	}
+
+	if (redirect) {
+		response.redirect(redirTo)
+	} else {
+		response.render(toRender, { params: passedData })
+	}
+}).get('/u/nomic/:file', (request, response) => {
+	var file = request.params.file
+	response.sendFile(file, { root: __dirname + '/views/nomic' })
 }).get('/:sub', (request, response) => {
 	response.render('homepage', { root: __dirname + '/views' })
 }).get('/((socket\.io|c))/:file', (request, response) => {

@@ -1,0 +1,107 @@
+﻿@font-face {
+	font-family: "Fira Sans";
+	src: url(/c/FiraSans-Regular.ttf) format('truetype')
+}
+
+@font-face {
+	font-family: "Fira Code";
+	src: url(/c/FiraCode-Regular.ttf) format('truetype');
+}
+
+body {
+	margin: 0;
+	background: hsl(40, 20%, 93%);
+	font-family: "Fira Sans", "Arial", sans-serif;
+}
+
+header#topBanter {
+	position: fixed;
+	top: 0;
+	background: hsl(185, 85%, 65%);
+	background: linear-gradient(110deg, hsl(360, 80%, 60%), hsl(30, 90%, 70%));
+	width: 100%;
+	z-index: 10;
+}
+
+header#topBanter div.inner {
+	color: white;
+	max-width: 1000px;
+	margin: auto;
+	box-sizing: border-box;
+	padding: 10px;
+}
+
+header#topBanter .inner > div {
+	display: inline-block;
+	vertical-align: middle;
+}
+
+header#topBanter .header {
+	font-size: 35px;
+	letter-spacing: 5px;
+}
+
+header#topBanter .links a {
+	font-weight: bold;
+	color: white;
+	text-decoration: none;
+	margin-left: 10px;
+	padding: 10px 5px;
+}
+
+header#topBanter .links a:hover {
+	background: white;
+	color: hsl(0, 85%, 65%);
+}
+
+header#topBanter .links a:active {
+	color: white;
+}
+
+main {
+	position: relative;
+	top: 100px;
+	margin: auto;
+	max-width: 1000px;
+	box-sizing: border-box;
+	padding: 10px;
+	background: white;
+	color: hsl(0, 0%, 30%);
+	box-shadow: 0 0 2px 0 hsl(0, 0%, 86%)
+}
+
+table.grid {
+	border-collapse: collapse;
+}
+
+table.grid tr:not(:last-of-type) {
+	border-bottom: 1px solid hsl(0, 0%, 86%);
+}
+
+table.grid td, table.grid th {
+	padding: 10px 20px;
+}
+
+table.grid th {
+	font-weight: bold;
+	text-align: left;
+}
+
+button.inline {
+	background: inherit;
+	border: inherit;
+	text-transform: uppercase;
+	font-family: inherit;
+	color: hsl(0, 0%, 50%); 
+	font-weight: bold;
+	border-radius: 3px;
+}
+button.inline:hover {
+	background: hsl(0, 0%, 96%);
+}
+button.inline:active {
+	background: hsl(0, 0%, 88%);
+}
+button.inline:focus {
+	outline: 0;
+}

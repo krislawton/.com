@@ -1,0 +1,16 @@
+﻿.rule h3 {
+	margin: 0
+}
+.rule h3 div.buttoncontainer {
+	display: inline-block; 
+}
+.rule h3 button.inline {
+	bottom: -12px;
+	padding: 10px 6px;
+	margin-left: 10px;
+	visibility: hidden;
+	cursor: pointer;
+}
+.rule:hover h3 button.inline {
+	visibility: visible;
+}

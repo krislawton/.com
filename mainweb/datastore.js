@@ -158,5 +158,11 @@ module.exports = {
 					callback(err, { recordset: result })
 				})
 		},
+		nomicRules: (params, callback) => {
+			pool.request()
+				.execute("nomic.spRulesGet", (err, result) => {
+					callback(err, { recordset: result })
+				})
+		}
 	}
 }

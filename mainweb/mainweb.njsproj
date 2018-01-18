@@ -52,6 +52,9 @@
     <Compile Include="views\mcm\summary.js">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="views\nomic\rules.js">
+      <SubType>Code</SubType>
+    </Compile>
     <Content Include="common\FiraCode-Regular.ttf" />
     <Content Include="common\FiraSans-Regular.ttf" />
     <Content Include="common\socket.io.js.map" />
@@ -62,6 +65,12 @@
       <SubType>Code</SubType>
     </Content>
     <Content Include="includes\mcmPageHead.pug">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="includes\nomicHtmlHead.pug">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="includes\nomicPageHead.pug">
       <SubType>Code</SubType>
     </Content>
     <Content Include="package.json" />
@@ -93,12 +102,22 @@
     <Content Include="views\mcm\summary.pug">
       <SubType>Code</SubType>
     </Content>
+    <Content Include="views\nomic\common.css">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="views\nomic\rules.css">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="views\nomic\rules.pug">
+      <SubType>Code</SubType>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="common\" />
     <Folder Include="includes\" />
     <Folder Include="views\" />
     <Folder Include="views\mcm\" />
+    <Folder Include="views\nomic\" />
   </ItemGroup>
   <!-- Do not delete the following Import Project.  While this appears to do nothing it is a marker for setting TypeScript properties before our import that depends on them. -->
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="False" />
