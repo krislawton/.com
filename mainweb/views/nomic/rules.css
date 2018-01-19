@@ -4,13 +4,26 @@
 .rule h3 div.buttoncontainer {
 	display: inline-block; 
 }
-.rule h3 button.inline {
+.rule h3 .inline {
 	bottom: -12px;
-	padding: 10px 6px;
-	margin-left: 10px;
 	visibility: hidden;
-	cursor: pointer;
+	padding: 10px 6px;
 }
-.rule:hover h3 button.inline {
+.rule:hover h3 .inline {
 	visibility: visible;
+}
+
+button, a.button {
+	margin-left: 10px;
+}
+.ruleEdit div {
+	text-align: right;
+}
+
+textarea {
+	box-sizing: border-box;
+	width: 100%;
+	max-width: 100%;
+	height: 90px;
+	min-height: 25px;
 }

@@ -1,0 +1,15 @@
+﻿doctype html
+html
+  head
+    title Nomic rules
+    include /includes/htmlHead.pug
+    include /includes/nomicHtmlHead.pug
+    script(src="/u/nomic/rule.js")
+    link(rel="stylesheet", href="/u/nomic/rule.css")
+    - var ruleId = params
+    meta#ruleId(data-ruleid=ruleId)
+  body.nomic
+    include /includes/nomicPageHead.pug
+      h1 Rule details
+      div#error
+      div#history

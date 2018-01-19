@@ -1,0 +1,48 @@
+﻿main {
+	max-width: unset;
+	top: 62px;
+	margin-bottom: 62px;
+}
+
+#sendContainer {
+	position: fixed;
+	bottom: 0;
+	width: 100%;
+	height: 52px;
+	padding: 5px;
+	background: white;
+}
+
+#sendContainer textarea {
+	font-family: inherit;
+	font-size: inherit;
+	width: 100%;
+	resize: none;
+	box-sizing: border-box;
+	border: 0;
+	height: 100%;
+	border-radius: 5px;
+	background: hsl(0, 0%, 96%);
+}
+
+main > table {
+	border-collapse: collapse;
+	width: 100%;
+}
+.achat {
+	vertical-align: top;
+	border-top: 1px solid hsl(0, 0%, 88%);
+}
+.achat td {
+	padding: 3px 0;
+}
+.achat .timestamp {
+	width: 200px;
+}
+.achat .else > div {
+	display: inline-block;
+	margin-left: 0.6em;
+}
+.achat .from {
+	font-weight: bold;
+}

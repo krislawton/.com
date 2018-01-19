@@ -163,6 +163,33 @@ module.exports = {
 				.execute("nomic.spRulesGet", (err, result) => {
 					callback(err, { recordset: result })
 				})
+		},
+		nomicChatLoad: (params, callback) => {
+			pool.request()
+				.input("From", sql.VarChar, params.from)
+				.execute("nomic.spChatLoad", (err, result) => {
+					callback(err, { recordset: result })
+					console.log(result)
+					console.log(err)
+				})
+		}
+	},
+	procedure: {
+		nomicRulesAdminEdit: (params, callback) => {
+			pool.request()
+				.input("RuleId", sql.Int, params.ruleId)
+				.input("NewContent", sql.VarChar, params.newContent)
+				.execute("nomic.spRulesAdminEdit", (err, result) => {
+					callback(err, result)
+				})
+		},
+		nomicChatSend: (params, callback) => {
+			pool.request()
+				.input("Sender", sql.VarChar, params.from)
+				.input("Message", sql.VarChar, params.contents)
+				.execute("nomic.spChatSend", (err, result) => {
+					callback(err, result)
+				})
 		}
 	}
 }

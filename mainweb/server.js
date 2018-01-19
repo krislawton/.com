@@ -169,6 +169,11 @@ app.get('/', (request, response) => {
 	var redirTo = null
 	if (request.params.sub === "rules") {
 		toRender = "nomic/rules"
+	} else if (request.params.sub === "rule" && typeof request.params.par !== "undefined") {
+		toRender = "nomic/rule"
+		passedData = request.params.par
+	} else if (request.params.sub === "chat") {
+		toRender = "nomic/chat"
 	} else {
 		redirect = true
 		redirTo = "/"
@@ -253,7 +258,13 @@ io.on('connection', function (socket) {
 			})
 		}
 		catch (e) {
-			socket.emit('grid response', e)
+			var ret = {
+				input: input,
+				err: e,
+				recordset: null,
+				params: params
+			}
+			socket.emit('grid response', ret)
 		}
 	})
 	socket.on('data request', (input) => {
@@ -272,7 +283,62 @@ io.on('connection', function (socket) {
 			})
 		}
 		catch (e) {
-			socket.emit('data response', e)
+			var ret = {
+				input: input,
+				err: e,
+				recordset: null,
+				params: params
+			}
+			socket.emit('data response', ret)
+		}
+	})
+	socket.on('db procedure request', (input) => {
+		try {
+			var params = (typeof input.params === "object" ? input.params : null)
+			datastore.procedure[input.procedure](params, (err, response) => {
+				var ret = {
+					input: input,
+					err: err,
+					response: null,
+					params: params
+				}
+				console.log("Emitting db procedure respones for input")
+				console.log(input)
+				socket.emit('db procedure response', ret)
+			})
+		}
+		catch (e) {
+			var ret = {
+				input: input,
+				err: e,
+				recordset: response.recordset,
+				params: params
+			}
+			socket.emit('db procedure response', ret)
+		}
+	})
+})
+var ioNomicChat = io.of('/nomic')
+ioNomicChat.on('connection', (socket) => {
+	socket.on('chat send', (input) => {
+		try {
+			var input = (typeof input === "object" ? input : null)
+			datastore.procedure.nomicChatSend(input, (err, response) => {
+				var ret = {
+					input: input,
+					err: err,
+					fromDb: response
+				}
+				ioNomicChat.emit('chat sent', ret)
+			})
+		}
+		catch (e) {
+			var ret = {
+				input: input,
+				err: e,
+				fromDb: null
+			}
+			ioNomicChat.emit('chat sent', ret)
 		}
 	})
 })

@@ -1,0 +1,14 @@
+﻿doctype html
+html
+  head
+    title Nomic rules
+    include /includes/htmlHead.pug
+    include /includes/nomicHtmlHead.pug
+    script(src="/u/nomic/chat.js")
+    link(rel="stylesheet", href="/u/nomic/chat.css")
+  body.nomic
+    include /includes/nomicPageHead.pug
+      table
+        tbody#chatContainer
+    div#sendContainer
+      textarea
