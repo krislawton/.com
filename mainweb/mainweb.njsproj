@@ -120,9 +120,6 @@
     <Content Include="views\nomic\common.css">
       <SubType>Code</SubType>
     </Content>
-    <Content Include="views\nomic\newProposal.pug">
-      <SubType>Code</SubType>
-    </Content>
     <Content Include="views\nomic\proposal.css">
       <SubType>Code</SubType>
     </Content>

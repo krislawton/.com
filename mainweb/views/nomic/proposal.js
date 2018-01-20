@@ -4,6 +4,10 @@
 
 	// Load players for select dropdown
 	socket.emit('data request', { request: "nomicPlayers" })
+	socket.emit('data request', { request: "nomicRules" })
+
+	// Rules stored globally
+	var globalRules = []
 
 	socket.on('data response', (response) => {
 		console.log(response)
@@ -16,6 +20,10 @@
 				toAppend += '<option value="' + players[p].PlayerId + '">' + players[p].Name + '</option>'
 			}
 			$('select#as').append(toAppend)
+		}
+		// On rules list receive
+		if (response.input.request === "nomicRules") {
+			globalRules = response.recordset.recordset
 		}
 	})
 
@@ -32,10 +40,20 @@
 		toAppend += '<option value="remove">Repeal rule</option>'
 		toAppend += '</select></p>'
 		toAppend += '<div class="rcBody">'
-		toAppend += '<select name="rcRule"></select>'
-		toAppend += '<div class="rcOldText"></textarea>'
-		toAppend += '<textarea class="rcText"></textarea>'
-		toAppend += '</div>'
+		toAppend += '<select name="rcRule">'
+		toAppend += '<option value="null">Select rule</option>'
+
+		for (var r in globalRules) {
+			toAppend += '<option value="' + r + '">'
+			toAppend += globalRules[r].RuleNumber
+			toAppend += '</option>'
+		}
+
+		toAppend += '</select>'
+		toAppend += '<table class="rcText"><tbody><tr>'
+		toAppend += '<td class="rcTextOld"></td>'
+		toAppend += '<td class="rcTextNew"><textarea></textarea></td>'
+		toAppend += '</tr></tbody></table>'
 		toAppend += '<button class="raised deleteRuleChange">Delete rule change</button>'
 		toAppend += '</div>'
 
@@ -57,20 +75,27 @@
 		if (type === "new") {
 			$(elementRc).find('[name="rcRule"]').removeClass('shown')
 			$(elementRc).find('.rcTextOld').removeClass('shown')
-			$(elementRc).find('.rcText').addClass('shown')
+			$(elementRc).find('.rcTextNew').addClass('shown')
 		} else if (type === "amend") {
 			$(elementRc).find('[name="rcRule"]').addClass('shown')
 			$(elementRc).find('.rcTextOld').addClass('shown')
-			$(elementRc).find('.rcText').addClass('shown')
+			$(elementRc).find('.rcTextNew').addClass('shown')
 		} else if (type === "remove") {
 			$(elementRc).find('[name="rcRule"]').addClass('shown')
 			$(elementRc).find('.rcTextOld').addClass('shown')
-			$(elementRc).find('.rcText').removeClass('shown')
+			$(elementRc).find('.rcTextNew').removeClass('shown')
 		} else {
 			$(elementRc).find('[name="rcRule"]').removeClass('shown')
 			$(elementRc).find('.rcTextOld').removeClass('shown')
-			$(elementRc).find('.rcText').removeClass('shown')
+			$(elementRc).find('.rcTextNew').removeClass('shown')
 		}
+	})
+
+	// If rule change's rule is changed, populate old thing
+	$(document).on('change', '[name="rcRule"]', (e) => {
+		var elementVal = $(e.currentTarget).val()
+		var ruleText = (elementVal !== "null" ? globalRules[elementVal].RuleBody : '')
+		$(e.currentTarget).parents('.ruleChange').find('.rcTextOld').text(ruleText)
 	})
 
 })
