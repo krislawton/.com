@@ -55,6 +55,9 @@
     <Compile Include="views\nomic\chat.js">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="views\nomic\proposal.js">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="views\nomic\rule.js">
       <SubType>Code</SubType>
     </Compile>
@@ -118,6 +121,12 @@
       <SubType>Code</SubType>
     </Content>
     <Content Include="views\nomic\newProposal.pug">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="views\nomic\proposal.css">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="views\nomic\proposal.pug">
       <SubType>Code</SubType>
     </Content>
     <Content Include="views\nomic\rule.pug">

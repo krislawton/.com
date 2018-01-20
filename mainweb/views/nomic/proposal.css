@@ -1,0 +1,6 @@
+﻿textarea.rcText, select[name="rcRule"] {
+	display: none;
+}
+textarea.rcText.shown, select[name="rcRule"].shown {
+	display: initial;
+}

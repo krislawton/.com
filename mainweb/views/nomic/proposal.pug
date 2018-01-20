@@ -1,0 +1,21 @@
+﻿doctype html
+html
+  head
+    title Nomic proposal
+    include /includes/htmlHead.pug
+    include /includes/nomicHtmlHead.pug
+    script(src="/u/nomic/proposal.js")
+    link(rel="stylesheet", href="/u/nomic/proposal.css")
+    - var proposalId = params
+    meta#proposalId(data-proposalid=proposalId)
+  body.nomic
+    include /includes/nomicPageHead.pug
+      h1 Proposal
+      div#error
+      p
+        | Proposing player 
+        select#as(autofocus)
+      h2 Rule changes
+      div#ruleChangeContainer
+      p
+        button.raised.colored#newRuleChange Add rule change

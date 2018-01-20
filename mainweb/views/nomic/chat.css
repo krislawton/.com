@@ -13,16 +13,29 @@
 	background: white;
 }
 
+#sendContainer select {
+	border: inherit;
+	font-size: inherit;
+	font-family: inherit;
+	height: 100%;
+	display: block;
+	position: relative;
+	float: left;
+	width: 250px;
+	border-radius: 3px;
+	background: hsl(0, 0%, 96%);
+}
 #sendContainer textarea {
 	font-family: inherit;
 	font-size: inherit;
-	width: 100%;
 	resize: none;
 	box-sizing: border-box;
 	border: 0;
 	height: 100%;
 	border-radius: 5px;
 	background: hsl(0, 0%, 96%);
+	width: calc(100% - 255px);
+	margin-left: 5px;
 }
 
 main > table {

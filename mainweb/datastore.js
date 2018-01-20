@@ -169,8 +169,12 @@ module.exports = {
 				.input("From", sql.VarChar, params.from)
 				.execute("nomic.spChatLoad", (err, result) => {
 					callback(err, { recordset: result })
-					console.log(result)
-					console.log(err)
+				})
+		},
+		nomicPlayers: (params, callback) => {
+			pool.request()
+				.query("select * from nomic.Players", (err, result) => {
+					callback(err, { recordset: result })
 				})
 		}
 	},

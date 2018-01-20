@@ -13,7 +13,7 @@
 	visibility: visible;
 }
 
-button, a.button {
+.rule button, .rule a.button {
 	margin-left: 10px;
 }
 .ruleEdit div {

@@ -174,6 +174,15 @@ app.get('/', (request, response) => {
 		passedData = request.params.par
 	} else if (request.params.sub === "chat") {
 		toRender = "nomic/chat"
+	} else if (
+		request.params.sub === "proposal"
+		&& typeof request.params.par !== "undefined"
+		&& (
+			!isNaN(request.params.par) || request.params.par === "new"
+		)
+	) {
+		toRender = "nomic/proposal"
+		passedData = request.params.par
 	} else {
 		redirect = true
 		redirTo = "/"
@@ -252,8 +261,6 @@ io.on('connection', function (socket) {
 					model: response.model,
 					params: params
 				}
-				console.log("Emitting data response for input")
-				console.log(input)
 				socket.emit('grid response', ret)
 			})
 		}
@@ -277,8 +284,6 @@ io.on('connection', function (socket) {
 					recordset: response.recordset,
 					params: params
 				}
-				console.log("Emitting data response for input")
-				console.log(input)
 				socket.emit('data response', ret)
 			})
 		}
@@ -302,8 +307,6 @@ io.on('connection', function (socket) {
 					response: null,
 					params: params
 				}
-				console.log("Emitting db procedure respones for input")
-				console.log(input)
 				socket.emit('db procedure response', ret)
 			})
 		}
