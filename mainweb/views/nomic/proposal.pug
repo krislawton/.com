@@ -15,9 +15,12 @@ html
       p
         | Proposing player 
         select#as(autofocus)
+      p
+        input(name="proposalName",type="text")
       h2 Rule changes
       div#ruleChangeContainer
       p
         button.raised.colored#newRuleChange Add rule change
       p
         button.raised.colored#submit Save proposal
+        div#submitError

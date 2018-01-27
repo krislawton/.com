@@ -37,6 +37,7 @@ select[name="rcRule"].shown {
 }
 .ruleChange .rcTextNew {
 	position: relative;
+	white-space: pre-line;
 }
 .ruleChange textarea {
 	font-family: inherit;
@@ -50,4 +51,13 @@ select[name="rcRule"].shown {
 	box-sizing: border-box;
 	position: absolute;
 	min-height: 100px;
+}
+
+#submitError {
+	display: none;
+	color: hsl(0, 70%, 40%);
+	font-weight: bold;
+}
+#submitError.shown {
+	display: inline-block;
 }

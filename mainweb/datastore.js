@@ -176,7 +176,14 @@ module.exports = {
 				.query("select * from nomic.Players", (err, result) => {
 					callback(err, { recordset: result })
 				})
-		}
+		},
+		nomicProposal: (params, callback) => {
+			pool.request()
+				.input("ProposalId", sql.Int, params.proposalId)
+				.execute("nomic.spProposalGet", (err, result) => {
+					callback(err, { recordset: result })
+				})
+		},
 	},
 	procedure: {
 		nomicRulesAdminEdit: (params, callback) => {
@@ -194,6 +201,54 @@ module.exports = {
 				.execute("nomic.spChatSend", (err, result) => {
 					callback(err, result)
 				})
+		},
+		nomicProposalNew: (params, callback) => {
+			var returnResults = []
+			var errs = []
+			var callbackDone = false
+
+			// Proposal header
+			pool.request()
+				.input("PlayerId", sql.VarChar, params.proposer)
+				.input("Name", sql.VarChar, params.propName)
+				.execute("nomic.spProposalInsertHead", (err, result) => {
+					if (!err) {
+						returnResults.push(result)
+						step2(result)
+					} else {
+						callback(err, null)
+					}
+				})
+
+			function step2(headResult) {
+				var headId = headResult.recordset[0].ProposalId
+				var openInserts = 0
+
+				for (i in params.ruleChanges) {
+					openInserts++
+					pool.request()
+						.input("ProposalId", sql.Int, headId)
+						.input("RuleId", sql.Int, params.ruleChanges[i].ruleId)
+						.input("AmendType", sql.VarChar, params.ruleChanges[i].changeType)
+						.input("NewText", sql.VarChar, params.ruleChanges[i].content)
+						.execute("nomic.spProposalInsertAmendment", (err, result) => {
+							openInserts--
+							if (err) {
+								errs.push(err)
+							} 
+							returnResults.push(result)
+							canCallback(openInserts)
+						})
+				}
+			}
+
+			function canCallback(openInserts) {
+				if (openInserts === 0 && !callbackDone) {
+					callback(errs, returnResults)
+					callbackDone = true
+				}
+			}
+
 		}
 	}
 }

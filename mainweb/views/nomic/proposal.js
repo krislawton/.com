@@ -2,13 +2,20 @@
 	// Connect to socket
 	const socket = io()
 
+	// Proposal ID
+	var proposalId = $('meta#proposalId').attr('data-proposalid')
+
 	// Load players for select dropdown
 	socket.emit('data request', { request: "nomicPlayers" })
 	socket.emit('data request', { request: "nomicRules" })
+	if (proposalId !== "new") {
+		socket.emit('data request', { request: "nomicProposal", params: { proposalId: proposalId } })
+	}
 
 	// Rules stored globally
 	var globalRules = []
 
+	// Socket receivers
 	socket.on('data response', (response) => {
 		console.log(response)
 		// On receive player list
@@ -25,14 +32,28 @@
 		if (response.input.request === "nomicRules") {
 			globalRules = response.recordset.recordset
 		}
+		// On proposal data received
+		if (response.input.request === "nomicProposal") {
+
+		}
 	})
 
 	// Each time a new rule change is created it is given this number which is incremented.
 	var newId = 1
 
-	// New rule change
-	$(document).on('click', '#newRuleChange', (e) => {
-		var toAppend = '<div class="ruleChange" data-amendmentid="new" data-newid="'+newId+'">'
+	// Helper: New rule change
+	function newRuleChange(dbRecord) {
+		var amendmentId = (typeof dbRecord !== "object" ? "new" : dbRecord.AmendmentId)
+
+		var toAppend = ''
+		toAppend += '<div class="ruleChange" data-amendmentid="new" data-newid="'
+		if (typeof dbRecord !== "object") {
+			toAppend += newId
+			newId++
+		} else {
+			toAppend += 'null'
+		}
+		toAppend += '">'
 		toAppend += '<p>Rule change type <select name="changeType">'
 		toAppend += '<option value="null">Please select</option>'
 		toAppend += '<option value="new">New rule</option>'
@@ -60,6 +81,11 @@
 		$('#ruleChangeContainer').append(toAppend)
 
 		newId++
+	}
+
+	// Handle new rule change button press
+	$(document).on('click', '#newRuleChange', (e) => {
+		newRuleChange()
 	})
 
 	// Delete rule change
@@ -96,6 +122,51 @@
 		var elementVal = $(e.currentTarget).val()
 		var ruleText = (elementVal !== "null" ? globalRules[elementVal].RuleBody : '')
 		$(e.currentTarget).parents('.ruleChange').find('.rcTextOld').text(ruleText)
+		$(e.currentTarget).parents('.ruleChange').find('.rcTextNew textarea').val(ruleText)
+	})
+
+	// On rule save
+	$(document).on('click', '#submit', (e) => {
+		var proposer = $('#as').val()
+		var propName = $('[name="proposalName"]').val()
+		var ruleChanges = []
+		var htmlRules = $('.ruleChange')
+
+		var error = null
+
+		for (var i = 0; i < htmlRules.length; i++) {
+			var toIns = {}
+
+			// Changetype
+			toIns.changeType = $(htmlRules[i]).find('[name="changeType"]').val()
+			if (toIns.changeType !== "new") {
+				var ruleIndex = $(htmlRules[i]).find('[name="rcRule"]').val()
+				toIns.ruleId = globalRules[ruleIndex].RuleId
+			}
+			else {
+				toIns.ruleId = null
+			}
+			// Content
+			toIns.content = (toIns.changeType !== "remove" ? $(htmlRules[i]).find('.rcTextNew textarea').val() : null)
+
+			ruleChanges.push(toIns)
+		}
+
+		if (error !== null) {
+			$('#submitError').html('ERROR with something').addClass('shown')
+		} else {
+			$('#submitError').html('').removeClass('shown')
+		}
+
+		socket.emit('db procedure request', { procedure: "nomicProposalNew", params: { propName: propName, proposer: proposer, ruleChanges: ruleChanges } })
+
+		// Disable form elements
+		$('#ruleChangeContainer, #newRuleChange, #submit').prop('disabled', true)
+	})
+
+	// On save receipt
+	socket.on('db procedure response', (response) => {
+		window.location.href = "/nomic/rules"
 	})
 
 })
