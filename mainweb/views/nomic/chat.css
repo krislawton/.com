@@ -42,7 +42,7 @@ main > table {
 	border-collapse: collapse;
 	width: 100%;
 }
-.achat {
+.achat, .dateSeparator {
 	vertical-align: top;
 	border-top: 1px solid hsl(0, 0%, 88%);
 }
@@ -50,12 +50,23 @@ main > table {
 	padding: 3px 0;
 }
 .achat .timestamp {
-	width: 200px;
+	width: 60px;
+}
+.achat .else {
+	padding-left: 0.6em;
 }
 .achat .else > div {
-	display: inline-block;
-	margin-left: 0.6em;
+	display: inline;
+}
+.achat .else .contents {
+	padding-left: 0.6em;
+	white-space: pre-wrap;
 }
 .achat .from {
 	font-weight: bold;
+}
+.dateSeparator td {
+	font-weight: bold;
+	text-align: center;
+	padding: 20px 0 10px 0;
 }
