@@ -184,11 +184,18 @@ module.exports = {
 					callback(err, { recordset: result })
 				})
 		},
+		nomicProposalsOpen: (params, callback) => {
+			pool.request()
+				.execute("nomic.spProposalsGetOpen", (err, result) => {
+					callback(err, { recordset: result })
+				})
+		},
 	},
 	procedure: {
 		nomicRulesAdminEdit: (params, callback) => {
 			pool.request()
 				.input("RuleId", sql.Int, params.ruleId)
+				.input("NewName", sql.VarChar, params.newName)
 				.input("NewContent", sql.VarChar, params.newContent)
 				.execute("nomic.spRulesAdminEdit", (err, result) => {
 					callback(err, result)
@@ -249,6 +256,6 @@ module.exports = {
 				}
 			}
 
-		}
+		},
 	}
 }

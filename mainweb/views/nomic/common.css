@@ -88,8 +88,8 @@ table.grid th {
 }
 
 button, a.button {
-	background: inherit;
-	border: inherit;
+	background: initial;
+	border: initial;
 	text-transform: uppercase;
 	font-family: inherit;
 	font-size: initial;

@@ -61,7 +61,7 @@
 			var prevStampFull = $('#chatContainer .achat:last-of-type').attr('data-timestamp')
 			var prevStamp = (typeof prevStampFull !== "undefined" ? prevStampFull : dbRecord.SentDate).slice(0, 10)
 			var curStamp = (dbRecord.SentDate).slice(0, 10)
-			console.log("COmpare " + prevStamp + " and " + currStamp)
+			console.log("COmpare " + prevStamp + " and " + curStamp)
 			if (prevStamp !== curStamp) {
 				var ds = dateSeparator(dbRecord.SentDate)
 				toAdd = ds + toAdd

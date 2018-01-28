@@ -1,4 +1,30 @@
-﻿.rule h3 {
+﻿/* Proposals */
+.proposal {
+	padding: 10px 0 10px 10px;
+	border-left: 5px solid hsl(0, 0%, 88%);
+	line-height: 150%;
+}
+.proposal > div > div {
+	display: inline;
+}
+.proposal > div .label {
+	font-weight: bold;
+	margin-right: 0.6em;
+}
+.proposal .amendments ul {
+	display: inline;
+	padding: 0;
+	list-style: none;
+}
+.proposal .amendments li {
+	display: inline;
+}
+.proposal .amendments li + li::before {
+	content: ", "
+}
+
+/* Rules */
+.rule h3 {
 	margin: 0
 }
 .rule h3 div.buttoncontainer {
@@ -6,11 +32,12 @@
 }
 .rule h3 .inline {
 	bottom: -12px;
-	visibility: hidden;
+	opacity: 0;
 	padding: 10px 6px;
+	transition: opacity 0.1s;
 }
 .rule:hover h3 .inline {
-	visibility: visible;
+	opacity: 1;
 }
 
 .rule button, .rule a.button {
@@ -20,6 +47,9 @@
 	text-align: right;
 }
 
+input {
+	width: 100%;
+}
 textarea {
 	box-sizing: border-box;
 	width: 100%;

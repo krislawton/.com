@@ -10,6 +10,7 @@
 	socket.emit('data request', { request: "nomicRules" })
 	if (proposalId !== "new") {
 		socket.emit('data request', { request: "nomicProposal", params: { proposalId: proposalId } })
+		$('#submit').remove()
 	}
 
 	// Rules stored globally
@@ -22,7 +23,7 @@
 		if (response.input.request === "nomicPlayers") {
 			var players = response.recordset.recordset,
 				toAppend = ''
-			$('select option').remove()
+			$('select option:not([value="null"]').remove()
 			for (var p in players) {
 				toAppend += '<option value="' + players[p].PlayerId + '">' + players[p].Name + '</option>'
 			}
@@ -34,7 +35,10 @@
 		}
 		// On proposal data received
 		if (response.input.request === "nomicProposal") {
-
+			var amends = response.recordset.recordsets[1]
+			for (var a in amends) {
+				newRuleChange(amends[a])
+			}
 		}
 	})
 
@@ -43,15 +47,18 @@
 
 	// Helper: New rule change
 	function newRuleChange(dbRecord) {
+
+		console.log(dbRecord)
+		console.log(typeof dbRecord)
 		var amendmentId = (typeof dbRecord !== "object" ? "new" : dbRecord.AmendmentId)
 
 		var toAppend = ''
-		toAppend += '<div class="ruleChange" data-amendmentid="new" data-newid="'
+		toAppend += '<div class="ruleChange" '
 		if (typeof dbRecord !== "object") {
-			toAppend += newId
+			toAppend += 'data-amendmentid="new" data-newid="' + newId
 			newId++
 		} else {
-			toAppend += 'null'
+			toAppend += 'data-amendmentid="' + dbRecord.AmendmentId + '" data-newid="null'
 		}
 		toAppend += '">'
 		toAppend += '<p>Rule change type <select name="changeType">'
@@ -71,16 +78,23 @@
 		}
 
 		toAppend += '</select>'
-		toAppend += '<table class="rcText"><tbody><tr>'
-		toAppend += '<td class="rcTextOld"></td>'
+		toAppend += '<div class="rcTextContainer"><table class="rcText"><tbody><tr>'
+		toAppend += '<td class="rcTextOld">'
+		toAppend += (typeof dbRecord === "object" ? dbRecord.OldText : '')
+		toAppend += '</td>'
 		toAppend += '<td class="rcTextNew"><textarea></textarea></td>'
-		toAppend += '</tr></tbody></table>'
+		toAppend += '</tr></tbody></table></div>'
 		toAppend += '<button class="raised deleteRuleChange">Delete rule change</button>'
 		toAppend += '</div>'
 
 		$('#ruleChangeContainer').append(toAppend)
 
-		newId++
+		if (typeof dbRecord === "object") {
+			var selector = '.ruleChange[data-amendmentid="' + dbRecord.AmendmentId + '"] '
+			$(selector + '[name="changeType"]').val(dbRecord.AmendType).trigger("change")
+			$(selector + '[name="rcRule"]').val((dbRecord.RuleId === null ? 'null' : dbRecord.RuleId)).trigger("change")
+			$(selector + '.rcTextNew textarea').val((dbRecord.NewText !== null ? dbRecord.NewText : ''))
+		}
 	}
 
 	// Handle new rule change button press
@@ -168,5 +182,18 @@
 	socket.on('db procedure response', (response) => {
 		window.location.href = "/nomic/rules"
 	})
+
+	// Helper: Get global rules index from rule ID
+	function ruleIndexFromId(ruleId) {
+		var index = null
+
+		for (i in globalRules) {
+			if (globalRules[i].RuleId === ruleId) {
+				index = i
+			}
+		}
+
+		return index
+	}
 
 })

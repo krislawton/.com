@@ -20,16 +20,23 @@ select[name="rcRule"].shown {
 .ruleChange p {
     margin-top: 0;
 }
-.ruleChange table {
-    width: 100%;
-    border-collapse: collapse;
-	min-height: 100px;
+.ruleChange .rcTextContainer {
+	resize: vertical;
+	min-height: 150px;
 	margin-bottom: 10px;
+	overflow: auto;
+	border: 1px solid hsl(0, 0%, 88%);
+	padding-top: 13px;
+}
+.ruleChange table {
+    width: calc(100% - 1px);
+    border-collapse: collapse;
+	min-height: 137px;
+	height: calc(100% - 13px);
 }
 .ruleChange table td {
     width: 50%;
     vertical-align: top;
-	border: 1px solid hsl(0, 0%, 88%);
 }
 .ruleChange .rcTextOld {
     color: hsl(0, 0%, 65%);
@@ -38,6 +45,9 @@ select[name="rcRule"].shown {
 .ruleChange .rcTextNew {
 	position: relative;
 	white-space: pre-line;
+}
+.rcTextOld.shown + .rcTextNew.shown {
+	border-left: 1px solid hsl(0, 0%, 88%);
 }
 .ruleChange textarea {
 	font-family: inherit;
