@@ -56,6 +56,7 @@
 
 			// Amendments
 			var amends = response.recordset.recordsets[1]
+			console.log(amends)
 			for (var a in amends) {
 				// Compose amendment html
 				var description = (amends[a].AmendType).charAt(0).toUpperCase()

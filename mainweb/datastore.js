@@ -173,7 +173,7 @@ module.exports = {
 		},
 		nomicPlayers: (params, callback) => {
 			pool.request()
-				.query("select * from nomic.Players", (err, result) => {
+				.query("select * from nomic.Players order by Name", (err, result) => {
 					callback(err, { recordset: result })
 				})
 		},
@@ -205,6 +205,8 @@ module.exports = {
 			pool.request()
 				.input("Sender", sql.VarChar, params.from)
 				.input("Message", sql.VarChar, params.contents)
+				.input("MessageType", sql.VarChar, "Message")
+				.input("ExtraJSON", sql.VarChar, null)
 				.execute("nomic.spChatSend", (err, result) => {
 					callback(err, result)
 				})
@@ -233,11 +235,12 @@ module.exports = {
 
 				for (i in params.ruleChanges) {
 					openInserts++
+					console.log("Inserting")
 					pool.request()
 						.input("ProposalId", sql.Int, headId)
 						.input("RuleId", sql.Int, params.ruleChanges[i].ruleId)
 						.input("AmendType", sql.VarChar, params.ruleChanges[i].changeType)
-						.input("NewText", sql.VarChar, params.ruleChanges[i].content)
+						.input("NewText", params.ruleChanges[i].content)
 						.execute("nomic.spProposalInsertAmendment", (err, result) => {
 							openInserts--
 							if (err) {
@@ -257,5 +260,81 @@ module.exports = {
 			}
 
 		},
+		nomicProposalUpdate: (params, callback) => {
+			var returnResults = []
+			var errs = []
+			var callbackDone = false
+
+			// Proposal header
+			pool.request()
+				.input("ProposalId", sql.Int, params.proposalId)
+				.input("PlayerId", sql.VarChar, params.proposer)
+				.input("Name", sql.VarChar, params.propName)
+				.execute("nomic.spProposalUpdateHead", (err, result) => {
+					if (!err) {
+						returnResults.push(result)
+					} else {
+						callback(err, null)
+					}
+				})
+
+			// Each amendment
+			var openAmendments = 0
+			for (i in params.ruleChanges) {
+				openAmendments++
+
+				if (params.ruleChanges[i].amendmentId === "new") {
+					pool.request()
+						.input("ProposalId", sql.Int, params.proposalId)
+						.input("RuleId", sql.Int, params.ruleChanges[i].ruleId)
+						.input("AmendType", sql.VarChar, params.ruleChanges[i].changeType)
+						.input("NewText", params.ruleChanges[i].content)
+						.execute("nomic.spProposalInsertAmendment", (err, result) => {
+							openAmendments--
+							if (err) {
+								errs.push(err)
+							}
+							returnResults.push(result)
+							canCallback(openAmendments)
+						})
+				} else {
+					pool.request()
+						.input("AmendmentId", sql.Int, params.ruleChanges[i].amendmentId)
+						.input("RuleId", sql.Int, params.ruleChanges[i].ruleId)
+						.input("AmendType", sql.VarChar, params.ruleChanges[i].changeType)
+						.input("NewText", params.ruleChanges[i].content)
+						.execute("nomic.spProposalUpdateAmendment", (err, result) => {
+							openAmendments--
+							if (err) {
+								errs.push(err)
+							}
+							returnResults.push(result)
+							canCallback(openAmendments)
+						})
+				}
+			}
+
+			// Each deletion
+			for (i in params.deletes) {
+				openAmendments++
+				pool.request()
+					.input("AmendmentId", sql.Int, params.deletes[i])
+					.execute("nomic.spProposalRemoveAmendment", (err, result) => {
+						openAmendments--
+						if (err) {
+							errs.push(err)
+						}
+						returnResults.push(result)
+						canCallback(openAmendments)
+					})
+			}
+
+			function canCallback(openAmendments) {
+				if (openAmendments === 0 && !callbackDone) {
+					callback(errs, returnResults)
+					callbackDone = true
+				}
+			}
+		}
 	}
 }

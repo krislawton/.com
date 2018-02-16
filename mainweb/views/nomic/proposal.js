@@ -10,17 +10,18 @@
 	socket.emit('data request', { request: "nomicRules" })
 	if (proposalId !== "new") {
 		socket.emit('data request', { request: "nomicProposal", params: { proposalId: proposalId } })
-		$('#submit').remove()
 	}
 
 	// Rules stored globally
 	var globalRules = []
 
 	// Socket receivers
+	var proposalResponse = null
 	socket.on('data response', (response) => {
 		console.log(response)
 		// On receive player list
 		if (response.input.request === "nomicPlayers") {
+			receivedPlayers = true
 			var players = response.recordset.recordset,
 				toAppend = ''
 			$('select option:not([value="null"]').remove()
@@ -28,28 +29,48 @@
 				toAppend += '<option value="' + players[p].PlayerId + '">' + players[p].Name + '</option>'
 			}
 			$('select#as').append(toAppend)
+			checkProposalReady()
 		}
 		// On rules list receive
 		if (response.input.request === "nomicRules") {
+			receivedRules = true
 			globalRules = response.recordset.recordset
+			checkProposalReady()
 		}
 		// On proposal data received
 		if (response.input.request === "nomicProposal") {
-			var amends = response.recordset.recordsets[1]
-			for (var a in amends) {
-				newRuleChange(amends[a])
-			}
+			receivedProposal = true
+			proposalResponse = response
+			checkProposalReady()
 		}
 	})
+
+	// Helper: Check if proposal contents are ready to be displayed
+	var receivedPlayers = false,
+		receivedRules = false,
+		receivedProposal = false
+	function checkProposalReady() {
+		if (receivedPlayers && receivedRules && receivedProposal) {
+			proposalReceived(proposalResponse)
+		}
+	}
+	// Helper: On proposal contents received
+	function proposalReceived(response) {
+		var prop = response.recordset.recordsets[0][0]
+		$('#as').val(prop.PlayerId)
+		$('[name="proposalName"]').val(prop.ProposalName)
+		var amends = response.recordset.recordsets[1]
+		for (var a in amends) {
+			newRuleChange(amends[a])
+		}
+	}
 
 	// Each time a new rule change is created it is given this number which is incremented.
 	var newId = 1
 
 	// Helper: New rule change
 	function newRuleChange(dbRecord) {
-
-		console.log(dbRecord)
-		console.log(typeof dbRecord)
+		
 		var amendmentId = (typeof dbRecord !== "object" ? "new" : dbRecord.AmendmentId)
 
 		var toAppend = ''
@@ -92,7 +113,7 @@
 		if (typeof dbRecord === "object") {
 			var selector = '.ruleChange[data-amendmentid="' + dbRecord.AmendmentId + '"] '
 			$(selector + '[name="changeType"]').val(dbRecord.AmendType).trigger("change")
-			$(selector + '[name="rcRule"]').val((dbRecord.RuleId === null ? 'null' : dbRecord.RuleId)).trigger("change")
+			$(selector + '[name="rcRule"]').val((dbRecord.RuleId === null ? 'null' : ruleIndexFromId(dbRecord.RuleId))).trigger("change")
 			$(selector + '.rcTextNew textarea').val((dbRecord.NewText !== null ? dbRecord.NewText : ''))
 		}
 	}
@@ -103,8 +124,14 @@
 	})
 
 	// Delete rule change
+	var deletedAmendments = []
 	$(document).on('click', '.deleteRuleChange', (e) => {
-		$(e.currentTarget).parents('.ruleChange').remove()
+		var parent = $(e.currentTarget).parents('.ruleChange')
+		var amendId = $(parent).attr('data-amendmentid')
+		if (amendId !== "new") {
+			deletedAmendments.push(amendId)
+		}
+		$(parent).remove()
 	})
 
 	// If rule change is changed to new rule
@@ -151,6 +178,9 @@
 		for (var i = 0; i < htmlRules.length; i++) {
 			var toIns = {}
 
+			// Amendment ID
+			toIns.amendmentId = $(htmlRules[i]).attr('data-amendmentid')
+
 			// Changetype
 			toIns.changeType = $(htmlRules[i]).find('[name="changeType"]').val()
 			if (toIns.changeType !== "new") {
@@ -172,7 +202,20 @@
 			$('#submitError').html('').removeClass('shown')
 		}
 
-		socket.emit('db procedure request', { procedure: "nomicProposalNew", params: { propName: propName, proposer: proposer, ruleChanges: ruleChanges } })
+		if (proposalId === "new") {
+			socket.emit('db procedure request', { procedure: "nomicProposalNew", params: { propName: propName, proposer: proposer, ruleChanges: ruleChanges } })
+		} else {
+			socket.emit('db procedure request', { procedure: "nomicProposalUpdate", params: { 
+				proposalId: proposalId,
+				propName: propName,
+				proposer: proposer,
+				ruleChanges: ruleChanges,
+				deletes: deletedAmendments
+			}
+			})
+		}
+		//var constr = { proposalId: proposalId, propName: propName, proposer: proposer, ruleChanges: ruleChanges }
+		//console.log(constr)
 
 		// Disable form elements
 		$('#ruleChangeContainer, #newRuleChange, #submit').prop('disabled', true)

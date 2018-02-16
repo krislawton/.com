@@ -58,8 +58,10 @@ main > table {
 .achat .else > div {
 	display: inline;
 }
+.achat .else .from {
+	padding-right: 0.6em;
+}
 .achat .else .contents {
-	padding-left: 0.6em;
 	white-space: pre-wrap;
 }
 .achat .from {
@@ -69,4 +71,22 @@ main > table {
 	font-weight: bold;
 	text-align: center;
 	padding: 20px 0 10px 0;
+}
+
+/* Actions */
+.achat.action .timestamp {
+	padding-top: 18px;
+}
+.achat .else .systemmessage {
+	display: block;
+	font-size: small;
+}
+.achat.action .contents {
+	font-weight: bold;
+}
+.achat.action .contents::after {
+	content: " ~";
+}
+.achat.action .contents::before {
+	content: "~ ";
 }

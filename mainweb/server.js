@@ -298,7 +298,6 @@ io.on('connection', function (socket) {
 		}
 	})
 	socket.on('db procedure request', (input) => {
-		console.log(input)
 		try {
 			var params = (typeof input.params === "object" ? input.params : null)
 			datastore.procedure[input.procedure](params, (err, response) => {
@@ -309,7 +308,7 @@ io.on('connection', function (socket) {
 					response: response,
 					params: params
 				}
-				console.log(ret)
+				console.log(err)
 				socket.emit('db procedure response', ret)
 			})
 		}
@@ -320,7 +319,6 @@ io.on('connection', function (socket) {
 				response: null,
 				params: params
 			}
-			console.log("db procedure error")
 			console.log(e)
 			socket.emit('db procedure response', ret)
 		}
