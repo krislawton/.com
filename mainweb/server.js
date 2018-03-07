@@ -131,6 +131,9 @@ app.use((request, response, next) => {
 // Page getters
 app.get('/', (request, response) => {
 	response.render('homepage', { root: __dirname + '/views' })
+}).get('/u/:file', (request, response) => {
+	var file = request.params.file
+	response.sendFile(file, { root: __dirname + '/views' })
 }).get('/mcm/:sub/:par*?', (request, response) => {
 	var passedModel = null
 	var passedData = null

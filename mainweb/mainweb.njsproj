@@ -82,7 +82,16 @@
     <Content Include="includes\nomicPageHead.pug">
       <SubType>Code</SubType>
     </Content>
+    <Content Include="includes\rootPageHead.pug">
+      <SubType>Code</SubType>
+    </Content>
     <Content Include="package.json" />
+    <Content Include="views\common.css">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="views\homepage.css">
+      <SubType>Code</SubType>
+    </Content>
     <Content Include="views\homepage.pug">
       <SubType>Code</SubType>
     </Content>

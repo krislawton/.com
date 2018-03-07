@@ -1,9 +1,19 @@
 ﻿doctype html
 html
   head
-    title Website
+    title Landing page - krislawton.com
+    link(rel="stylesheet", href="/u/common.css")
+    link(rel="stylesheet", href="/u/homepage.css")
   body
-    p
-      a(href="/mcm/leaderboard") MCM leaderboard
-    p
-      a(href="/nomic/rules") Nomic rules
+    include /includes/rootPageHead.pug
+    main
+      div.login
+        p Log in pls
+        input(type="text",placeholder="User name")#username
+        input(type="text",placeholder="Password")#password
+        button.raised.colored.login Log in
+        p.aint Bitch I ain't got an account, #[span.signmeup sign me up].
+      p
+        a(href="/mcm/leaderboard") MCM leaderboard
+      p
+        a(href="/nomic/rules") Nomic rules
