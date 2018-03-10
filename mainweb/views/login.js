@@ -16,10 +16,8 @@
 
 		if (er.length === 0) {
 			socket.emit('login attempt', { username: un, password: pw })
-			console.log("Sent")
 		} else {
 			printErrors(er)
-			console.log("Error")
 		}
 	})
 
@@ -27,7 +25,7 @@
 		if (response.err) {
 			printErrors(response.err)
 		} else {
-			printErrors(response.result)
+			window.location.href = '/'
 		}
 	})
 

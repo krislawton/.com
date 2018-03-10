@@ -13,7 +13,7 @@ const dbconfig = {
 const dbconstr = "Driver=msnodesqlv8;Server=(local);Database=Website;Trusted_Connection=yes;TrustServerCertificate=yes;Encrypt=yes;"
 const dbconstrmcm = "Driver=msnodesqlv8;Server=(local);Database=MCM;Trusted_Connection=yes;TrustServerCertificate=yes;Encrypt=yes;"
 // Create connection pool
-const pool = new sql.ConnectionPool(dbconstr, err => {
+const pool = new sql.ConnectionPool(dbconfig, err => {
     if (err) {
         console.log("Database error: " + err["name"])
         console.log(err)

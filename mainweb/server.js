@@ -22,6 +22,9 @@ const iosession = require("express-socket.io-session")
 
 const datastore = require('./datastore.js')
 
+// Secret variables the public shouldn't see
+const seecret = require('./seecret.js')
+
 /* ================== */
 /* SETTING UP MODULES */
 /* ================== */
@@ -34,9 +37,9 @@ io = require('socket.io').listen(server)
 
 // DB Configuration and connection string
 const dbconfig = {
-    user: 'sa',
-    password: 'StopChanging9000',
-    server: '.',
+	user: seecret.dbUser,
+	password: seecret.dbPassword,
+	server: seecret.dbServer,
     database: 'Website',
     options: {
         charset: 'Latin1_General_CI_AS'
@@ -45,7 +48,7 @@ const dbconfig = {
 }
 const dbconstr = "Driver=msnodesqlv8;Server=(local);Database=Website;Trusted_Connection=yes;TrustServerCertificate=yes;Encrypt=yes;"
 // Create connection pool
-const pool = new sql.ConnectionPool(dbconstr, err => {
+const pool = new sql.ConnectionPool(dbconfig, err => {
     if (err) {
         console.log("Database error: " + err["name"])
         console.log(err)
@@ -94,23 +97,24 @@ var storeoptions = {
 	table: "NodeSessions",
 	ttl: 24 * 60 * 60 * 1000,
 }
+
 // Set up sessions
-//var sessionMiddleware = session({
-//	store: new storesessions(storeconfig, storeoptions),
-//	maxAge: 60 * 60 * 1000,
-//	genid: (req) => { return generateSessionId() },
-//	name: "nkei",
-//	secret: 'you big query',
-//	resave: true,
-//	saveUninitialized: true,
-//	cookie: { userData: {} }
-//})
-//// Tell server to use sessions
-//app.use(sessionMiddleware)
-//// Tell socket to use sessions
-//io.use(iosession(sessionMiddleware, {
-//	autoSave: true
-//}))
+var sessionMiddleware = session({
+	store: new storesessions(storeconfig, storeoptions),
+	maxAge: 60 * 60 * 1000,
+	genid: (req) => { return generateSessionId() },
+	name: "kiwi",
+	secret: seecret.sessionSecret,
+	resave: true,
+	saveUninitialized: true,
+	cookie: { userData: { loggedIn: false } }
+})
+// Tell server to use sessions
+app.use(sessionMiddleware)
+// Tell socket to use sessions
+io.use(iosession(sessionMiddleware, {
+	autoSave: true
+}))
 
 /* ======= */
 /* ROUTING */
@@ -124,8 +128,17 @@ app.use((err, request, response, next) => {
     console.log(err)
     response.status(500).send('Something wrong')
 })
+// Check login
 app.use((request, response, next) => {
-	next()
+	var reg = RegExp(/\/(c\/|u\/|login)/)
+	if (
+		!reg.test(request.url) &&
+		(typeof request.session.userData === "undefined" || request.session.userData.loggedIn === "false")
+	) {
+		response.redirect('/login')
+	} else {
+		next()
+	}
 })
 
 // Page getters
@@ -200,7 +213,8 @@ app.get('/', (request, response) => {
 	var file = request.params.file
 	response.sendFile(file, { root: __dirname + '/views/nomic' })
 }).get('/:sub', (request, response) => {
-	response.render('homepage', { root: __dirname + '/views' })
+	var toRender = request.params.sub
+	response.render(toRender, { root: __dirname + '/views' })
 }).get('/((socket\.io|c))/:file', (request, response) => {
 	var file = request.params.file
 	response.sendFile(file, { root: __dirname + '/common' })
@@ -296,6 +310,12 @@ io.on('connection', function (socket) {
 			function checkPassword(userInfo) {
 				if (input.password === userInfo.Pw) {
 					ret.result = "Login successful but we haven't implemented it yet."
+					socket.handshake.session.userData = {
+						loggedIn: true,
+						username: input.username,
+						permaid: userInfo.AccountPermaId
+					}
+					socket.handshake.session.save()
 				} else {
 					ret.err = "Username found but password did not match."
 				}
@@ -315,9 +335,9 @@ io.on('connection', function (socket) {
 		}
 	})
 
-	/* ===================================== */
-	/* DATA-RELATED STUFF (TILL END OF FILE) */
-	/* ===================================== */
+	/* ========================================== */
+	/* DATA-RELATED STUFF (TILL NEAR END OF FILE) */
+	/* ========================================== */
 
 	socket.on('grid request', (input) => {
 		try {
@@ -393,6 +413,8 @@ io.on('connection', function (socket) {
 		}
 	})
 })
+
+// Nomic chat
 var ioNomicChat = io.of('/nomic')
 ioNomicChat.on('connection', (socket) => {
 	socket.on('chat send', (input) => {

@@ -1,0 +1,50 @@
+﻿div.login {
+	width: 300px;
+	margin: 50px auto;
+}
+div.login > * {
+	margin: 0;
+}
+div.login > *:not(:last-child) {
+	margin-bottom: 20px;
+}
+div.login input {
+	font: inherit;
+	border: none;
+	background: hsl(216,31%,92%);
+	display: block;
+	height: 40px;
+	padding: 0 20px;
+	width: 100%;
+}
+div.login button {
+	width: 100%;
+}
+div.login .aint {
+	font-size: small;
+	opacity: 0.5;
+}
+div.login .signmeup {
+	font-weight: bold;
+	cursor: pointer;
+}
+
+/* Error */
+.login .error {
+	background: hsl(0, 60%, 90%);
+	border: 1px solid hsl(0, 60%, 50%);
+	padding: 10px;
+	border-radius: 3px;
+	color: hsl(0, 60%, 50%);
+	box-shadow: 0 0 5px 0 hsl(0, 60%, 70%);
+	cursor: pointer;
+}
+.login .error:hover {
+	background: hsl(0, 60%, 85%);
+}
+.login .error:active {
+	background: hsl(0, 70%, 80%);
+}
+.login .error ul {
+	margin: 0;
+}

@@ -264,5 +264,8 @@ __pycache__/
 #               CUSTOM
 #
 
-#nsproj stop pls
+# nsproj stop pls
 mainweb.njsproj
+
+# secret stuff
+seecret.js

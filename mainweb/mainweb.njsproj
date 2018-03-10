@@ -4,6 +4,7 @@
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
     <Name>mainweb</Name>
     <RootNamespace>mainweb</RootNamespace>
+    <LastActiveSolutionConfig>Debug|Any CPU</LastActiveSolutionConfig>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -19,7 +20,7 @@
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <ProjectTypeGuids>{3AF33F2E-1136-4D97-BBB7-1795711AC8B8};{349c5851-65df-11da-9384-00065b846f21};{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}</ProjectTypeGuids>
     <NodejsPort>1337</NodejsPort>
-    <StartWebBrowser>true</StartWebBrowser>
+    <StartWebBrowser>True</StartWebBrowser>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -39,7 +40,16 @@
     <Compile Include="model.js">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="seecret.js">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="server.js" />
+    <Compile Include="views\homepage.js">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="views\login.js">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="views\mcm\leaderboard.js">
       <SubType>Code</SubType>
     </Compile>
@@ -96,6 +106,12 @@
       <SubType>Code</SubType>
     </Content>
     <Content Include="views\KrisCiv.pug">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="views\login.css">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="views\login.pug">
       <SubType>Code</SubType>
     </Content>
     <Content Include="views\mcm\common.css">

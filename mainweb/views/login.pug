@@ -1,0 +1,18 @@
+﻿doctype html
+html
+  head
+    title Landing page - krislawton.com
+    include /includes/htmlHead.pug
+    link(rel="stylesheet", href="/u/common.css")
+    link(rel="stylesheet", href="/u/login.css")
+    script(src="/u/login.js")
+  body
+    include /includes/rootPageHead.pug
+    main
+      div.login
+        p Log in pls
+        input(type="text",placeholder="User name")#username
+        input(type="text",placeholder="Password")#password
+        button.raised.colored.login Log in
+        div.error(style="display: none")
+        p.aint Bitch I ain't got an account, #[span.signmeup sign me up].
