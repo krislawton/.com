@@ -245,15 +245,81 @@ app.get('/', (request, response) => {
 //	response.sendFile(file, { root: __dirname + '/utils/' })
 //})
 
-///* ===================================== */
-///* DATA-RELATED STUFF (till end of file) */
-///* ===================================== */
-// Socket stuff
+/* ============================== */
+/* SOCKETS ARE VERY IMPORTANT OK? */
+/* ============================== */
 io.on('connection', function (socket) {
+
+	// With the right manipulation, any socket request can be sent to the 
+	// server. Therefore, put the request in a try block to prevent the 
+	// server from crashing if it encounters such a manipulation.
+
+	/* =========== */
+	/* OI OI LOGIN */
+	/* =========== */
+	socket.on('login attempt', (input) => {
+		try {
+			var ret = {
+				input: input,
+				err: null,
+				result: null
+			}
+			function begin() {
+				dbUsername()
+			}
+			begin()
+
+			function dbUsername() {
+				pool.request()
+					.input("CustomId", sql.VarChar, input.username)
+					.query("select AccountPermaId, Pw from Accounts where CustomId = @CustomId", (err, result) => {
+						if (!err) {
+							var usernames = result.recordset
+							checkUsernames(usernames)
+						} else {
+							ret.err = err
+							sendResponse()
+						}
+					})
+			}
+
+			function checkUsernames(usernames) {
+				if (usernames.length !== 1) {
+					ret.err = "No users with that user name."
+					sendResponse()
+				} else {
+					var userInfo = usernames[0]
+					checkPassword(userInfo)
+				}
+			}
+
+			function checkPassword(userInfo) {
+				if (input.password === userInfo.Pw) {
+					ret.result = "Login successful but we haven't implemented it yet."
+				} else {
+					ret.err = "Username found but password did not match."
+				}
+				sendResponse()
+			}
+
+			function sendResponse() {
+				socket.emit('login response', ret)
+			}
+		} catch (e) {
+			var ret = {
+				input: input,
+				err: e,
+				result: null
+			}
+			socket.emit('login response', ret)
+		}
+	})
+
+	/* ===================================== */
+	/* DATA-RELATED STUFF (TILL END OF FILE) */
+	/* ===================================== */
+
 	socket.on('grid request', (input) => {
-		// With the right manipulation, any data request can be sent to the 
-		// server. Therefore, put the request in a try block to prevent the 
-		// server from crashing if it encounters such a manipulation.
 		try {
 			var params = (typeof input.params === "object" ? input.params : null)
 			datastore.grids[input.load](params, (err, response) => {

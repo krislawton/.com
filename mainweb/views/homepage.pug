@@ -2,8 +2,10 @@
 html
   head
     title Landing page - krislawton.com
+    include /includes/htmlHead.pug
     link(rel="stylesheet", href="/u/common.css")
     link(rel="stylesheet", href="/u/homepage.css")
+    script(src="/u/homepage.js")
   body
     include /includes/rootPageHead.pug
     main
@@ -12,6 +14,7 @@ html
         input(type="text",placeholder="User name")#username
         input(type="text",placeholder="Password")#password
         button.raised.colored.login Log in
+        div.error(style="display: none")
         p.aint Bitch I ain't got an account, #[span.signmeup sign me up].
       p
         a(href="/mcm/leaderboard") MCM leaderboard
