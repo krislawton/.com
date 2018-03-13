@@ -1,29 +1,31 @@
 /* ===================================== */
 /* LOADING MODULES AND SETTING UP SERVER */
 /* ===================================== */
-const express = require('express')
+const express = require("express")
 const app = express()
 const port = 1337
 const server = app.listen(port, (err) => {
 	if (err) {
-		return console.log('Sum ting wong', err)
+		return console.log("Sum ting wong", err)
 	}
 	console.log(`Server is listening on port ${port}`)
 })
 
-const path = require('path')
+const path = require("path")
 
-const sql = require('mssql/msnodesqlv8')
-const model = require('./model.js')
+const sql = require("mssql/msnodesqlv8")
+const model = require("./model.js")
 
 const session = require("express-session")
 const storesessions = require("connect-mssql")(session)
 const iosession = require("express-socket.io-session")
 
-const datastore = require('./datastore.js')
-
+// Data store (accesses database)
+const datastore = require("./datastore.js")
+// Resource manager (controls access)
+const resmgr = require("./resourceManager.js")
 // Secret variables the public shouldn't see
-const seecret = require('./seecret.js')
+const seecret = require("./seecret.js")
 
 /* ================== */
 /* SETTING UP MODULES */
@@ -99,6 +101,7 @@ var storeoptions = {
 }
 
 // Set up sessions
+var defaultSession = { userData: { loggedIn: false, sites: [0] } }
 var sessionMiddleware = session({
 	store: new storesessions(storeconfig, storeoptions),
 	maxAge: 60 * 60 * 1000,
@@ -107,7 +110,7 @@ var sessionMiddleware = session({
 	secret: seecret.sessionSecret,
 	resave: true,
 	saveUninitialized: true,
-	cookie: { userData: { loggedIn: false } }
+	cookie: defaultSession
 })
 // Tell server to use sessions
 app.use(sessionMiddleware)
@@ -130,94 +133,117 @@ app.use((err, request, response, next) => {
 })
 // Check login
 app.use((request, response, next) => {
-	var reg = RegExp(/\/(c\/|u\/|login)/)
-	if (
-		!reg.test(request.url) &&
-		(typeof request.session.userData === "undefined" || request.session.userData.loggedIn === "false")
-	) {
-		response.redirect('/login')
-	} else {
-		next()
-	}
+	//var reg = RegExp(/\/(c\/|u\/|login)/)
+	//if (
+	//	!reg.test(request.url) &&
+	//	(typeof request.session.userData === "undefined" || request.session.userData.loggedIn === "false")
+	//) {
+	//	response.redirect('/login')
+	//} else {
+	//	next()
+	//}
+	next()
 })
 
 // Page getters
-app.get('/', (request, response) => {
-	response.render('homepage', { root: __dirname + '/views' })
-}).get('/u/:file', (request, response) => {
-	var file = request.params.file
-	response.sendFile(file, { root: __dirname + '/views' })
-}).get('/mcm/:sub/:par*?', (request, response) => {
-	var passedModel = null
-	var passedData = null
-	var toRender = null
-	var redirect = false
-	var redirTo = null
-	if (request.params.sub === "leaderboard") {
-		toRender = "mcm/leaderboard"
-		passedModel = new model.mcmLeaderboard()
-	} else if (request.params.sub === "player" && typeof request.params.par !== "undefined") {
-		toRender = "mcm/player"
-		passedModel = new model.mcmPlayerMatches()
-		passedData = request.params.par
-	} else if (request.params.sub === "match" && typeof request.params.par !== "undefined") {
-		toRender = "mcm/match"
-		passedData = request.params.par
-	} else if (request.params.sub === "summary") {
-		toRender = "mcm/summary"
-	} else {
-		redirect = true
-		redirTo = "/"
-	}
+app.get('/*', (request, response) => {
 
-	if (redirect) {
-		response.redirect(redirTo)
-	} else {
-		response.render(toRender, { model: passedModel, params: passedData })
-	}
-}).get('/u/mcm/:file', (request, response) => {
-	var file = request.params.file
-	response.sendFile(file, { root: __dirname + '/views/mcm' })
-}).get('/nomic/:sub/:par*?', (request, response) => {
-	var passedData = null
-	var toRender = null
-	var redirect = false
-	var redirTo = null
-	if (request.params.sub === "rules") {
-		toRender = "nomic/rules"
-	} else if (request.params.sub === "rule" && typeof request.params.par !== "undefined") {
-		toRender = "nomic/rule"
-		passedData = request.params.par
-	} else if (request.params.sub === "chat") {
-		toRender = "nomic/chat"
-	} else if (
-		request.params.sub === "proposal"
-		&& typeof request.params.par !== "undefined"
-		&& (
-			!isNaN(request.params.par) || request.params.par === "new"
-		)
-	) {
-		toRender = "nomic/proposal"
-		passedData = request.params.par
-	} else {
-		redirect = true
-		redirTo = "/"
-	}
+	var passUserData = (typeof request.session.userData === "undefined" ? defaultSession.userData : request.session.userData)
+	resmgr.canAccess(request.path, passUserData, (err, result) => {
+		console.log('Accessing "' + request.url + '", ' + "err: " + err + ", result: " + result)
 
-	if (redirect) {
-		response.redirect(redirTo)
-	} else {
-		response.render(toRender, { params: passedData })
-	}
-}).get('/u/nomic/:file', (request, response) => {
-	var file = request.params.file
-	response.sendFile(file, { root: __dirname + '/views/nomic' })
-}).get('/:sub', (request, response) => {
-	var toRender = request.params.sub
-	response.render(toRender, { root: __dirname + '/views' })
-}).get('/((socket\.io|c))/:file', (request, response) => {
-	var file = request.params.file
-	response.sendFile(file, { root: __dirname + '/common' })
+		if (!err) {
+			if (result.type === "render") {
+				response.render(result.send, { root: __dirname })
+			} else if (result.type === "file") {
+				response.sendFile(result.send, { root: __dirname })
+			} else {
+				response.render('error', { root: __dirname })
+			}
+		} else {
+			if (request.url === "/") {
+				response.render('login', { root: __dirname })
+			} else {
+				response.render('error', { root: __dirname })
+			}
+		}
+
+	})
+//	response.render('homepage', { root: __dirname + '/views' })
+//}).get('/u/:file', (request, response) => {
+//	var file = request.params.file
+//	response.sendFile(file, { root: __dirname + '/views' })
+//}).get('/mcm/:sub/:par*?', (request, response) => {
+//	var passedModel = null
+//	var passedData = null
+//	var toRender = null
+//	var redirect = false
+//	var redirTo = null
+//	if (request.params.sub === "leaderboard") {
+//		toRender = "mcm/leaderboard"
+//		passedModel = new model.mcmLeaderboard()
+//	} else if (request.params.sub === "player" && typeof request.params.par !== "undefined") {
+//		toRender = "mcm/player"
+//		passedModel = new model.mcmPlayerMatches()
+//		passedData = request.params.par
+//	} else if (request.params.sub === "match" && typeof request.params.par !== "undefined") {
+//		toRender = "mcm/match"
+//		passedData = request.params.par
+//	} else if (request.params.sub === "summary") {
+//		toRender = "mcm/summary"
+//	} else {
+//		redirect = true
+//		redirTo = "/"
+//	}
+
+//	if (redirect) {
+//		response.redirect(redirTo)
+//	} else {
+//		response.render(toRender, { model: passedModel, params: passedData })
+//	}
+//}).get('/u/mcm/:file', (request, response) => {
+//	var file = request.params.file
+//	response.sendFile(file, { root: __dirname + '/views/mcm' })
+//}).get('/nomic/:sub/:par*?', (request, response) => {
+//	var passedData = null
+//	var toRender = null
+//	var redirect = false
+//	var redirTo = null
+//	if (request.params.sub === "rules") {
+//		toRender = "nomic/rules"
+//	} else if (request.params.sub === "rule" && typeof request.params.par !== "undefined") {
+//		toRender = "nomic/rule"
+//		passedData = request.params.par
+//	} else if (request.params.sub === "chat") {
+//		toRender = "nomic/chat"
+//	} else if (
+//		request.params.sub === "proposal"
+//		&& typeof request.params.par !== "undefined"
+//		&& (
+//			!isNaN(request.params.par) || request.params.par === "new"
+//		)
+//	) {
+//		toRender = "nomic/proposal"
+//		passedData = request.params.par
+//	} else {
+//		redirect = true
+//		redirTo = "/"
+//	}
+
+//	if (redirect) {
+//		response.redirect(redirTo)
+//	} else {
+//		response.render(toRender, { params: passedData })
+//	}
+//}).get('/u/nomic/:file', (request, response) => {
+//	var file = request.params.file
+//	response.sendFile(file, { root: __dirname + '/views/nomic' })
+//}).get('/:sub', (request, response) => {
+//	var toRender = request.params.sub
+//	response.render(toRender, { root: __dirname + '/views' })
+//}).get('/((socket\.io|c))/:file', (request, response) => {
+//	var file = request.params.file
+//	response.sendFile(file, { root: __dirname + '/common' })
 })
 
 //}).get(["/403", "/404", "/501"], (request, response) => {
@@ -313,13 +339,33 @@ io.on('connection', function (socket) {
 					socket.handshake.session.userData = {
 						loggedIn: true,
 						username: input.username,
-						permaid: userInfo.AccountPermaId
+						permaid: userInfo.AccountPermaId,
+						sites: null
 					}
 					socket.handshake.session.save()
+					getSites()
 				} else {
 					ret.err = "Username found but password did not match."
+					sendResponse()
 				}
-				sendResponse()
+			}
+
+			function getSites() {
+				pool.request()
+					.input("AccountPermaId", sql.Int, socket.handshake.session.userData.permaid)
+					.query("select SiteAreaId from AccountToArea where AccountPermaId = @AccountPermaId and HasAccess = 1", (err, result) => {
+						if (!err) {
+							var sites = [0]
+							for (var r = 0; r < result.recordset.length; r++) {
+								sites.push(result.recordset[r].SiteAreaId)
+							}
+							socket.handshake.session.userData.sites = sites
+							socket.handshake.session.save()
+						} else {
+							ret.err = "Error getting site access information."
+						}
+						sendResponse()
+					})
 			}
 
 			function sendResponse() {

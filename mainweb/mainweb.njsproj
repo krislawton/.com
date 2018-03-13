@@ -40,6 +40,9 @@
     <Compile Include="model.js">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="resourceManager.js">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="seecret.js">
       <SubType>Code</SubType>
     </Compile>
@@ -97,6 +100,9 @@
     </Content>
     <Content Include="package.json" />
     <Content Include="views\common.css">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="views\error.pug">
       <SubType>Code</SubType>
     </Content>
     <Content Include="views\homepage.css">
