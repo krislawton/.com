@@ -153,18 +153,25 @@ app.get('/*', (request, response) => {
 		console.log('Accessing "' + request.url + '", ' + "err: " + err + ", result: " + result)
 
 		if (!err) {
+			app.set('views', path.join(__dirname, '/views', result.directory));
 			if (result.type === "render") {
-				response.render(result.send, { root: __dirname })
+				response.render(result.send, {
+					urlParameter: (typeof result.urlParameter !== "undefined" ? result.urlParameter : null)
+				})
 			} else if (result.type === "file") {
 				response.sendFile(result.send, { root: __dirname })
 			} else {
-				response.render('error', { root: __dirname })
+				response.render('error', { root: __dirname + '/views' })
 			}
 		} else {
 			if (request.url === "/") {
-				response.render('login', { root: __dirname })
+				response.render('login', { root: __dirname + '/views' })
+			} else if (err === "Unauthorized") {
+				response.render('403', { root: __dirname + '/views' })
+			} else if (err === "Resource not found") {
+				response.render('404', { root: __dirname + '/views' })
 			} else {
-				response.render('error', { root: __dirname })
+				response.render('error', { root: __dirname + '/views' })
 			}
 		}
 
@@ -352,7 +359,7 @@ io.on('connection', function (socket) {
 
 			function getSites() {
 				pool.request()
-					.input("AccountPermaId", sql.Int, socket.handshake.session.userData.permaid)
+					.input("AccountPermaId", sql.VarChar, socket.handshake.session.userData.permaid)
 					.query("select SiteAreaId from AccountToArea where AccountPermaId = @AccountPermaId and HasAccess = 1", (err, result) => {
 						if (!err) {
 							var sites = [0]

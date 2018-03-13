@@ -99,6 +99,12 @@
       <SubType>Code</SubType>
     </Content>
     <Content Include="package.json" />
+    <Content Include="views\403.pug">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="views\404.pug">
+      <SubType>Code</SubType>
+    </Content>
     <Content Include="views\common.css">
       <SubType>Code</SubType>
     </Content>

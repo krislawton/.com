@@ -6,7 +6,7 @@ html
     include /includes/nomicHtmlHead.pug
     script(src="/u/nomic/proposal.js")
     link(rel="stylesheet", href="/u/nomic/proposal.css")
-    - var proposalId = params
+    - var proposalId = urlParameter
     meta#proposalId(data-proposalid=proposalId)
   body.nomic
     include /includes/nomicPageHead.pug
