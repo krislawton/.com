@@ -47,6 +47,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="server.js" />
+    <Compile Include="views\chat.js">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="views\homepage.js">
       <SubType>Code</SubType>
     </Compile>
@@ -79,6 +82,11 @@
     </Compile>
     <Content Include="common\FiraCode-Regular.ttf" />
     <Content Include="common\FiraSans-Regular.ttf" />
+    <Content Include="common\IconAchievement.png" />
+    <Content Include="common\IconAchievementL1.png" />
+    <Content Include="common\IconAchievementL2.png" />
+    <Content Include="common\IconAchievementL3.png" />
+    <Content Include="common\IconAchievementL4.png" />
     <Content Include="common\socket.io.js.map" />
     <Content Include="includes\htmlHead.pug">
       <SubType>Code</SubType>
@@ -103,6 +111,12 @@
       <SubType>Code</SubType>
     </Content>
     <Content Include="views\404.pug">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="views\chat.css">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="views\chat.pug">
       <SubType>Code</SubType>
     </Content>
     <Content Include="views\common.css">

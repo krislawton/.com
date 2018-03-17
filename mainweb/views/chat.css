@@ -1,0 +1,106 @@
+﻿body {
+	background: white;
+	height: 100vh;
+	overflow: hidden;
+}
+#topBanner {
+	position: fixed;
+	width: 100%;
+	top: 0;
+}
+#tableContainer {
+	overflow-y: scroll;
+	height: calc(100% - 115px);
+	position: relative;
+	top: 60px;
+}
+#tableContainer table {
+	width: 100%;
+}
+
+#sendContainer {
+	position: fixed;
+	bottom: 0;
+	width: 100%;
+	height: 55px;
+	padding: 5px;
+	background: white;
+}
+
+#sendContainer select {
+	border: inherit;
+	font-size: inherit;
+	font-family: inherit;
+	height: 100%;
+	display: block;
+	position: relative;
+	float: left;
+	width: 250px;
+	border-radius: 3px;
+	background: hsl(0, 0%, 96%);
+}
+#sendContainer textarea {
+	font-family: inherit;
+	font-size: inherit;
+	resize: none;
+	box-sizing: border-box;
+	border: 0;
+	height: 100%;
+	border-radius: 5px;
+	background: hsl(0, 0%, 96%);
+	width: calc(100% - 10px);
+	margin-left: 5px;
+}
+
+main > table {
+	border-collapse: collapse;
+	width: 100%;
+}
+.achat, .dateSeparator {
+	vertical-align: top;
+	border-top: 1px solid hsl(0, 0%, 88%);
+}
+.achat td {
+	padding: 3px 0;
+}
+.achat .timestamp {
+	width: 60px;
+}
+.achat .else {
+	padding-left: 0.6em;
+}
+.achat .else > div {
+	display: inline;
+}
+.achat .else .from {
+	padding-right: 0.6em;
+}
+.achat .else .content {
+	white-space: pre-wrap;
+}
+.achat .from {
+	font-weight: bold;
+}
+.dateSeparator td {
+	font-weight: bold;
+	text-align: center;
+	padding: 20px 0 10px 0;
+}
+
+/* Actions */
+.achat.action .timestamp {
+	padding-top: 18px;
+}
+.achat .else .systemmessage {
+	display: block;
+	font-size: small;
+}
+.achat.action .content {
+	font-weight: bold;
+}
+.achat.action .content::after {
+	content: " ~";
+}
+.achat.action .content::before {
+	content: "~ ";
+}

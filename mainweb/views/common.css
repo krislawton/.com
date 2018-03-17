@@ -38,8 +38,10 @@ body {
 	display: inline-block;
 	height: 60px;
 	line-height: 60px;
-	padding: 0 18px;
+	width: 60px;
+	text-align: center;
 	cursor: pointer;
+	position: relative;
 }
 #topBanner .header a:hover, #topBanner .right > *:hover {
 	background: hsla(0, 0%, 0%, 0.1);
@@ -47,6 +49,56 @@ body {
 #topBanner .header a:active, #topBanner .right > *:active {
 	background: hsla(0, 0%, 0%, 0.3);
 }
+
+#topBanner .achievements-button img {
+	position: absolute;
+	width: 20px;
+	top: 20px;
+	left: 20px;
+}
+
+#topBanner .achievements-button img.animate {
+	animation-iteration-count: 1;
+	animation-duration: 1s;
+	animation-timing-function: ease;
+	animation-name: ac;
+}
+@keyframes ac {
+	0%   { transform: scale(1.00) rotate(0); }
+	20%  { transform: scale(1.40) rotate(-10deg); }
+	30%  { transform: scale(1.20) rotate(10deg); }
+	40%  { transform: scale(1.20) rotate(-10deg); }
+	50%  { transform: scale(1.20) rotate(5deg); }
+	60%  { transform: scale(1.15) rotate(-5deg); }
+	70%  { transform: scale(1.10) rotate(2deg); }
+	80%  { transform: scale(1.05) rotate(-2deg); }
+	100% { transform: scale(1.00) rotate(0deg); }
+}
+/*@keyframes ac1 {
+	from { transform: rotate(0dg); }
+	to {   transform: rotate(360deg); }
+}
+@keyframes ac2 {
+	from { transform: rotate(0dg); }
+	to {   transform: rotate(-360deg); }
+}
+@keyframes ac3 {
+	from { transform: rotate(0dg); }
+	to {   transform: rotate(360deg); }
+}
+@keyframes ac4 {
+	from { transform: rotate(0dg); }
+	to {   transform: rotate(-360deg); }
+}
+#topBanner .achievements-button img.l2 {
+	animation-name: ac2;
+}
+#topBanner .achievements-button img.l3 {
+	animation-name: ac3;
+}
+#topBanner .achievements-button img.l4 {
+	animation-name: ac4;
+}*/
 
 main {
 	background: white;

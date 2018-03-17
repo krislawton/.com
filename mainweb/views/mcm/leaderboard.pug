@@ -12,6 +12,6 @@ html
       table.grid#leaderboardGrid
         tbody
           tr.nondata
-            each val, key in model
+            each val, key in forView.model
               if (val.show)
                 th #{key}

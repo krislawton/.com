@@ -129,6 +129,19 @@ module.exports = {
 		}
 	},
 	data: {
+		chatMessagesLoad: (params, callback) => {
+			pool.request()
+				.input("From", sql.VarChar, params.from)
+				.execute("dbo.spChatLoad", (err, result) => {
+					callback(err, { recordset: result })
+				})
+		},
+		chatAccountsLoad: (params, callback) => {
+			pool.request()
+				.query("select AccountPermaId, CustomId, DisplayName from Accounts", (err, result) => {
+					callback(err, { recordset: result })
+				})
+		},
 		mcmPlayerInventory: (params, callback) => {
 			dbmcm.request()
 				.input("PlayerId", sql.VarChar, params.PlayerId)
@@ -192,6 +205,24 @@ module.exports = {
 		},
 	},
 	procedure: {
+		serverPageLoadAudit: (params, callback) => {
+			pool.request()
+				.input("AccountPermaId", sql.Int, params.permaid)
+				.input("IPAddress", sql.VarChar, params.ip)
+				.input("PageRequested", sql.VarChar, params.page)
+				.execute("dbo.spPageLoadInsert")
+				// don't care whether it succeeds or not
+		},
+		chatSend: (params, callback) => {
+			pool.request()
+				.input("Sender", sql.VarChar, params.from)
+				.input("Message", sql.VarChar, params.content)
+				.input("MessageType", sql.VarChar, "Message")
+				.input("ExtraJSON", sql.VarChar, null)
+				.execute("dbo.spChatSend", (err, result) => {
+					callback(err, result)
+				})
+		},
 		nomicRulesAdminEdit: (params, callback) => {
 			pool.request()
 				.input("RuleId", sql.Int, params.ruleId)

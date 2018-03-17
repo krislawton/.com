@@ -1,0 +1,16 @@
+﻿doctype html
+html
+  head
+    title Chat - krislawton.com
+    include /includes/htmlHead.pug
+    link(rel="stylesheet", href="/u/common.css")
+    script(src="/c/dataTransformers.js")
+    script(src="/u/chat.js")
+    link(rel="stylesheet", href="/u/chat.css")
+  body.nomic
+    include /includes/rootPageHead.pug
+    div#tableContainer
+      table
+        tbody#chatContainer
+    div#sendContainer
+      textarea(autofocus)

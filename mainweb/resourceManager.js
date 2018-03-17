@@ -1,9 +1,14 @@
-﻿function findOne (haystack, arr) {
+﻿// Load view
+const model = require("./model.js")
+
+// Helper: If one item from first input array matches any item from second input array
+function findOne(haystack, arr) {
 	return arr.some(function (v) {
 		return haystack.indexOf(v) >= 0
 	})
 }
 
+// Helper: Resource class (Create Resource)
 function cr(input) {
 	this.send = input.send
 	this.type = (typeof input.type === "string" ? input.type : "file")
@@ -11,9 +16,10 @@ function cr(input) {
 	this.siteId = (typeof input.siteId === "object" ? input.siteId : [0])
 	this.parameterized = (typeof input.parameterized === "boolean" ? input.parameterized : false)
 	this.directory = (typeof input.directory === "string" ? input.directory : '')
+	this.passToView = (typeof input.passToView === "object" ? input.passToView : null)
 }
 
-var	resources = {
+var resources = {
 	// Common
 	"/c/dataTransformers.js": new cr({
 		send: "/common/dataTransformers.js"
@@ -30,6 +36,21 @@ var	resources = {
 	"/c/socket.io.js": new cr({
 		send: "/common/socket.io.js"
 	}),
+	"/c/IconAchievement.png": new cr({
+		send: "/common/IconAchievement.png"
+	}),
+	"/c/IconAchievementL1.png": new cr({
+		send: "/common/IconAchievementL1.png"
+	}),
+	"/c/IconAchievementL2.png": new cr({
+		send: "/common/IconAchievementL2.png"
+	}),
+	"/c/IconAchievementL3.png": new cr({
+		send: "/common/IconAchievementL3.png"
+	}),
+	"/c/IconAchievementL4.png": new cr({
+		send: "/common/IconAchievementL4.png"
+	}),
 	// Root
 	"/": new cr({
 		type: "render",
@@ -45,13 +66,26 @@ var	resources = {
 	}),
 	"/login": new cr({
 		type: "render",
-		send: "login.js"
+		send: "login"
 	}),
 	"/u/login.css": new cr({
 		send: "/views/login.css"
 	}),
 	"/u/login.js": new cr({
 		send: "/views/login.js"
+	}),
+	"/chat": new cr({
+		type: "render",
+		send: "chat",
+		loggedInOnly: true
+	}),
+	"/u/chat.css": new cr({
+		send: "/views/chat.css",
+		loggedInOnly: true
+	}),
+	"/u/chat.js": new cr({
+		send: "/views/chat.js",
+		loggedInOnly: true
 	}),
 	// Nomic
 	"/u/nomic/common.css": new cr({
@@ -111,6 +145,80 @@ var	resources = {
 		loggedInOnly: true,
 		siteId: [3]
 	}),
+	// MCM
+	"/u/mcm/common.css": new cr({
+		send: "/views/mcm/common.css",
+		loggedInOnly: true,
+		siteId: [2]
+	}),
+	"/mcm/leaderboard": new cr({
+		type: "render",
+		send: "leaderboard",
+		loggedInOnly: true,
+		siteId: [2],
+		directory: "/mcm",
+		passToView: { model: new model.mcmLeaderboard() }
+	}),
+	"/u/mcm/leaderboard.js": new cr({
+		send: "/views/mcm/leaderboard.js",
+		loggedInOnly: true,
+		siteId: [2]
+	}),
+	"/mcm/player": new cr({
+		type: "render",
+		send: "player",
+		loggedInOnly: true,
+		siteId: [2],
+		directory: "/mcm",
+		parameterized: true,
+		passToView: { model: new model.mcmPlayerMatches() }
+	}),
+	"/u/mcm/player.js": new cr({
+		send: "/views/mcm/player.js",
+		loggedInOnly: true,
+		siteId: [2]
+	}),
+	"/u/mcm/player.css": new cr({
+		send: "/views/mcm/player.css",
+		loggedInOnly: true,
+		siteId: [2]
+	}),
+	"/mcm/match": new cr({
+		type: "render",
+		send: "match",
+		loggedInOnly: true,
+		siteId: [2],
+		directory: "/mcm",
+		parameterized: true
+	}),
+	"/u/mcm/match.js": new cr({
+		send: "/views/mcm/match.js",
+		loggedInOnly: true,
+		siteId: [2]
+	}),
+	"/u/mcm/match.css": new cr({
+		send: "/views/mcm/match.css",
+		loggedInOnly: true,
+		siteId: [2]
+	}),
+	"/mcm/summary": new cr({
+		type: "render",
+		send: "summary",
+		loggedInOnly: true,
+		siteId: [2],
+		directory: "/mcm",
+		parameterized: true
+	}),
+	"/u/mcm/summary.js": new cr({
+		send: "/views/mcm/summary.js",
+		loggedInOnly: true,
+		siteId: [2]
+	}),
+	"/u/mcm/summary.css": new cr({
+		send: "/views/mcm/summary.css",
+		loggedInOnly: true,
+		siteId: [2]
+	})
 }
 
 module.exports = {

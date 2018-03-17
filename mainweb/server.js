@@ -104,7 +104,7 @@ var storeoptions = {
 var defaultSession = { userData: { loggedIn: false, sites: [0] } }
 var sessionMiddleware = session({
 	store: new storesessions(storeconfig, storeoptions),
-	maxAge: 60 * 60 * 1000,
+	maxAge: 30 * 24 * 60 * 60 * 1000, // 24 * 60 * 60 * 1000 = 1 day
 	genid: (req) => { return generateSessionId() },
 	name: "kiwi",
 	secret: seecret.sessionSecret,
@@ -116,6 +116,9 @@ var sessionMiddleware = session({
 app.use(sessionMiddleware)
 // Tell socket to use sessions
 io.use(iosession(sessionMiddleware, {
+	autoSave: true
+}))
+io.of('/chat').use(iosession(sessionMiddleware, {
 	autoSave: true
 }))
 
@@ -150,13 +153,18 @@ app.get('/*', (request, response) => {
 
 	var passUserData = (typeof request.session.userData === "undefined" ? defaultSession.userData : request.session.userData)
 	resmgr.canAccess(request.path, passUserData, (err, result) => {
-		console.log('Accessing "' + request.url + '", ' + "err: " + err + ", result: " + result)
+
+		if ((request.headers.accept || "").match(/text\/html/)) {
+			var params = { permaid: passUserData.permaid || null, page: request.path, ip: request.connection.remoteAddress }
+			datastore.procedure.serverPageLoadAudit(params)
+		}
 
 		if (!err) {
 			app.set('views', path.join(__dirname, '/views', result.directory));
 			if (result.type === "render") {
 				response.render(result.send, {
-					urlParameter: (typeof result.urlParameter !== "undefined" ? result.urlParameter : null)
+					urlParameter: (typeof result.urlParameter !== "undefined" ? result.urlParameter : null),
+					forView: (typeof result.passToView !== "undefined" ? result.passToView : null)
 				})
 			} else if (result.type === "file") {
 				response.sendFile(result.send, { root: __dirname })
@@ -463,6 +471,33 @@ io.on('connection', function (socket) {
 			}
 			console.log(e)
 			socket.emit('db procedure response', ret)
+		}
+	})
+})
+
+// Chat
+var ioChat = io.of('/chat')
+ioChat.on('connection', (socket) => {
+	socket.on('chat send', (input) => {
+		try {
+			var input = (typeof input === "object" ? input : null)
+			input.from = socket.handshake.session.userData.permaid
+			datastore.procedure.chatSend(input, (err, response) => {
+				var ret = {
+					input: input,
+					err: err,
+					fromDb: response
+				}
+				ioChat.emit('chat sent', ret)
+			})
+		}
+		catch (e) {
+			var ret = {
+				input: input,
+				err: e,
+				fromDb: null
+			}
+			ioChat.emit('chat sent', ret)
 		}
 	})
 })
