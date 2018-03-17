@@ -6,7 +6,7 @@ html
     include /includes/mcmHtmlHead.pug
     script(src="/u/mcm/player.js")
     link(rel="stylesheet", href="/u/mcm/player.css")
-    - var playerId = params
+    - var playerId = urlParameter
     meta#playerId(data-playerid=playerId)
   body.mcm
     include /includes/mcmPageHead.pug

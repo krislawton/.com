@@ -47,6 +47,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="server.js" />
+    <Compile Include="views\achievements.js">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="views\chat.js">
       <SubType>Code</SubType>
     </Compile>
@@ -111,6 +114,12 @@
       <SubType>Code</SubType>
     </Content>
     <Content Include="views\404.pug">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="views\achievements.css">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="views\achievements.pug">
       <SubType>Code</SubType>
     </Content>
     <Content Include="views\chat.css">

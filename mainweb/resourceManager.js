@@ -87,6 +87,19 @@ var resources = {
 		send: "/views/chat.js",
 		loggedInOnly: true
 	}),
+	"/achievements": new cr({
+		type: "render",
+		send: "achievements",
+		loggedInOnly: true
+	}),
+	"/u/achievements.css": new cr({
+		send: "/views/achievements.css",
+		loggedInOnly: true
+	}),
+	"/u/achievements.js": new cr({
+		send: "/views/achievements.js",
+		loggedInOnly: true
+	}),
 	// Nomic
 	"/u/nomic/common.css": new cr({
 		send: "/views/nomic/common.css",

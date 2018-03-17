@@ -129,6 +129,12 @@ module.exports = {
 		}
 	},
 	data: {
+		rootAchievementsLoadAll: (params, callback) => {
+			pool.request()
+				.execute("dbo.spAchievementsGetAll", (err, result) => {
+					callback(err, { recordset: result })
+				})
+		},
 		chatMessagesLoad: (params, callback) => {
 			pool.request()
 				.input("From", sql.VarChar, params.from)

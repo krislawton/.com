@@ -65,6 +65,8 @@
 
 			// Actually append
 			$('#chatContainer').append(toAdd)
+			// Scroll to bottom, where a new message has been added
+			$('#tableContainer').scrollTop($('#tableContainer')[0].scrollHeight)
 		}
 		
 		var content = escapeHtml((dbRecord.Content !== null ? dbRecord.Content : ""))

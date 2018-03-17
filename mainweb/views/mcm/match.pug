@@ -6,7 +6,7 @@ html
     include /includes/mcmHtmlHead.pug
     script(src="/u/mcm/match.js")
     link(rel="stylesheet", href="/u/mcm/match.css")
-    - var matchId = params
+    - var matchId = urlParameter
     meta#matchId(data-matchid=matchId)
   body.mcm
     include /includes/mcmPageHead.pug

@@ -10,7 +10,7 @@
 }
 #tableContainer {
 	overflow-y: scroll;
-	height: calc(100% - 115px);
+	height: calc(100% - 120px);
 	position: relative;
 	top: 60px;
 }
@@ -22,22 +22,9 @@
 	position: fixed;
 	bottom: 0;
 	width: 100%;
-	height: 55px;
+	height: 60px;
 	padding: 5px;
 	background: white;
-}
-
-#sendContainer select {
-	border: inherit;
-	font-size: inherit;
-	font-family: inherit;
-	height: 100%;
-	display: block;
-	position: relative;
-	float: left;
-	width: 250px;
-	border-radius: 3px;
-	background: hsl(0, 0%, 96%);
 }
 #sendContainer textarea {
 	font-family: inherit;
@@ -46,10 +33,13 @@
 	box-sizing: border-box;
 	border: 0;
 	height: 100%;
-	border-radius: 5px;
-	background: hsl(0, 0%, 96%);
 	width: calc(100% - 10px);
 	margin-left: 5px;
+	box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.1);
+	padding: 5px;
+}
+#sendContainer textarea:focus {
+	outline: 0;
 }
 
 main > table {
