@@ -402,8 +402,10 @@ io.on('connection', function (socket) {
 
 	socket.on('grid request', (input) => {
 		try {
-			var params = (typeof input.params === "object" ? input.params : null)
+			var params = (typeof input.params === "object" ? input.params : {})
+			params.session = socket.handshake.session
 			datastore.grids[input.load](params, (err, response) => {
+				delete params.session
 				var ret = {
 					input: input,
 					err: err,
@@ -415,6 +417,7 @@ io.on('connection', function (socket) {
 			})
 		}
 		catch (e) {
+			delete params.session
 			var ret = {
 				input: input,
 				err: e,
@@ -426,8 +429,10 @@ io.on('connection', function (socket) {
 	})
 	socket.on('data request', (input) => {
 		try {
-			var params = (typeof input.params === "object" ? input.params : null)
+			var params = (typeof input.params === "object" ? input.params : {})
+			params.session = socket.handshake.session
 			datastore.data[input.request](params, (err, response) => {
+				delete params.session
 				var ret = {
 					input: input,
 					err: err,
@@ -438,6 +443,8 @@ io.on('connection', function (socket) {
 			})
 		}
 		catch (e) {
+			delete params.session
+			console.log(e)
 			var ret = {
 				input: input,
 				err: e,
@@ -449,27 +456,27 @@ io.on('connection', function (socket) {
 	})
 	socket.on('db procedure request', (input) => {
 		try {
-			var params = (typeof input.params === "object" ? input.params : null)
+			var params = (typeof input.params === "object" ? input.params : {})
+			params.session = socket.handshake.session
 			datastore.procedure[input.procedure](params, (err, response) => {
-				console.log("Data store access completed")
+				delete params.session
 				var ret = {
 					input: input,
 					err: err,
 					response: response,
 					params: params
 				}
-				console.log(err)
 				socket.emit('db procedure response', ret)
 			})
 		}
 		catch (e) {
+			delete params.session
 			var ret = {
 				input: input,
 				err: e,
 				response: null,
 				params: params
 			}
-			console.log(e)
 			socket.emit('db procedure response', ret)
 		}
 	})

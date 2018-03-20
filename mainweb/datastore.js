@@ -148,6 +148,14 @@ module.exports = {
 					callback(err, { recordset: result })
 				})
 		},
+		chatRoomsLoad: (params, callback) => {
+			permaid = typeof params.session.userData.permaid === "undefined" ? null : params.session.userData.permaid
+			pool.request()
+				.input("AccountPermaId", sql.VarChar, permaid)
+				.execute("dbo.spChatRoomsLoad", (err, result) => {
+					callback(err, { recordset: result })
+				})
+		},
 		mcmPlayerInventory: (params, callback) => {
 			dbmcm.request()
 				.input("PlayerId", sql.VarChar, params.PlayerId)
@@ -221,12 +229,23 @@ module.exports = {
 		},
 		chatSend: (params, callback) => {
 			pool.request()
+				.input("Room", sql.VarChar, params.room)
 				.input("Sender", sql.VarChar, params.from)
 				.input("Message", sql.VarChar, params.content)
 				.input("MessageType", sql.VarChar, "Message")
 				.input("ExtraJSON", sql.VarChar, null)
 				.execute("dbo.spChatSend", (err, result) => {
 					callback(err, result)
+				})
+		},
+		chatRoomAdd: (params, callback) => {
+			permaid = (typeof params.session.userData.permaid === "undefined" ? null : params.session.userData.permaid)
+			pool.request()
+				.input("RoomName", sql.VarChar, params.roomName)
+				.input("CreatedBy", sql.Int, permaid)
+				.execute("dbo.spChatRoomsAdd", (err, result) => {
+					var success = (!err && result.rowsAffected === 1 ? true : false)
+					callback(err, success)
 				})
 		},
 		nomicRulesAdminEdit: (params, callback) => {

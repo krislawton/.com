@@ -7,10 +7,21 @@ html
     script(src="/c/dataTransformers.js")
     script(src="/u/chat.js")
     link(rel="stylesheet", href="/u/chat.css")
-  body.nomic
+  body.chats-open.info-open
     include /includes/rootPageHead.pug
-    div#tableContainer
-      table
-        tbody#chatContainer
-    div#sendContainer
-      textarea(autofocus)
+    div#chatToolbar
+      button.left.button
+        span.chevron >
+        |  Toggle chats
+      button.right.button
+        | Toggle info 
+        span.chevron <
+    div#chats
+      div.rooms
+    div#info
+    div#center
+      div#tableContainer
+        table
+          tbody#chatContainer
+      div#sendContainer
+        textarea(autofocus)

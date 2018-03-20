@@ -1,30 +1,107 @@
-﻿body {
-	background: white;
+﻿/* Primary elements */
+body {
 	height: 100vh;
 	overflow: hidden;
 }
 #topBanner {
-	position: fixed;
 	width: 100%;
+	position: fixed;
 	top: 0;
 }
-#tableContainer {
-	overflow-y: scroll;
-	height: calc(100% - 120px);
+#chatToolbar {
+	width: 100%;
+	height: 20px;
+	position: fixed;
+	top: 40px;
+}
+#chats {
+	width: 200px;
+	height: calc(100% - 60px);
+	position: fixed;
+	top: 60px;
+	overflow-y: auto;
+	transition: width 0.3s, opacity 0.3s;
+}
+#info {
+	height: calc(100% - 60px);
+	width: 350px;
+	position: fixed;
+	top: 60px;
+	right: 0;
+	transition: width 0.3s, opacity 0.3s;
+}
+#center {
+	height: calc(100% - 60px);
 	position: relative;
 	top: 60px;
+	background: white;
+	transition: all 0.3s;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+#tableContainer {
+	height: calc(100% - 70px);
+	position: relative;
+	top: 0;
+	padding: 0 10px;
+	overflow-y: scroll;
 }
 #tableContainer table {
 	width: 100%;
+	height: 100%;
 }
 
+/* Top toolbar */
+#chatToolbar {
+	font-size: 80%;
+	text-transform: uppercase;
+}
+#chatToolbar button {
+	height: 20px;
+	line-height: 20px;
+	font-size: 80%;
+	padding-top: 0;
+	padding-bottom: 0;
+	color: white;
+}
+#chatToolbar button:hover {
+	color: inherit;
+}
+#chatToolbar button.right {
+	position: absolute;
+	right: 0;
+}
+
+/* When open/closed chats/info */
+.chats-open #center {
+	margin-left: 200px;
+}
+.chats-closed #center {
+	margin-left: 0;
+}
+.chats-closed #chats {
+	width: 0;
+	opacity: 0;
+}
+.info-open #center {
+	margin-right: 350px;
+}
+.info-closed #center {
+	margin-right: 0;
+}
+.info-closed #info {
+	width: 0;
+	opacity: 0;
+}
+
+/* Text entry area */
 #sendContainer {
+	width: 100%;
+	height: 70px;
 	position: fixed;
 	bottom: 0;
-	width: 100%;
-	height: 60px;
-	padding: 5px;
+	padding: 10px;
 	background: white;
+	transition: all 0.3s;
 }
 #sendContainer textarea {
 	font-family: inherit;
@@ -32,9 +109,7 @@
 	resize: none;
 	box-sizing: border-box;
 	border: 0;
-	height: 100%;
-	width: calc(100% - 10px);
-	margin-left: 5px;
+	width: 100%;
 	box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.1);
 	padding: 5px;
 }
@@ -42,6 +117,7 @@
 	outline: 0;
 }
 
+/* Chat log */
 main > table {
 	border-collapse: collapse;
 	width: 100%;
@@ -71,13 +147,18 @@ main > table {
 .achat .from {
 	font-weight: bold;
 }
-.dateSeparator td {
+.dateHeader td {
 	font-weight: bold;
 	text-align: center;
 	padding: 20px 0 10px 0;
 }
+.diffSeparator div {
+	margin: 5px 10px;
+	border-left: 2px solid hsl(216,45%,92%);
+	padding: 10px;
+}
 
-/* Actions */
+/* Chatlog's actions */
 .achat.action .timestamp {
 	padding-top: 18px;
 }
@@ -93,4 +174,57 @@ main > table {
 }
 .achat.action .content::before {
 	content: "~ ";
+}
+
+/* Chats sidebar */
+#chats {
+	padding: 10px;
+}
+#chats button {
+	width: 100%;
+	padding: 4px 8px;
+	text-align: left;
+	white-space: pre;
+}
+#chats button:hover {
+	background: hsl(216, 45%, 87%);
+}
+#chats button:active {
+	background: hsl(216, 50%, 82%);
+}
+
+/* Info sidebar */
+#info {
+	padding: 10px;
+}
+
+/* Add room form */
+.addRoomForm {
+	display: flex;
+	flex-wrap: wrap;
+	padding-top: 40px;
+}
+.addRoomForm > div {
+	flex-basis: 100%;
+	text-align: center;
+	padding: 10px 0;
+}
+
+/* Error */
+.addRoomForm .error {
+	background: hsl(0, 60%, 90%);
+	border: 1px solid hsl(0, 60%, 50%);
+	padding: 10px;
+	border-radius: 3px;
+	color: hsl(0, 60%, 50%);
+	box-shadow: 0 0 5px 0 hsl(0, 60%, 70%);
+	cursor: pointer;
+	max-width: 300px;
+	margin: auto;
+}
+.addRoomForm .error:hover {
+	background: hsl(0, 60%, 85%);
+}
+.addRoomForm .error:active {
+	background: hsl(0, 70%, 80%);
 }

@@ -9,12 +9,7 @@ div.login > *:not(:last-child) {
 	margin-bottom: 20px;
 }
 div.login input {
-	font: inherit;
-	border: none;
-	background: hsl(216,31%,92%);
 	display: block;
-	height: 40px;
-	padding: 0 20px;
 	width: 100%;
 }
 div.login button {
