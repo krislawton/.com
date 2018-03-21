@@ -49,6 +49,7 @@
 			$('#chats .rooms').html(toAppend)
 			$('#chats .addRoom').remove()
 			$('#chats').append('<button class="addRoom">(+) Add room</button>')
+			refreshRoomHighlight()
 
 			// Refresh chat on first load
 			if (!chatInitialized) {
@@ -234,22 +235,41 @@
 	})
 
 	// Send message helper
-	function sendMessage(fromwhom, content) {
+	function sendMessage(content) {
 		console.log("message sending")
 		var uid = Math.random()
-		socketChat.emit('chat send', { content: content, uid: uid, room: "tournytime" })
+		socketChat.emit('chat send', { content: content, uid: uid, room: viewingRoom })
 	}
 
 	// Send message on return press
 	$(document).on('keypress', 'textarea', (e) => {
 		if (e.keyCode === 13 && !e.shiftKey) {
 			var content = $('textarea').val()
-			var from = $('select').val()
-			sendMessage(from, content)
+			sendMessage(content)
 			$('textarea').val('')
 			e.preventDefault()
 		}
 	})
+
+	// On room change
+	$(document).on("click", "button.room", (e) => {
+		// Get room just clicked
+		var room = $(this.activeElement).attr('data-roomid')
+		viewingRoom = room
+		// Clear chat
+		$('#chatContainer').html("")
+		// Loop through chat of room and add
+		var chatToAdd = log[room]
+		for (var c = chatToAdd.length - 1; c >= 0; c--) {
+			addChatToView(chatToAdd[c], "top")
+		}
+		refreshRoomHighlight()
+	})
+	// Highlight chosen room
+	function refreshRoomHighlight() {
+		$('button.room').removeClass('active')
+		$('button.room[data-roomid="' + viewingRoom + '"]').addClass('active')
+	}
 
 	// Name color randomiser
 	function randomColor(inputId) {
@@ -346,8 +366,7 @@
 	})
 	// Handle cancel
 	$(document).on("click", '.addRoomCancel', () => {
-		$('#center .addRoomForm').remove()
-		$('#center > *').removeAttr('style')
+		closeAddRoomForm()
 		reconsiderSend()
 	})
 	// Always prepend hashtag to room title
@@ -364,7 +383,13 @@
 	// Handle respones
 	socket.on('db procedure response', (response) => {
 		if (response.input.procedure === "chatRoomAdd") {
+			closeAddRoomForm()
 			refreshRooms()
 		}
 	})
+	// Helper: Close "add room" form
+	function closeAddRoomForm() {
+		$('#center .addRoomForm').remove()
+		$('#center > *').removeAttr('style')
+	}
 })

@@ -192,6 +192,16 @@ main > table {
 #chats button:active {
 	background: hsl(216, 50%, 82%);
 }
+#chats button.active {
+	background: hsl(216, 31%, 39%);
+	color: White;
+}
+#chats button.active:hover {
+	background: hsla(216, 31%, 39%, 70%);
+}
+#chats button.active:active {
+	background: hsla(216, 31%, 39%, 40%);
+}
 
 /* Info sidebar */
 #info {

@@ -79,3 +79,8 @@
 	font-size: 85%;
 	font-weight: bold;
 }
+.ach-extrainfo {
+	margin: 15px 20px;
+	opacity: 0.6;
+	font-size: small;
+}
