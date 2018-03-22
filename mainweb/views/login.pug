@@ -11,8 +11,10 @@ html
     main.default
       div.login
         p Log in pls
+        input(type="text",placeholder="Token",style="display: none")#token
         input(type="text",placeholder="User name")#username
         input(type="text",placeholder="Password")#password
         button.button.raised.colored.login Log in
         div.error(style="display: none")
         p.aint Bitch I ain't got an account, #[span.signmeup sign me up].
+        p.have(style="display: none") Bitch I HAVE an account, #[span.logmein log me in].

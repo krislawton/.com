@@ -20,11 +20,11 @@ div.login input {
 div.login button {
 	width: 100%;
 }
-div.login .aint {
+div.login .aint, div.login .have {
 	font-size: small;
 	opacity: 0.5;
 }
-div.login .signmeup {
+div.login .signmeup, div.login .logmein {
 	font-weight: bold;
 	cursor: pointer;
 }

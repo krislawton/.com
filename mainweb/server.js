@@ -184,121 +184,7 @@ app.get('/*', (request, response) => {
 		}
 
 	})
-//	response.render('homepage', { root: __dirname + '/views' })
-//}).get('/u/:file', (request, response) => {
-//	var file = request.params.file
-//	response.sendFile(file, { root: __dirname + '/views' })
-//}).get('/mcm/:sub/:par*?', (request, response) => {
-//	var passedModel = null
-//	var passedData = null
-//	var toRender = null
-//	var redirect = false
-//	var redirTo = null
-//	if (request.params.sub === "leaderboard") {
-//		toRender = "mcm/leaderboard"
-//		passedModel = new model.mcmLeaderboard()
-//	} else if (request.params.sub === "player" && typeof request.params.par !== "undefined") {
-//		toRender = "mcm/player"
-//		passedModel = new model.mcmPlayerMatches()
-//		passedData = request.params.par
-//	} else if (request.params.sub === "match" && typeof request.params.par !== "undefined") {
-//		toRender = "mcm/match"
-//		passedData = request.params.par
-//	} else if (request.params.sub === "summary") {
-//		toRender = "mcm/summary"
-//	} else {
-//		redirect = true
-//		redirTo = "/"
-//	}
-
-//	if (redirect) {
-//		response.redirect(redirTo)
-//	} else {
-//		response.render(toRender, { model: passedModel, params: passedData })
-//	}
-//}).get('/u/mcm/:file', (request, response) => {
-//	var file = request.params.file
-//	response.sendFile(file, { root: __dirname + '/views/mcm' })
-//}).get('/nomic/:sub/:par*?', (request, response) => {
-//	var passedData = null
-//	var toRender = null
-//	var redirect = false
-//	var redirTo = null
-//	if (request.params.sub === "rules") {
-//		toRender = "nomic/rules"
-//	} else if (request.params.sub === "rule" && typeof request.params.par !== "undefined") {
-//		toRender = "nomic/rule"
-//		passedData = request.params.par
-//	} else if (request.params.sub === "chat") {
-//		toRender = "nomic/chat"
-//	} else if (
-//		request.params.sub === "proposal"
-//		&& typeof request.params.par !== "undefined"
-//		&& (
-//			!isNaN(request.params.par) || request.params.par === "new"
-//		)
-//	) {
-//		toRender = "nomic/proposal"
-//		passedData = request.params.par
-//	} else {
-//		redirect = true
-//		redirTo = "/"
-//	}
-
-//	if (redirect) {
-//		response.redirect(redirTo)
-//	} else {
-//		response.render(toRender, { params: passedData })
-//	}
-//}).get('/u/nomic/:file', (request, response) => {
-//	var file = request.params.file
-//	response.sendFile(file, { root: __dirname + '/views/nomic' })
-//}).get('/:sub', (request, response) => {
-//	var toRender = request.params.sub
-//	response.render(toRender, { root: __dirname + '/views' })
-//}).get('/((socket\.io|c))/:file', (request, response) => {
-//	var file = request.params.file
-//	response.sendFile(file, { root: __dirname + '/common' })
 })
-
-//}).get(["/403", "/404", "/501"], (request, response) => {
-//	var pg = request.path.slice(1) // remove slash from URL to get page name
-//	response.render(pg, { root: __dirname + '/views' })
-//}).get('/v/login', (request, response) => {
-//	if (typeof request.session.userData !== "undefined" && request.session.userData.loggedIn) {
-//		response.redirect('/')
-//	} else {
-//		response.render("login", { root: __dirname + '/views' })
-//	}
-//}).get('/v/:sub/:id?', (request, response) => {
-//	console.log(request.session)
-//	var sub = request.params.sub
-//	var id = request.params.id
-//	var passedModel
-//	var redirect = false, redirTo
-//	var ud = request.session.userData
-
-//	if (redirect) {
-//		response.redirect('/' + redirTo)
-//	} else {
-//		response.render(sub, { model: passedModel, id: id })
-//	}
-//}).get('/vu/:file', (request, response) => {
-//	var file = request.params.file
-//	response.sendFile(file, { root: __dirname + '/views/' })
-//}).get('/s/:file', (request, response) => {
-//	var file = request.params.file
-//	response.sendFile(file, { root: __dirname + '/static/' })
-//}).get('/u/:file', (request, response) => {
-//	var file = request.params.file
-//	response.sendFile(file, { root: __dirname + '/utils/' })
-//}).get('/socket.io/:file', (request, response) => {
-//	var file = request.params.file
-//	if (file == null || file == "") {
-//		file = "socket.io.js"
-//	}
-//	response.sendFile(file, { root: __dirname + '/utils/' })
-//})
 
 /* ============================== */
 /* SOCKETS ARE VERY IMPORTANT OK? */
@@ -309,9 +195,9 @@ io.on('connection', function (socket) {
 	// server. Therefore, put the request in a try block to prevent the 
 	// server from crashing if it encounters such a manipulation.
 
-	/* =========== */
-	/* OI OI LOGIN */
-	/* =========== */
+	/* ==================== */
+	/* OI OI LOGIN / SIGNUP */
+	/* ==================== */
 	socket.on('login attempt', (input) => {
 		try {
 			var ret = {
@@ -393,6 +279,101 @@ io.on('connection', function (socket) {
 				result: null
 			}
 			socket.emit('login response', ret)
+		}
+	})
+	socket.on('signup attempt', (input) => {
+		try {
+			var ret = {
+				input: input,
+				err: null,
+				result: null
+			}
+			function begin() {
+				checkToken()
+			}
+			begin()
+
+			// Globals
+			var biggest
+			var ids = []
+			var newid = null
+
+			function checkToken() {
+				if (seecret.validTokens.indexOf(input.token) !== -1) {
+					getPermaids()
+				} else {
+					throw "Invalid token"
+				}
+			}
+
+			function getPermaids() {
+				pool.request()
+					.execute("spAccountAllPermaIds", (err, result) => {
+						if (err) {
+							throw "Could not get all account permanent IDs"
+						} else {
+							biggest = result.recordsets[0][0].Biggest
+							for (var i in result.recordsets[1]) {
+								ids.push(result.recordsets[1][i].AccountPermaId)
+							}
+							generateNewUserId()
+						}
+					})
+			}
+
+			function generateNewUserId() {
+				var firstEmpty = biggest + 1
+				if (ids.length > 1) {
+					for (var i = 1; i < ids.length; i++) {
+						if (ids[i] - ids[i - 1] > 1) {
+							firstEmpty = ids[i] - 1
+							i = ids.length
+						}
+					}
+				}
+				var power = Math.log10(firstEmpty)
+				var maxnew = Math.pow(10, Math.ceil(power) + 1)
+
+				console.log("First empty: " + firstEmpty + ", power: " + power + ", maxnew: " + maxnew)
+
+				var lim = 2000
+				while (lim > 0 && (newid === null || ids.indexOf(newid) >= 0)) {
+					newid = Math.floor(firstEmpty + Math.random() * (maxnew - firstEmpty))
+					console.log("Is " + newid + " new?")
+					lim--
+				}
+
+				if (lim === 0) {
+					throw "Could not generate new permanent ID"
+				} else {
+					insertDb()
+				}
+			}
+
+			function insertDb() {
+				pool.request()
+					.input("AccountPermaId", sql.VarChar, newid)
+					.input("CustomId", sql.VarChar, input.username)
+					.input("Pw", sql.VarChar, input.password)
+					.execute("spAccountCreate", (err, result) => {
+						if (err) {
+							throw err
+						} else {
+							result = "Success"
+							socket.emit('signup response', ret)
+						}
+					})
+			}
+
+		}
+		catch (e) {
+			var ret = {
+				input: input,
+				err: e,
+				result: null
+			}
+			console.log(e)
+			socket.emit('signup response', ret)
 		}
 	})
 
