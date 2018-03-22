@@ -263,6 +263,7 @@
 		for (var c = chatToAdd.length - 1; c >= 0; c--) {
 			addChatToView(chatToAdd[c], "top")
 		}
+		$('#tableContainer').scrollTop($('#tableContainer')[0].scrollHeight)
 		refreshRoomHighlight()
 	})
 	// Highlight chosen room
