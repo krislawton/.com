@@ -156,6 +156,7 @@ main > table {
 	margin: 5px 10px;
 	border-left: 2px solid hsl(216,45%,92%);
 	padding: 10px;
+	color: rgba(0, 0, 0, 0.5);
 }
 
 /* Chatlog's actions */

@@ -234,10 +234,14 @@ var resources = {
 	})
 }
 
+var usmid = 1 // user session metadata ID
 module.exports = {
+	// Expose user session metadata ID
+	usmid: usmid,
 	// Function to check if user can access
 	canAccess: (resource, userData, callback) => {
 		var lookFor = resource
+		var uusmid = (typeof userData.usmid !== "undefined" ? userData.usmid : 0)
 
 		// Check if resource is URL parameterized
 		var lio = resource.lastIndexOf('/'),
@@ -258,7 +262,7 @@ module.exports = {
 
 		// Check resource is authorized
 		var thisResource = resources[lookFor]
-		if (userData.loggedIn === false && thisResource.loggedInOnly) {
+		if ((uusmid !== usmid || userData.loggedIn === false) && thisResource.loggedInOnly) {
 			callback("Unauthorized")
 			return
 		} else if (!findOne(userData.sites, thisResource.siteId)) {

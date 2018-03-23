@@ -83,14 +83,25 @@
 		var dateString = dataTransformer("time seconds", dbRecord.SentDate)
 		var dateTitle = dataTransformer("datetime long", dbRecord.SentDate)
 
+		var contents = escapeHtml((dbRecord.Content !== null ? dbRecord.Content : ""))
+		if (dbRecord.MessageType === "Action" && dbRecord.ExtraJSON !== null) {
+			var ej = JSON.parse(dbRecord.ExtraJSON)
+			contents = contents.replace('{player}', '<span style="color: ' + randomColor(ej.customId) + '">' + ej.displayName + '</span>')
+			contents = contents.replace('{room}', '<span style="font-weight: normal">#' + ej.room + '</span>')
+		}
+
 		var toAdd = '<tr class="achat ' + classType + '" data-messageid="' + dbRecord.MessageId + '" data-timestamp="' + dbRecord.SentDate + '">'
 		toAdd += '<td class="timestamp" title="' + dateTitle + '">' + dateString + '</div>'
 		toAdd += '<td class="else">'
 		if (dbRecord.SenderAccountId !== null) {
-			toAdd += '<div class="from">' + dbRecord.DisplayName + '</div>'
+			var color = randomColor(dbRecord.CustomId)
+			toAdd += '<div class="from" style="color: '+color+'">' + dbRecord.DisplayName + '</div>'
+		}
+		if (dbRecord.MessageType === "Action") {
+			toAdd += '<div class="systemmessage">Action taken</div>'
 		}
 		toAdd += '<div class="content">'
-		toAdd += escapeHtml((dbRecord.Content !== null ? dbRecord.Content : ""))
+		toAdd += contents
 		toAdd += '</div>'
 		toAdd += '</td></tr>'
 
@@ -120,7 +131,7 @@
 			cLT = new Date(cLater)
 		if (typeof cLater !== "undefined") {
 			var hourDiff = Math.abs(cLT - cET) / 36e5
-			if (hourDiff >= 0.15) {
+			if (hourDiff >= 0.25) {
 				var ts = diffSeparator(hourDiff)
 				$('#chatContainer .achat').eq(0).after(ts)
 			}
@@ -142,73 +153,23 @@
 		// Diff separators
 		var cET = new Date(cEarlier),
 			cLT = new Date(cLater)
-		if (!hasDateHeader) {
-			var hourDiff = Math.abs(cLT - cET) / 36e5
-			if (hourDiff >= 0.15) {
-				var ts = diffSeparator(hourDiff)
+		var hourDiff = Math.abs(cLT - cET) / 36e5
+		if (hourDiff >= 0.25) {
+			console.log(hourDiff)
+			var ts = diffSeparator(hourDiff)
+			if (hasDateHeader) {
+				$('#chatContainer .dateHeader').eq(-1).before(ts)
+			} else {
 				$('#chatContainer .achat').eq(-1).before(ts)
 			}
 		}
 	}
-	//// Helper for adding message to board
-	//function addMessage(dbRecord, toTop) {
-	//	//var nameColor = (dbRecord.PlayerId !== null ? randomColor(dbRecord.PlayerId) : "hsl(0,0%,0%)")
-	//	var classType = (dbRecord.MessageType).toLowerCase().replace(' ', '')
-	//	var toAdd = '<tr class="achat ' + classType + '" data-messageid="' + dbRecord.MessageId + '" data-timestamp="' + dbRecord.SentDate + '">'
-
-	//	var dateString = dataTransformer("time seconds", dbRecord.SentDate)
-	//	var dateTitle = dataTransformer("datetime long", dbRecord.SentDate)
-
-	//	toAdd += '<td class="timestamp" title="' + dateTitle + '">' + dateString + '</div>'
-	//	toAdd += '<td class="else">'
-	//	if (dbRecord.PlayerId !== null) {
-	//		toAdd += '<div class="from">' + dbRecord.DisplayName + '</div>'
-	//	}
-	//	if (dbRecord.MessageType === "Action") {
-	//		toAdd += '<div class="systemmessage">Action taken</div>'
-	//	}
-	//	toAdd += '<div class="content"></div>'
-	//	toAdd += '</td></tr>'
-	//	if (toTop) {
-	//		// Compare dates
-	//		var compStampFull = $('#chatContainer .achat:first-of-type').attr('data-timestamp')
-	//		var compStamp = (typeof compStampFull !== "undefined" ? compStampFull : dbRecord.SentDate).slice(0, 10)
-	//		var curStamp = (dbRecord.SentDate).slice(0, 10)
-	//		if (compStamp !== curStamp) {
-	//			var ds = dateSeparator(compStampFull)
-	//			toAdd += ds
-	//		}
-	//		// Actually add
-	//		$('#chatContainer').prepend(toAdd)
-	//	} else {
-	//		// Compare dates
-	//		var prevStampFull = $('#chatContainer .achat:last-of-type').attr('data-timestamp')
-	//		var prevStamp = (typeof prevStampFull !== "undefined" ? prevStampFull : dbRecord.SentDate).slice(0, 10)
-	//		var curStamp = (dbRecord.SentDate).slice(0, 10)
-	//		if (prevStamp !== curStamp) {
-	//			var ds = dateSeparator(dbRecord.SentDate)
-	//			toAdd = ds + toAdd
-	//		}
-
-	//		// Actually append
-	//		$('#chatContainer').append(toAdd)
-	//		// Scroll to bottom, where a new message has been added
-	//		$('#tableContainer').scrollTop($('#tableContainer')[0].scrollHeight)
-	//	}
-		
-	//	var content = escapeHtml((dbRecord.Content !== null ? dbRecord.Content : ""))
-	//	if (dbRecord.MessageType === "Action" && dbRecord.ExtraJSON !== null) {
-	//		var ej = JSON.parse(dbRecord.ExtraJSON)
-	//		content = content.replace('{Player}', '<span>' + ej.PlayerName + '</span>')
-	//	}
-	//	$('[data-messageid="' + dbRecord.MessageId + '"] .content').html(content)
-	//}
 
 	// Helper for date separators in chat
 	function dateHeader(dateIn) {
 		var dateOut = new Date(dateIn)
 		dateOut = dataTransformer("date long", dateOut)
-		var ret = '<tr class="dateHeader" data-timestamp="' + dateIn + '"><td colspan="2">' + dateOut + '</td></tr>'
+		var ret = '<tr class="dateHeader" data-timestamp="' + dateIn + '"><td colspan="2">~ ' + dateOut + ' ~</td></tr>'
 		return ret
 	}
 	function diffSeparator(diffIn) {
@@ -362,7 +323,7 @@
 		} else {
 			room = room.slice(1)
 			console.log(room)
-			socket.emit('db procedure request', { procedure: "chatRoomAdd", params: { roomName: room } })
+			socketChat.emit('room add', { roomName: room })
 		}
 	})
 	// Handle cancel
@@ -382,8 +343,8 @@
 		$('.addRoomForm .error').slideUp()
 	})
 	// Handle respones
-	socket.on('db procedure response', (response) => {
-		if (response.input.procedure === "chatRoomAdd") {
+	socketChat.on('room added', (response) => {
+		if (response.success) {
 			closeAddRoomForm()
 			refreshRooms()
 		}

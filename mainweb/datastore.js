@@ -238,16 +238,6 @@ module.exports = {
 					callback(err, result)
 				})
 		},
-		chatRoomAdd: (params, callback) => {
-			permaid = (typeof params.session.userData.permaid === "undefined" ? null : params.session.userData.permaid)
-			pool.request()
-				.input("RoomName", sql.VarChar, params.roomName)
-				.input("CreatedBy", sql.Int, permaid)
-				.execute("dbo.spChatRoomsAdd", (err, result) => {
-					var success = (!err && result.rowsAffected === 1 ? true : false)
-					callback(err, success)
-				})
-		},
 		nomicRulesAdminEdit: (params, callback) => {
 			pool.request()
 				.input("RuleId", sql.Int, params.ruleId)

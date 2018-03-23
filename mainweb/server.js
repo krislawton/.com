@@ -101,7 +101,7 @@ var storeoptions = {
 }
 
 // Set up sessions
-var defaultSession = { userData: { loggedIn: false, sites: [0] } }
+var defaultSession = { userData: { loggedIn: false, sites: [0], usmid: resmgr.usmid } }
 var sessionMiddleware = session({
 	store: new storesessions(storeconfig, storeoptions),
 	maxAge: 30 * 24 * 60 * 60 * 1000, // 24 * 60 * 60 * 1000 = 1 day
@@ -213,7 +213,7 @@ io.on('connection', function (socket) {
 			function dbUsername() {
 				pool.request()
 					.input("CustomId", sql.VarChar, input.username)
-					.query("select AccountPermaId, Pw from Accounts where CustomId = @CustomId", (err, result) => {
+					.query("select AccountPermaId, DisplayName, Pw from Accounts where CustomId = @CustomId", (err, result) => {
 						if (!err) {
 							var usernames = result.recordset
 							checkUsernames(usernames)
@@ -240,8 +240,10 @@ io.on('connection', function (socket) {
 					socket.handshake.session.userData = {
 						loggedIn: true,
 						username: input.username,
+						displayas: userInfo.DisplayName,
 						permaid: userInfo.AccountPermaId,
-						sites: null
+						sites: null,
+						usmid: resmgr.usmid
 					}
 					socket.handshake.session.save()
 					getSites()
@@ -326,7 +328,7 @@ io.on('connection', function (socket) {
 				if (ids.length > 1) {
 					for (var i = 1; i < ids.length; i++) {
 						if (ids[i] - ids[i - 1] > 1) {
-							firstEmpty = ids[i] - 1
+							firstEmpty = ids[i - 1] + 1
 							i = ids.length
 						}
 					}
@@ -488,7 +490,73 @@ ioChat.on('connection', (socket) => {
 			ioChat.emit('chat sent', ret)
 		}
 	})
+	socket.on('room add', (input) => {
+		try {
+			console.log("trying")
+			userData = (typeof socket.handshake.session.userData.permaid === "undefined" ? null : socket.handshake.session.userData)
+			var ret = { success: false, err: null }
+			pool.request()
+				.input("RoomName", sql.VarChar, input.roomName)
+				.input("CreatedBy", sql.Int, userData.permaid)
+				.execute("dbo.spChatRoomsAdd", (err, result) => {
+					console.log(result)
+					ret.success = (!err && result.rowsAffected[0] === 1 ? true : false)
+					if (ret.success) {
+						console.log("room insert success")
+						stage2()
+					} else {
+						console.log("room insert error")
+						ret.err = err
+						socket.emit('room added', ret)
+					}
+				})
+
+			// Send message to chat of room creation
+			function stage2() {
+				console.log("stage 2")
+				var extra = '{ "accountPermaId": "' + userData.permaid + '", '
+				extra += '"customId": "' + userData.username + '", '
+				extra += '"displayName": "' + userData.displayas + '", '
+				extra += '"room": "' + input.roomName + '" }'
+				var smp = { room: "tournytime", content: "{player} created room: {room}", extra: extra }
+				console.log(smp)
+				chatAddSystemMessage(smp, (err, result) => {
+					console.log("message add callback done")
+					if (!err) {
+						console.log("success, emitting system message")
+						ret.success = true
+						var retchat = {
+							input: input,
+							err: err,
+							fromDb: result
+						}
+						ioChat.emit('chat sent', retchat)
+					}
+					console.log("emitting room add success")
+					ioChat.emit('room added', ret)
+				})
+			}
+		}
+		catch (e) {
+			var ret = { success: false, err: e }
+			ioChat.emit('chat sent', ret)
+		}
+	})
 })
+// Chat helper for adding system messages
+function chatAddSystemMessage(params, callback) {
+	console.log("add system message doing")
+	pool.request()
+		.input("Room", sql.VarChar, params.room)
+		.input("Sender", sql.Int, null)
+		.input("Message", sql.VarChar, params.content)
+		.input("MessageType", sql.VarChar, "Action")
+		.input("ExtraJSON", sql.VarChar, params.extra)
+		.execute("spChatSend", (err, result) => {
+			console.log("add system message done")
+			callback(err, result)
+		})
+}
 
 // Nomic chat
 var ioNomicChat = io.of('/nomic')
