@@ -135,6 +135,22 @@ module.exports = {
 					callback(err, { recordset: result })
 				})
 		},
+		rootUserLoadAchievements: (params, callback) => {
+			pool.request()
+				.input("CustomId", sql.VarChar, params.username)
+				.execute("dbo.spAccountAchievementsGet", (err, result) => {
+					if (!err) {
+						// For in-progress, filter JSON data so that it's only progress
+						for (i in result.recordsets[1]) {
+							var r = result.recordsets[1][i]
+							var extraj = JSON.parse(r.ExtraJSON)
+							var newj = { progressMax: extraj.progressMax, progressCurrent: extraj.progressCurrent }
+							result.recordsets[1][i].ExtraJSON = newj
+						}
+					}
+					callback(err, result)
+				})
+		},
 		chatMessagesLoad: (params, callback) => {
 			pool.request()
 				.input("From", sql.VarChar, params.from)
@@ -153,6 +169,14 @@ module.exports = {
 			pool.request()
 				.input("AccountPermaId", sql.VarChar, permaid)
 				.execute("dbo.spChatRoomsLoad", (err, result) => {
+					callback(err, { recordset: result })
+				})
+		},
+		chatStarsLoad: (params, callback) => {
+			permaid = typeof params.session.userData.permaid === "undefined" ? null : params.session.userData.permaid
+			pool.request()
+				.input("AccountPermaId", sql.Int, permaid)
+				.execute("dbo.spChatStarsGet", (err, result) => {
 					callback(err, { recordset: result })
 				})
 		},
@@ -235,6 +259,15 @@ module.exports = {
 				.input("MessageType", sql.VarChar, "Message")
 				.input("ExtraJSON", sql.VarChar, null)
 				.execute("dbo.spChatSend", (err, result) => {
+					callback(err, result)
+				})
+		},
+		chatStarMessage: (params, callback) => {
+			permaid = typeof params.session.userData.permaid === "undefined" ? null : params.session.userData.permaid
+			pool.request()
+				.input("AccountPermaId", sql.Int, permaid)
+				.input("MessageId", sql.Int, params.messageid)
+				.execute("spChatStarMessage", (err, result) => {
 					callback(err, result)
 				})
 		},

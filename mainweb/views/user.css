@@ -1,0 +1,91 @@
+﻿.ach-container {
+	width: 300px;
+	margin: 0 15px 15px 0;
+}
+.ach-badge {
+	background: #f0f0f0;
+	border: 1px solid #c0c0c0;
+	padding: 5px 10px;
+	border-radius: 4px;
+	cursor: pointer;
+	position: relative;
+	padding-left: 30px;
+	display: inline-block;
+}
+.ach-badge:hover {
+	background: #e0e0e0;
+}
+.ach-badge::before {
+	display: inline-block;
+	width: 8px;
+	height: 8px;
+	border-radius: 4px;
+	content: " ";
+	position: absolute;
+	left: 12px;
+	top: 10px;
+	background: black;
+	z-index: 2;
+}
+.ach-badge.lvl1::before {
+	background: hsl(20, 40%, 50%);
+}
+.ach-badge.lvl2::before {
+	background: hsl(200, 10%, 75%);
+}
+.ach-badge.lvl3::before {
+	background: hsl(45, 90%, 60%);
+}
+.ach-badge.lvl4::before {
+	background: hsl(260, 100%, 70%);
+	background: linear-gradient(45deg, hsl(170, 80%, 60%), hsl(200, 90%, 50%));
+}
+.ach-badge.lvl-1 {
+	background: #c0c0c0;
+}
+.ach-badge.lvl-2 {
+	background: black;
+	color: white;
+}
+.ach-badge.lvl-2::before {
+	background: white;
+}
+.ach-badge.lvl-3 {
+	background: hsl(0, 80%, 40%);
+	color: white;
+}
+.ach-badge.lvl-3::before {
+	background: white;
+}
+
+/* Working */
+.ach-badge.working {
+	width: 300px;
+	text-align: center;
+	margin: 0 15px 15px 0;
+	position: relative;
+	overflow: hidden;
+}
+.ach-badge.working .ach-progress {
+	height: 100%;
+	position: absolute;
+	left: 0;
+	top: 0;
+	z-index: 1;
+}
+.ach-badge.working .ach-inner {
+	z-index: 2;
+	position: relative;
+}
+.lvl1 .ach-progress {
+	background: hsl(20, 40%, 85%);
+}
+.lvl2 .ach-progress {
+	background: hsl(200, 10%, 85%);
+}
+.lvl3 .ach-progress {
+	background: hsl(45, 90%, 80%);
+}
+.lvl4 .ach-progress {
+	background: linear-gradient(325deg, hsl(170, 80%, 60%), hsl(200, 90%, 50%));
+}

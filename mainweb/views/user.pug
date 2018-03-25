@@ -1,0 +1,22 @@
+﻿doctype html
+html
+  head
+    title User profile - krislawton.com
+    include /includes/htmlHead.pug
+    link(rel="stylesheet", href="/u/common.css")
+    link(rel="stylesheet", href="/u/user.css")
+    script(src="/u/user.js")
+    - var username = urlParameter.slice(urlParameter.indexOf("-") + 1)
+    - var permaid = urlParameter.slice(0, urlParameter.indexOf("-"))
+    meta#username(data-username=username)
+  body
+    include /includes/rootPageHead.pug
+    +header(userData)
+    main.default
+      - headerText = "ID " + permaid + ": " + username
+      h1= username + "'s profile"
+      p Profiles is pretty early in development, yo. We'll try to make this page show achievements and basic stats about the user.
+      h2 Achievements gotten
+      div#ach-gotten
+      h2 Achievements working towards
+      div#ach-working

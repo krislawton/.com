@@ -3,9 +3,13 @@ const model = require("./model.js")
 
 // Helper: If one item from first input array matches any item from second input array
 function findOne(haystack, arr) {
+	if (haystack === null) {
+		haystack = [0]
+	} 
 	return arr.some(function (v) {
 		return haystack.indexOf(v) >= 0
 	})
+	
 }
 
 // Helper: Resource class (Create Resource)
@@ -30,6 +34,9 @@ var resources = {
 	"/c/FiraSans-Regular.ttf": new cr({
 		send: "/common/FiraSans-Regular.ttf"
 	}),
+	"/c/jquery.easing.1.3.js": new cr({
+		send: "/common/jquery.easing.1.3.js"
+	}),
 	"/c/jquery-3.2.1.min.js": new cr({
 		send: "/common/jquery-3.2.1.min.js"
 	}),
@@ -39,17 +46,8 @@ var resources = {
 	"/c/IconAchievement.png": new cr({
 		send: "/common/IconAchievement.png"
 	}),
-	"/c/IconAchievementL1.png": new cr({
-		send: "/common/IconAchievementL1.png"
-	}),
-	"/c/IconAchievementL2.png": new cr({
-		send: "/common/IconAchievementL2.png"
-	}),
-	"/c/IconAchievementL3.png": new cr({
-		send: "/common/IconAchievementL3.png"
-	}),
-	"/c/IconAchievementL4.png": new cr({
-		send: "/common/IconAchievementL4.png"
+	"/c/IconProfile.png": new cr({
+		send: "/common/IconProfile.png"
 	}),
 	// Root
 	"/": new cr({
@@ -98,6 +96,21 @@ var resources = {
 	}),
 	"/u/achievements.js": new cr({
 		send: "/views/achievements.js",
+		loggedInOnly: true
+	}),
+	"/user": new cr({
+		type: "render",
+		send: "user",
+		loggedInOnly: true,
+		siteId: [0],
+		parameterized: true
+	}),
+	"/u/user.css": new cr({
+		send: "/views/user.css",
+		loggedInOnly: true
+	}),
+	"/u/user.js": new cr({
+		send: "/views/user.js",
 		loggedInOnly: true
 	}),
 	// Nomic
@@ -234,14 +247,14 @@ var resources = {
 	})
 }
 
-var usmid = 1 // user session metadata ID
+var usmev = 1 // user session metadata version
 module.exports = {
 	// Expose user session metadata ID
-	usmid: usmid,
+	usmev: usmev,
 	// Function to check if user can access
 	canAccess: (resource, userData, callback) => {
 		var lookFor = resource
-		var uusmid = (typeof userData.usmid !== "undefined" ? userData.usmid : 0)
+		var lusmev = (typeof userData.usmev !== "undefined" ? userData.usmev : 0)
 
 		// Check if resource is URL parameterized
 		var lio = resource.lastIndexOf('/'),
@@ -262,7 +275,7 @@ module.exports = {
 
 		// Check resource is authorized
 		var thisResource = resources[lookFor]
-		if ((uusmid !== usmid || userData.loggedIn === false) && thisResource.loggedInOnly) {
+		if ((lusmev !== usmev || userData.loggedIn === false) && thisResource.loggedInOnly) {
 			callback("Unauthorized")
 			return
 		} else if (!findOne(userData.sites, thisResource.siteId)) {

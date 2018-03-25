@@ -3,7 +3,7 @@
 /* ===================================== */
 const express = require("express")
 const app = express()
-const port = 1337
+const port = 1338
 const server = app.listen(port, (err) => {
 	if (err) {
 		return console.log("Sum ting wong", err)
@@ -26,6 +26,8 @@ const datastore = require("./datastore.js")
 const resmgr = require("./resourceManager.js")
 // Secret variables the public shouldn't see
 const seecret = require("./seecret.js")
+// Achievements
+const achiev = require("./achievements.js")
 
 /* ================== */
 /* SETTING UP MODULES */
@@ -97,14 +99,14 @@ var storeconfig = {
 }
 var storeoptions = {
 	table: "NodeSessions",
-	ttl: 24 * 60 * 60 * 1000,
+	ttl: 69 * 864e5, // 864e5
 }
 
 // Set up sessions
-var defaultSession = { userData: { loggedIn: false, sites: [0], usmid: resmgr.usmid } }
+var defaultSession = { userData: { loggedIn: false, sites: [0], usmev: resmgr.usmev } }
 var sessionMiddleware = session({
 	store: new storesessions(storeconfig, storeoptions),
-	maxAge: 30 * 24 * 60 * 60 * 1000, // 24 * 60 * 60 * 1000 = 1 day
+	maxAge: storeoptions.ttl,
 	genid: (req) => { return generateSessionId() },
 	name: "kiwi",
 	secret: seecret.sessionSecret,
@@ -157,6 +159,7 @@ app.get('/*', (request, response) => {
 		if ((request.headers.accept || "").match(/text\/html/)) {
 			var params = { permaid: passUserData.permaid || null, page: request.path, ip: request.connection.remoteAddress }
 			datastore.procedure.serverPageLoadAudit(params)
+			achiev.updateAchievements({ justdone: "serverPageLoadAudit", userData: passUserData })
 		}
 
 		if (!err) {
@@ -164,22 +167,23 @@ app.get('/*', (request, response) => {
 			if (result.type === "render") {
 				response.render(result.send, {
 					urlParameter: (typeof result.urlParameter !== "undefined" ? result.urlParameter : null),
-					forView: (typeof result.passToView !== "undefined" ? result.passToView : null)
+					forView: (typeof result.passToView !== "undefined" ? result.passToView : null),
+					userData: passUserData
 				})
 			} else if (result.type === "file") {
 				response.sendFile(result.send, { root: __dirname })
 			} else {
-				response.render('error', { root: __dirname + '/views' })
+				response.render('error', { root: __dirname + '/views', userData: passUserData })
 			}
 		} else {
 			if (request.url === "/") {
-				response.render('login', { root: __dirname + '/views' })
+				response.render('login', { root: __dirname + '/views', userData: passUserData })
 			} else if (err === "Unauthorized") {
-				response.render('403', { root: __dirname + '/views' })
+				response.render('403', { root: __dirname + '/views', userData: passUserData })
 			} else if (err === "Resource not found") {
-				response.render('404', { root: __dirname + '/views' })
+				response.render('404', { root: __dirname + '/views', userData: passUserData })
 			} else {
-				response.render('error', { root: __dirname + '/views' })
+				response.render('error', { root: __dirname + '/views', userData: passUserData })
 			}
 		}
 
@@ -243,7 +247,7 @@ io.on('connection', function (socket) {
 						displayas: userInfo.DisplayName,
 						permaid: userInfo.AccountPermaId,
 						sites: null,
-						usmid: resmgr.usmid
+						usmev: resmgr.usmev
 					}
 					socket.handshake.session.save()
 					getSites()
@@ -422,6 +426,9 @@ io.on('connection', function (socket) {
 					recordset: response.recordset,
 					params: params
 				}
+				if (!err && typeof response.recordsets !== "undefined" && response.recordsets.length > 1) {
+					ret.recordsets = response.recordsets
+				}
 				socket.emit('data response', ret)
 			})
 		}
@@ -442,6 +449,10 @@ io.on('connection', function (socket) {
 			var params = (typeof input.params === "object" ? input.params : {})
 			params.session = socket.handshake.session
 			datastore.procedure[input.procedure](params, (err, response) => {
+				if (!err) {
+					var pass = { justdone: input.procedure, userData: params.session.userData, params: input.params }
+					achiev.updateAchievements(pass)
+				}
 				delete params.session
 				var ret = {
 					input: input,
@@ -479,6 +490,7 @@ ioChat.on('connection', (socket) => {
 					fromDb: response
 				}
 				ioChat.emit('chat sent', ret)
+				achiev.updateAchievements({ justdone: "chatSend", userData: socket.handshake.session.userData })
 			})
 		}
 		catch (e) {

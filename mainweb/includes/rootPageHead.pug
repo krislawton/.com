@@ -1,10 +1,15 @@
-﻿header#topBanner
-  div.inner 
-    div.header 
-      a(href="/") krislawton.com
-    div.right
-      a.user(href="/users/99999-kris") us
-      div.inbox-button in
-      a.achievements-button(href="/achievements")
-        img(src="/c/IconAchievement.png")
-      div.nav-button na
+﻿mixin header(userData)
+  header#topBanner
+    div.inner 
+      div.header 
+        a(href="/") krislawton.com
+      div.right
+        - 
+          var loggedIn = userData.loggedIn
+          var linkTo = "/" + (loggedIn ? "user/" + userData.permaid + "-" + userData.username : "login")
+        a.user(href=linkTo) us
+          img(src="/c/IconProfile.png")
+        div.inbox-button in
+        a.achievements-button(href="/achievements")
+          img(src="/c/IconAchievement.png")
+        div.nav-button na

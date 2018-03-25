@@ -5,7 +5,9 @@
 
 	// Emit a request for the initial chat history
 	function initializeChat() {
-		socket.emit('data request', { request: "chatMessagesLoad", params: { from: null } })
+		if (initialSocketsWIP === 0) {
+			socket.emit('data request', { request: "chatMessagesLoad", params: { from: null } })
+		}
 	}
 	// And players please
 	socket.emit('data request', { request: "chatAccountsLoad" })
@@ -15,11 +17,15 @@
 	}
 	refreshRooms() // onload
 
-	// Global chat and current room
+	// Globals
 	var viewingRoom = 'tournytime',
 		log = {},
-		chatInitialized = false
+		chatInitialized = false,
+		initialSocketsWIP = 2,
+		users = {},
+		stars = {}
 
+	// Socket responses
 	socket.on('data response', (response) => {
 		console.log(response)
 		// On receive initial chat
@@ -30,33 +36,125 @@
 				addChatToMemory(msgs[i], "top")
 			}
 			$('#tableContainer').scrollTop($('#tableContainer')[0].scrollHeight)
+			// Load stars after chat
+			loadStars()
 		}
 		// On receive player list
 		if (response.input.request === "chatAccountsLoad") {
+			if (!response.err) {
+				// Flush and reload users
+				users = {}
+				for (i in response.recordset.recordset) {
+					var r = response.recordset.recordset[i]
+					users[r.AccountPermaId] = {
+						displayName: r.DisplayName,
+						username: r.CustomId
+					}
+				}
+				for (i in users) {
+					var link = "/user/" + i + "-" + users[i].username
+					var html = '<div class="user-row">'
+					html += nameTag(i).outerHTML
+					html += '</div>'
+					$('#users').append(html)
+				}
+				// If this is page load, see if chat can be initialized
+				if (!chatInitialized) {
+					initialSocketsWIP--
+					initializeChat()
+				}
+			}
 		}
 		// On receive rooms list
 		if (response.input.request === "chatRoomsLoad") {
-			var rooms = response.recordset.recordset
-			var toAppend = ""
-			for (r in rooms) {
-				// Button in #chats
-				toAppend += '<button class="room" data-roomid="' + rooms[r].RoomPermanentId + '">#' + rooms[r].RoomName + '</button>'
-				// Add to log object if it's not there
-				if (typeof log[rooms[r].RoomPermanentId] === "undefined") {
-					log[rooms[r].RoomPermanentId] = []
+			if (!response.err) {
+				var rooms = response.recordset.recordset
+				var toAppend = ""
+				for (r in rooms) {
+					// Button in #chats
+					toAppend += '<button class="room" data-roomid="' + rooms[r].RoomPermanentId + '">#' + rooms[r].RoomName + '</button>'
+					// Add to log object if it's not there
+					if (typeof log[rooms[r].RoomPermanentId] === "undefined") {
+						log[rooms[r].RoomPermanentId] = []
+					}
+				}
+				$('#chats .rooms').html(toAppend)
+				$('#chats .addRoom').remove()
+				$('#chats').append('<button class="addRoom">(+) Add room</button>')
+				refreshRoomHighlight()
+
+				// Refresh chat on first load
+				if (!chatInitialized) {
+					initialSocketsWIP--
+					initializeChat()
 				}
 			}
-			$('#chats .rooms').html(toAppend)
-			$('#chats .addRoom').remove()
-			$('#chats').append('<button class="addRoom">(+) Add room</button>')
-			refreshRoomHighlight()
-
-			// Refresh chat on first load
-			if (!chatInitialized) {
-				initializeChat()
-			}
+		}
+		// On stars received
+		if (!response.err && response.input.request === "chatStarsLoad") {
+			refreshStars(response.recordset.recordset)
 		}
 	})
+
+	// Load starred messages
+	function loadStars() {
+		socket.emit('data request', { request: "chatStarsLoad" })
+	}
+	// Helper for loaded stars
+	function refreshStars(dbStars) {
+		var amountOfStars = 0
+
+		// Load in to global
+		stars = {}
+		for (i in dbStars) {
+			var r = dbStars[i]
+			stars[r.MessageId] = {
+				dateStarred: r.StarDate,
+				room: r.RoomName,
+				messageDate: r.SentDate,
+				permaid: r.SenderAccountId,
+				content: r.Content
+			}
+		}
+
+		// Render in chat
+		$('.achat.starred').removeClass("starred")
+		for (i in stars) {
+			amountOfStars++
+			$('.achat[data-messageid="' + i + '"]').addClass("starred")
+		}
+
+		// Render in info
+		$('.star-snippet').remove()
+		if (amountOfStars > 0) {
+			$('#nostars').hide()
+			for (i in stars) {
+				var element = document.createElement("div")
+				element.className = "star-snippet"
+
+				element.appendChild(nameTag(stars[i].permaid))
+
+				var content = document.createElement("div")
+				content.className = "content"
+				content.innerHTML = stars[i].content
+				element.appendChild(content)
+
+				var posted = document.createElement("div")
+				posted.className = "posted"
+				posted.innerHTML = "Posted in #" + stars[i].room + " x ago"
+				element.appendChild(posted)
+
+				var whenstar = document.createElement("div")
+				whenstar.className = "date-starred"
+				whenstar.innerHTML = "Starred x ago"
+				element.appendChild(whenstar)
+
+				$('#starred').append(element)
+			}
+		} else {
+			$('#nostars').show()
+		}	
+	}
 
 	// Helper for putting DB-received messages in to memory
 	function addChatToMemory(dbRecord, bottomOrTop) {
@@ -86,16 +184,19 @@
 		var contents = escapeHtml((dbRecord.Content !== null ? dbRecord.Content : ""))
 		if (dbRecord.MessageType === "Action" && dbRecord.ExtraJSON !== null) {
 			var ej = JSON.parse(dbRecord.ExtraJSON)
-			contents = contents.replace('{player}', '<span style="color: ' + randomColor(ej.customId) + '">' + ej.displayName + '</span>')
+			contents = contents.replace('{player}', nameTag(ej.accountPermaId).outerHTML)
 			contents = contents.replace('{room}', '<span style="font-weight: normal">#' + ej.room + '</span>')
 		}
 
-		var toAdd = '<tr class="achat ' + classType + '" data-messageid="' + dbRecord.MessageId + '" data-timestamp="' + dbRecord.SentDate + '">'
+		var starred = (typeof stars[dbRecord.MessageId] === "object" ? " starred" : "")
+
+		var toAdd = '<tr class="achat ' + classType + starred + '" data-messageid="' + dbRecord.MessageId + '" data-timestamp="' + dbRecord.SentDate + '">'
 		toAdd += '<td class="timestamp" title="' + dateTitle + '">' + dateString + '</div>'
 		toAdd += '<td class="else">'
 		if (dbRecord.SenderAccountId !== null) {
-			var color = randomColor(dbRecord.CustomId)
-			toAdd += '<div class="from" style="color: '+color+'">' + dbRecord.DisplayName + '</div>'
+			var nt = nameTag(dbRecord.SenderAccountId)
+			nt.className += " from"
+			toAdd += nt.outerHTML
 		}
 		if (dbRecord.MessageType === "Action") {
 			toAdd += '<div class="systemmessage">Action taken</div>'
@@ -103,6 +204,7 @@
 		toAdd += '<div class="content">'
 		toAdd += contents
 		toAdd += '</div>'
+		toAdd += '<button class="options">o</button>'
 		toAdd += '</td></tr>'
 
 		if (bottomOrTop === "top") {
@@ -155,7 +257,6 @@
 			cLT = new Date(cLater)
 		var hourDiff = Math.abs(cLT - cET) / 36e5
 		if (hourDiff >= 0.25) {
-			console.log(hourDiff)
 			var ts = diffSeparator(hourDiff)
 			if (hasDateHeader) {
 				$('#chatContainer .dateHeader').eq(-1).before(ts)
@@ -175,14 +276,19 @@
 	function diffSeparator(diffIn) {
 		var days = Math.floor(diffIn / 24)
 		var hours = Math.floor(diffIn % 24)
-		var quarterHorus = Math.round(diffIn * 4) % 4 *  15
+		var quarterHorus = Math.round(diffIn * 4) % 4 * 15
+
+		var padding = 10 + Math.pow(days * 24 * 4 + hours * 4 + quarterHorus / 15 - 1, 0.4) * 10
+		padding = 'style="padding-top: ' + padding + 'px; padding-bottom: ' + padding + 'px"'
+
 		var diffString = ""
 		diffString += days + " day" + (days === 1 ? "" : "s") + " "
 		diffString += hours + " hour" + (hours === 1 ? "" : "s") + " "
 		diffString += quarterHorus + " minutes later..."
 		diffString = diffString.replace(/ 0 (hours|minutes)/m, "")
 		diffString = diffString.replace(/^0 days /m, "")
-		var ret = '<tr class="diffSeparator"><td colspan="2"><div>' + diffString + '</div></td></tr>'
+
+		var ret = '<tr class="diffSeparator"><td colspan="2"><div ' + padding + '>' + diffString + '</div></td></tr>'
 		return ret
 	}
 
@@ -197,7 +303,6 @@
 
 	// Send message helper
 	function sendMessage(content) {
-		console.log("message sending")
 		var uid = Math.random()
 		socketChat.emit('chat send', { content: content, uid: uid, room: viewingRoom })
 	}
@@ -233,6 +338,22 @@
 		$('button.room[data-roomid="' + viewingRoom + '"]').addClass('active')
 	}
 
+	// Helper for name tags
+	function nameTag(permaid) {
+		var nametag = document.createElement("div")
+		nametag.className = "nametag"
+		nametag.style.color = randomColor(users[permaid].username)
+
+		var anchor = document.createElement("a")
+		anchor.href = "/user/" + permaid + "-" + users[permaid].username
+		anchor.target = "_blank"
+		anchor.innerHTML = users[permaid].displayName
+		
+		nametag.appendChild(anchor)
+
+		return nametag
+
+	}
 	// Name color randomiser
 	function randomColor(inputId) {
 		var characters = inputId.split('')
@@ -322,7 +443,6 @@
 			})
 		} else {
 			room = room.slice(1)
-			console.log(room)
 			socketChat.emit('room add', { roomName: room })
 		}
 	})
@@ -354,4 +474,64 @@
 		$('#center .addRoomForm').remove()
 		$('#center > *').removeAttr('style')
 	}
+
+	// Handle chat option button click
+	$(document).on("click", ".achat button.options", (e) => {
+		var parent = $(e.target).parent()[0]
+		var messageId = $(parent).parents('.achat').attr('data-messageid')
+		// Base element
+		var optionsEl = document.createElement("div")
+		optionsEl.className = "options"
+		// Star
+		var star = document.createElement("button")
+		star.className = "option star"
+		var starred = (typeof stars[messageId] === "object" ? "Unstar" : "Star")
+		star.innerHTML = starred + " this message"
+		optionsEl.appendChild(star)
+		// Close
+		var close = document.createElement("button")
+		close.className = "option close"
+		close.innerHTML = "Close"
+		optionsEl.appendChild(close)
+		// Put elemetn and animate
+		parent.appendChild(optionsEl)
+		var created = $(parent).find('div.options')
+		var height = $(created).height()
+		$(created).css("margin-top", "-" + (height * 2) + "px").animate({ "margin-top": -height, opacity: "+=1" }, 150, "easeOutCirc")
+		// Disable button
+		e.target.disabled = true
+	})
+	// Handle closing menu
+	$(document).on("click", ".achat div.options .close", (e) => {
+		var options = $(e.target).parent()
+		var height = $(options).height()
+		$(options).animate({ "margin-top": height * -2, opacity: 0 }, 150, "easeOutCirc", () => {
+			$(options).remove()
+		})
+		$(e.target).parents('.achat').find('button.options').prop("disabled", false)
+	})
+	// Also close menu if anywhere else on the screen is clicked
+	$(document).on("click", "body", (e) => {
+		var clickedOptions = $(e.target).parents('div.options')
+		var clickedToggler = $(e.target).is('button.options')
+		if (clickedOptions.length === 0 && !clickedToggler) {
+			$('button.options:disabled').parent().find('div.options .close').trigger("click")
+		}
+	})
+	// Handle starring message
+	$(document).on("click", "button.option.star", (e) => {
+		var messageId = $(e.target).parents('.achat').attr("data-messageid")
+		socket.emit("db procedure request", { procedure: "chatStarMessage", params: { messageid: messageId } })
+		e.target.innerHTML = "Starring..."
+	})
+	// Handle starring message conf
+	socket.on("db procedure response", (response) => {
+		console.log(response)
+		if (!response.err && response.input.procedure === "chatStarMessage") {
+			var messageId = response.input.params.messageid
+			$('[data-messageid="' + messageId + '"] div.options .close').trigger("click")
+			loadStars()
+		}
+	})
+
 })

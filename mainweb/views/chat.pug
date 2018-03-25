@@ -9,6 +9,7 @@ html
     link(rel="stylesheet", href="/u/chat.css")
   body.chats-open.info-open
     include /includes/rootPageHead.pug
+    +header(userData)
     div#chatToolbar
       button.left.button
         span.chevron >
@@ -19,6 +20,15 @@ html
     div#chats
       div.rooms
     div#info
+      div.card
+        h2 Users
+        div#users
+      div.card
+        h2 Starred
+        div#nostars No messages starred yet! Star messages that are important 
+          | to you or that you want to save for later. 
+          | No one else can see what messages you've starred.
+        div#starred
     div#center
       div#tableContainer
         table

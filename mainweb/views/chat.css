@@ -54,6 +54,7 @@ body {
 #chatToolbar {
 	font-size: 80%;
 	text-transform: uppercase;
+	pointer-events: none;
 }
 #chatToolbar button {
 	height: 20px;
@@ -62,6 +63,7 @@ body {
 	padding-top: 0;
 	padding-bottom: 0;
 	color: white;
+	pointer-events: auto;
 }
 #chatToolbar button:hover {
 	color: inherit;
@@ -118,13 +120,18 @@ body {
 }
 
 /* Chat log */
-main > table {
+#tableContainer table {
 	border-collapse: collapse;
 	width: 100%;
 }
 .achat, .dateSeparator {
 	vertical-align: top;
-	border-top: 1px solid hsl(0, 0%, 88%);
+}
+.achat.starred {
+	background: hsl(50, 90%, 95%);
+}
+.achat:hover {
+	background: #f9f9f9;
 }
 .achat td {
 	padding: 3px 0;
@@ -133,7 +140,8 @@ main > table {
 	width: 60px;
 }
 .achat .else {
-	padding-left: 0.6em;
+	padding: 3px 1.3em 3px 0.6em;
+	position: relative;
 }
 .achat .else > div {
 	display: inline;
@@ -146,6 +154,42 @@ main > table {
 }
 .achat .from {
 	font-weight: bold;
+}
+.achat button.options {
+	position: absolute;
+	top: 0;
+	right: 0;
+	visibility: hidden;
+}
+.achat:hover button.options {
+	visibility: visible;
+}
+div.options {
+	position: absolute;
+	top: 0;
+	right: 0;
+	z-index: 1;
+	background: white;
+	box-shadow: 0 2px 5px 1px rgba(0, 0, 0, 0.16);
+	margin-top: 0;
+	opacity: 0;
+}
+div.options button.option {
+	display: block;
+	padding: 7px 10px;
+	width: 100%;
+	text-align: left;
+	font-size: 80%;
+	color: rgba(0, 0, 0, 0.5);
+}
+div.options button.option.close {
+	color: hsl(0, 70%, 70%);
+}
+div.options button.option:hover {
+	background: rgba(0, 0, 0, 0.08);
+}
+div.options button.option:active {
+	background: rgba(0, 0, 0, 0.16);
 }
 .dateHeader td {
 	font-weight: bold;
@@ -166,6 +210,10 @@ main > table {
 .achat .else .systemmessage {
 	display: block;
 	font-size: small;
+}
+.achat.action .else span a {
+	color: inherit;
+	text-decoration: inherit;
 }
 .achat.action .content {
 	font-weight: bold;
@@ -206,7 +254,50 @@ main > table {
 
 /* Info sidebar */
 #info {
+	padding: 15px;
+	overflow-y: auto;
+}
+#info .card {
 	padding: 10px;
+	margin-bottom: 20px;
+	background: white;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+#info h2 {
+	margin: 0 0 10px;
+	font-size: 120%;
+}
+#users {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	margin: 0 -6px;
+}
+#users .user-row {
+	font-weight: bold;
+	margin: 6px;
+}
+#users .user-row a {
+	text-decoration: inherit;
+	color: inherit;
+}
+.star-snippet {
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 10px 0;
+}
+.star-snippet > * {
+    margin: 2px 0;
+}
+#starred .nametag {
+    margin-right: 10px;
+    font-weight: bold;
+}
+.nametag, .content {
+    display: inline-block;
+}
+.posted, .date-starred {
+    font-size: 80%;
+    color: rgba(0, 0, 0, 0.5)
 }
 
 /* Add room form */
@@ -238,4 +329,10 @@ main > table {
 }
 .addRoomForm .error:active {
 	background: hsl(0, 70%, 80%);
+}
+
+/* Misc */
+.nametag a {
+	color: inherit;
+	text-decoration: inherit;
 }
