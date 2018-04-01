@@ -55,6 +55,7 @@
 		$('.have').show()
 		// Show token field
 		$('#token').show()
+		$('.only-signup').show()
 		// Change text of login button
 		$('.button.login').html("Sign up")
 	})
@@ -67,6 +68,7 @@
 		$('.have').hide()
 		// Show token field
 		$('#token').hide()
+		$('.only-signup').hide()
 		// Change text of login button
 		$('.button.login').html("Log in")
 	})

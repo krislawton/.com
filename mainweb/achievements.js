@@ -42,7 +42,8 @@ pool.request()
 var checklookup = {
 	serverPageLoadAudit: [1000, 1020, 1021, 1022, 1023, 1030, 1031, 1032],
 	chatSend: [2000, 2001, 2002, 2003, 2010, 2011, 2012, 2060, 2061, 2062, 2070, 2080, 2180, 2190, 2191],
-	chatStarMessage: [2170, 2171, 2172]
+	chatStarMessage: [2170, 2171, 2172],
+	reactSend: [2020, 2021, 2022, 2030, 2031, 2032, 2120, 2121, 2122, 2150]
 }
 
 // Achievement checker: Checks if achievements need updating
@@ -66,7 +67,7 @@ var acheck = {
 			if (result1.recordset.length === 0) {
 				pool.request()
 					.input("AccountPermaId", sql.VarChar, input.permaid)
-					.query("insert into AccountAchievements (AccountPermaId, AchievementId, AwardedDate) values (@AccountPermaId, " + achid + ", getdate())", (err, result) => {
+					.query("insert into AccountAchievements (AccountPermaId, AchievementId, AwardedDate) values (@AccountPermaId, " + achid + ", getutcdate())", (err, result) => {
 						callback(err, result, achid)
 					})
 			} else {
@@ -130,7 +131,7 @@ var acheck = {
 				rj = JSON.stringify(rj)
 				var query = "update aa"
 				query += " set ExtraJSON = @ExtraJSON"
-				query += (rj.progressCurrent >= max ? ", AwardedDate = getdate()" : "")
+				query += (rj.progressCurrent >= max ? ", AwardedDate = getutcdate()" : "")
 				query += " from AccountAchievements aa"
 				query += " where AccAchieveId = @AccAchieveId"
 				pool.request()
@@ -198,7 +199,7 @@ var acheck = {
 				rj = JSON.stringify(rj)
 				var query = "update aa"
 				query += " set ExtraJSON = @ExtraJSON"
-				query += (rj.progressCurrent >= max ? ", AwardedDate = getdate()" : "")
+				query += (rj.progressCurrent >= max ? ", AwardedDate = getutcdate()" : "")
 				query += " from AccountAchievements aa"
 				query += " where AccAchieveId = @AccAchieveId"
 				pool.request()
@@ -266,7 +267,7 @@ var acheck = {
 				rj = JSON.stringify(rj)
 				var query = "update aa"
 				query += " set ExtraJSON = @ExtraJSON"
-				query += (rj.progressCurrent >= max ? ", AwardedDate = getdate()" : "")
+				query += (rj.progressCurrent >= max ? ", AwardedDate = getutcdate()" : "")
 				query += " from AccountAchievements aa"
 				query += " where AccAchieveId = @AccAchieveId"
 				pool.request()
@@ -334,7 +335,7 @@ var acheck = {
 				rj = JSON.stringify(rj)
 				var query = "update aa"
 				query += " set ExtraJSON = @ExtraJSON"
-				query += (rj.progressCurrent >= max ? ", AwardedDate = getdate()" : "")
+				query += (rj.progressCurrent >= max ? ", AwardedDate = getutcdate()" : "")
 				query += " from AccountAchievements aa"
 				query += " where AccAchieveId = @AccAchieveId"
 				pool.request()
@@ -409,7 +410,7 @@ var acheck = {
 				rj = JSON.stringify(rj)
 				var query = "update aa"
 				query += " set ExtraJSON = @ExtraJSON"
-				query += (progress >= max ? ", AwardedDate = getdate()" : "")
+				query += (progress >= max ? ", AwardedDate = getutcdate()" : "")
 				query += " from AccountAchievements aa"
 				query += " where AccAchieveId = @AccAchieveId"
 				pool.request()
@@ -490,7 +491,7 @@ var acheck = {
 				rj = JSON.stringify(rj)
 				var query = "update aa"
 				query += " set ExtraJSON = @ExtraJSON"
-				query += (progress >= max ? ", AwardedDate = getdate()" : "")
+				query += (progress >= max ? ", AwardedDate = getutcdate()" : "")
 				query += " from AccountAchievements aa"
 				query += " where AccAchieveId = @AccAchieveId"
 				pool.request()
@@ -571,7 +572,7 @@ var acheck = {
 				rj = JSON.stringify(rj)
 				var query = "update aa"
 				query += " set ExtraJSON = @ExtraJSON"
-				query += (progress >= max ? ", AwardedDate = getdate()" : "")
+				query += (progress >= max ? ", AwardedDate = getutcdate()" : "")
 				query += " from AccountAchievements aa"
 				query += " where AccAchieveId = @AccAchieveId"
 				pool.request()
@@ -648,7 +649,7 @@ var acheck = {
 				rj = JSON.stringify(rj)
 				var query = "update aa"
 				query += " set ExtraJSON = @ExtraJSON"
-				query += (rj.progressCurrent >= max ? ", AwardedDate = getdate()" : "")
+				query += (rj.progressCurrent >= max ? ", AwardedDate = getutcdate()" : "")
 				query += " from AccountAchievements aa"
 				query += " where AccAchieveId = @AccAchieveId"
 				pool.request()
@@ -716,7 +717,7 @@ var acheck = {
 				rj = JSON.stringify(rj)
 				var query = "update aa"
 				query += " set ExtraJSON = @ExtraJSON"
-				query += (rj.progressCurrent >= max ? ", AwardedDate = getdate()" : "")
+				query += (rj.progressCurrent >= max ? ", AwardedDate = getutcdate()" : "")
 				query += " from AccountAchievements aa"
 				query += " where AccAchieveId = @AccAchieveId"
 				pool.request()
@@ -784,7 +785,7 @@ var acheck = {
 				rj = JSON.stringify(rj)
 				var query = "update aa"
 				query += " set ExtraJSON = @ExtraJSON"
-				query += (rj.progressCurrent >= max ? ", AwardedDate = getdate()" : "")
+				query += (rj.progressCurrent >= max ? ", AwardedDate = getutcdate()" : "")
 				query += " from AccountAchievements aa"
 				query += " where AccAchieveId = @AccAchieveId"
 				pool.request()
@@ -807,7 +808,7 @@ var acheck = {
 		// Get the achievement if they have one in progress
 		var query = "select AccAchieveId, ExtraJSON, "
 		query += "(select count(distinct datediff(minute, 0, SentDate) / 10) from ChatMessages "
-		query += "where SenderAccountId = @AccountPermaId and dateadd(month, -3, getdate()) < SentDate) as AmountSent "
+		query += "where SenderAccountId = @AccountPermaId and dateadd(month, -3, getutcdate()) < SentDate) as AmountSent "
 		query += "from AccountAchievements "
 		query += "where AchievementId = " + achid + " and AwardedDate is null and "
 		pool.request()
@@ -854,7 +855,7 @@ var acheck = {
 				rj = JSON.stringify(rj)
 				var query = "update aa"
 				query += " set ExtraJSON = @ExtraJSON"
-				query += (rj.progressCurrent >= max ? ", AwardedDate = getdate()" : "")
+				query += (rj.progressCurrent >= max ? ", AwardedDate = getutcdate()" : "")
 				query += " from AccountAchievements aa"
 				query += " where AccAchieveId = @AccAchieveId"
 				pool.request()
@@ -872,11 +873,717 @@ var acheck = {
 	//2011	attention - 2
 	//2012	attention - 3
 	//2020	creator - 1
+	2020: (input, callback) => {
+		var achid = 2020
+		var max = 2
+
+		var messageId = input.params.messageId
+		var targetPermaId = null
+		var reactValue = 0
+		var achs = []
+		var wipIndex = null
+
+		// Get reaction count of this message
+		var rquery = "select sum(ReactValue) as ReactValue, max(SenderAccountId) as AccountPermaId"
+		rquery += " from ("
+		rquery += "		select m.SenderAccountId,"
+		rquery += "			case Reaction when 'positive' then 2 when 'negative' then 0 else 1 end as ReactValue"
+		rquery += "		from ChatReactions r"
+		rquery += " 		inner join ChatMessages m"
+		rquery += "			on r.MessageId = m.MessageId"
+		rquery += "		where r.MessageId = @MessageId and r.UnreactionDate is null"
+		rquery += "			and r.AccountPermaId != m.SenderAccountId"
+		rquery += " ) a"
+		pool.request()
+			.input("MessageId", sql.Int, messageId)
+			.query(rquery, (err, result) => {
+				if (err) {
+					callback(err, result, achid)
+					return
+				}
+
+				targetPermaId = result.recordset[0].AccountPermaId
+				reactValue = result.recordset[0].ReactValue
+
+				if (reactValue >= 5) {
+					getAllAchievements()
+				} else {
+					callback(null, null, achid)
+				}
+			})
+
+		// Get all achievements to find ones related to that message
+		function getAllAchievements() {
+			var allquery = "select AccAchieveId, ExtraJSON, iif(AwardedDate is null, 0, 1) as Awarded"
+			allquery += " from AccountAchievements"
+			allquery += " where AccountPermaId = @AccountPermaId and AchievementId = @AchievementId"
+			pool.request()
+				.input("AchievementId", sql.Int, achid)
+				.input("AccountPermaId", sql.Int, targetPermaId)
+				.query(allquery, (err, result) => {
+					if (err) {
+						callback(err, result, achid)
+						return
+					}
+					achs = result.recordset
+					lookForMessage()
+				})
+		}
+
+		// Find out whether message already has an achievement
+		function lookForMessage() {
+			var found = false
+			for (i in achs) {
+				var ej = JSON.parse(achs[i].ExtraJSON)
+				var mids = ej.messageIds
+				for (mi in mids) {
+					found = (mids[mi] === messageId ? true : found)
+				}
+			}
+			if (!found) {
+				messageIsWorthy()
+			} else {
+				callback(null, null, achid)
+			}
+		}
+
+		// It doesn't have an achievement but is worthy of one - update or insert?
+		function messageIsWorthy() {
+			// Look for an in-progress achievement
+			for (i in achs) {
+				wipIndex = (achs[i].Awarded === 0 ? i : wipIndex)
+			}
+			if (wipIndex === null) {
+				insertNew()
+			} else {
+				updateWithMessage()
+			}
+		}
+
+		// perform the insert of a blank in-progress achievement
+		function insertNew() {
+			var ej = {
+				progressCurrent: 1,
+				progressMax: max,
+				messageIds: [ messageId ]
+			}
+			ej = JSON.stringify(ej)
+			var insq = " insert into AccountAchievements (AccountPermaId, AchievementId, ExtraJSON)"
+			insq += " select @AccountPermaId, @AchievementId, @ExtraJSON"
+			pool.request()
+				.input("AccountPermaId", sql.Int, targetPermaId)
+				.input("AchievementId", sql.Int, achid)
+				.input("ExtraJSON", sql.VarChar, ej)
+				.query(insq, (err, result) => {
+					callback(err, result, achid)
+				})
+		}
+
+		// Update the necessary achievement with new stats
+		function updateWithMessage() {
+			var ej = JSON.parse(achs[wipIndex].ExtraJSON)
+			ej.messageIds.push(messageId)
+			ej.progressCurrent++
+			var acid = achs[wipIndex].AccAchieveId
+
+			var uq = "update AccountAchievements set ExtraJSON = @ExtraJSON"
+			uq += (ej.progressCurrent >= ej.progressMax ? ", AwardedDate = getutcdate()" : "")
+			uq += " from AccountAchievements"
+			uq += " where AccAchieveId = @AccAchieveId"
+
+			ej = JSON.stringify(ej)
+
+			pool.request()
+				.input("AccAchieveId", sql.Int, acid)
+				.input("ExtraJSON", sql.VarChar, ej)
+				.query(uq, (err, result) => {
+					callback(err, result, achid)
+				})
+		}
+	},
 	//2021	creator - 2
+	2021: (input, callback) => {
+		var achid = 2021
+		var max = 5
+
+		var messageId = input.params.messageId
+		var targetPermaId = null
+		var reactValue = 0
+		var achs = []
+		var wipIndex = null
+
+		// Get reaction count of this message
+		var rquery = "select sum(ReactValue) as ReactValue, max(SenderAccountId) as AccountPermaId"
+		rquery += " from ("
+		rquery += "		select m.SenderAccountId,"
+		rquery += "			case Reaction when 'positive' then 2 when 'negative' then 0 else 1 end as ReactValue"
+		rquery += "		from ChatReactions r"
+		rquery += " 		inner join ChatMessages m"
+		rquery += "			on r.MessageId = m.MessageId"
+		rquery += "		where r.MessageId = @MessageId and r.UnreactionDate is null"
+		rquery += "			and r.AccountPermaId != m.SenderAccountId"
+		rquery += " ) a"
+		pool.request()
+			.input("MessageId", sql.Int, messageId)
+			.query(rquery, (err, result) => {
+				if (err) {
+					callback(err, result, achid)
+					return
+				}
+
+				targetPermaId = result.recordset[0].AccountPermaId
+				reactValue = result.recordset[0].ReactValue
+
+				if (reactValue >= 5) {
+					getAllAchievements()
+				} else {
+					callback(null, null, achid)
+				}
+			})
+
+		// Get all achievements to find ones related to that message
+		function getAllAchievements() {
+			var allquery = "select AccAchieveId, ExtraJSON, iif(AwardedDate is null, 0, 1) as Awarded"
+			allquery += " from AccountAchievements"
+			allquery += " where AccountPermaId = @AccountPermaId and AchievementId = @AchievementId"
+			pool.request()
+				.input("AchievementId", sql.Int, achid)
+				.input("AccountPermaId", sql.Int, targetPermaId)
+				.query(allquery, (err, result) => {
+					if (err) {
+						callback(err, result, achid)
+						return
+					}
+					achs = result.recordset
+					lookForMessage()
+				})
+		}
+
+		// Find out whether message already has an achievement
+		function lookForMessage() {
+			var found = false
+			for (i in achs) {
+				var ej = JSON.parse(achs[i].ExtraJSON)
+				var mids = ej.messageIds
+				for (mi in mids) {
+					found = (mids[mi] === messageId ? true : found)
+				}
+			}
+			if (!found) {
+				messageIsWorthy()
+			} else {
+				callback(null, null, achid)
+			}
+		}
+
+		// It doesn't have an achievement but is worthy of one - update or insert?
+		function messageIsWorthy() {
+			// Look for an in-progress achievement
+			for (i in achs) {
+				wipIndex = (achs[i].Awarded === 0 ? i : wipIndex)
+			}
+			if (wipIndex === null) {
+				insertNew()
+			} else {
+				updateWithMessage()
+			}
+		}
+
+		// perform the insert of a blank in-progress achievement
+		function insertNew() {
+			var ej = {
+				progressCurrent: 1,
+				progressMax: max,
+				messageIds: [messageId]
+			}
+			ej = JSON.stringify(ej)
+			var insq = " insert into AccountAchievements (AccountPermaId, AchievementId, ExtraJSON)"
+			insq += " select @AccountPermaId, @AchievementId, @ExtraJSON"
+			pool.request()
+				.input("AccountPermaId", sql.Int, targetPermaId)
+				.input("AchievementId", sql.Int, achid)
+				.input("ExtraJSON", sql.VarChar, ej)
+				.query(insq, (err, result) => {
+					callback(err, result, achid)
+				})
+		}
+
+		// Update the necessary achievement with new stats
+		function updateWithMessage() {
+			var ej = JSON.parse(achs[wipIndex].ExtraJSON)
+			ej.messageIds.push(messageId)
+			ej.progressCurrent++
+			var acid = achs[wipIndex].AccAchieveId
+
+			var uq = "update AccountAchievements set ExtraJSON = @ExtraJSON"
+			uq += (ej.progressCurrent >= ej.progressMax ? ", AwardedDate = getutcdate()" : "")
+			uq += " from AccountAchievements"
+			uq += " where AccAchieveId = @AccAchieveId"
+
+			ej = JSON.stringify(ej)
+
+			pool.request()
+				.input("AccAchieveId", sql.Int, acid)
+				.input("ExtraJSON", sql.VarChar, ej)
+				.query(uq, (err, result) => {
+					callback(err, result, achid)
+				})
+		}
+	},
 	//2022	creator - 3
+	2022: (input, callback) => {
+		var achid = 2022
+		var max = 10
+
+		var messageId = input.params.messageId
+		var targetPermaId = null
+		var reactValue = 0
+		var achs = []
+		var wipIndex = null
+
+		// Get reaction count of this message
+		var rquery = "select sum(ReactValue) as ReactValue, max(SenderAccountId) as AccountPermaId"
+		rquery += " from ("
+		rquery += "		select m.SenderAccountId,"
+		rquery += "			case Reaction when 'positive' then 2 when 'negative' then 0 else 1 end as ReactValue"
+		rquery += "		from ChatReactions r"
+		rquery += " 		inner join ChatMessages m"
+		rquery += "			on r.MessageId = m.MessageId"
+		rquery += "		where r.MessageId = @MessageId and r.UnreactionDate is null"
+		rquery += "			and r.AccountPermaId != m.SenderAccountId"
+		rquery += " ) a"
+		pool.request()
+			.input("MessageId", sql.Int, messageId)
+			.query(rquery, (err, result) => {
+				if (err) {
+					callback(err, result, achid)
+					return
+				}
+
+				targetPermaId = result.recordset[0].AccountPermaId
+				reactValue = result.recordset[0].ReactValue
+
+				if (reactValue >= 5) {
+					getAllAchievements()
+				} else {
+					callback(null, null, achid)
+				}
+			})
+
+		// Get all achievements to find ones related to that message
+		function getAllAchievements() {
+			var allquery = "select AccAchieveId, ExtraJSON, iif(AwardedDate is null, 0, 1) as Awarded"
+			allquery += " from AccountAchievements"
+			allquery += " where AccountPermaId = @AccountPermaId and AchievementId = @AchievementId"
+			pool.request()
+				.input("AchievementId", sql.Int, achid)
+				.input("AccountPermaId", sql.Int, targetPermaId)
+				.query(allquery, (err, result) => {
+					if (err) {
+						callback(err, result, achid)
+						return
+					}
+					achs = result.recordset
+					lookForMessage()
+				})
+		}
+
+		// Find out whether message already has an achievement
+		function lookForMessage() {
+			var found = false
+			for (i in achs) {
+				var ej = JSON.parse(achs[i].ExtraJSON)
+				var mids = ej.messageIds
+				for (mi in mids) {
+					found = (mids[mi] === messageId ? true : found)
+				}
+			}
+			if (!found) {
+				messageIsWorthy()
+			} else {
+				callback(null, null, achid)
+			}
+		}
+
+		// It doesn't have an achievement but is worthy of one - update or insert?
+		function messageIsWorthy() {
+			// Look for an in-progress achievement
+			for (i in achs) {
+				wipIndex = (achs[i].Awarded === 0 ? i : wipIndex)
+			}
+			if (wipIndex === null) {
+				insertNew()
+			} else {
+				updateWithMessage()
+			}
+		}
+
+		// perform the insert of a blank in-progress achievement
+		function insertNew() {
+			var ej = {
+				progressCurrent: 1,
+				progressMax: max,
+				messageIds: [messageId]
+			}
+			ej = JSON.stringify(ej)
+			var insq = " insert into AccountAchievements (AccountPermaId, AchievementId, ExtraJSON)"
+			insq += " select @AccountPermaId, @AchievementId, @ExtraJSON"
+			pool.request()
+				.input("AccountPermaId", sql.Int, targetPermaId)
+				.input("AchievementId", sql.Int, achid)
+				.input("ExtraJSON", sql.VarChar, ej)
+				.query(insq, (err, result) => {
+					callback(err, result, achid)
+				})
+		}
+
+		// Update the necessary achievement with new stats
+		function updateWithMessage() {
+			var ej = JSON.parse(achs[wipIndex].ExtraJSON)
+			ej.messageIds.push(messageId)
+			ej.progressCurrent++
+			var acid = achs[wipIndex].AccAchieveId
+
+			var uq = "update AccountAchievements set ExtraJSON = @ExtraJSON"
+			uq += (ej.progressCurrent >= ej.progressMax ? ", AwardedDate = getutcdate()" : "")
+			uq += " from AccountAchievements"
+			uq += " where AccAchieveId = @AccAchieveId"
+
+			ej = JSON.stringify(ej)
+
+			pool.request()
+				.input("AccAchieveId", sql.Int, acid)
+				.input("ExtraJSON", sql.VarChar, ej)
+				.query(uq, (err, result) => {
+					callback(err, result, achid)
+				})
+		}
+	},
 	//2030	consumer - 1
+	2030: (input, callback) => {
+		var achid = 2030
+		var max = 20
+
+		// Check there isn't already one awarded (only awarded once)
+		var queryaw = "select count(1) as Amount from AccountAchievements"
+		queryaw += " where AchievementId = @AchievementId"
+		queryaw += " and AccountPermaId = @AccountPermaId and AwardedDate is not null"
+		pool.request()
+			.input("AchievementId", sql.Int, achid)
+			.input("AccountPermaId", sql.Int, input.permaid)
+			.query(queryaw, (err, result) => {
+				if (err) {
+					callback(err, null, achid)
+				} else if (result.recordset[0].Amount > 0) {
+					callback(null, null, achid)
+				} else {
+					getProgress()
+				}
+			})
+				
+		var rn = (new Date).toISOString()
+		var dbAch = null
+
+		// Get the achievement if they have one in progress
+		function getProgress() {
+			var query = "select AccAchieveId, ExtraJSON "
+			query += "from AccountAchievements "
+			query += "where AchievementId = @AchievementId and AwardedDate is null and "
+			pool.request()
+				.input("AchievementId", sql.Int, achid)
+				.input("AccountPermaId", sql.Int, input.permaid)
+				.query(query + "AccountPermaId = @AccountPermaId", (err, result) => {
+					if (err) {
+						callback(err, null, achid)
+					} else {
+						considerCreating(result)
+					}
+				})
+		}
+
+		// If one is not in progress, create it
+		function considerCreating(result) {
+			if (result.recordset.length === 0) {
+				var ej = {
+					progressCurrent: 0,
+					progressMax: max,
+					reactionsFrom: (new Date()).toISOString()
+				}
+				ej = JSON.stringify(ej)
+				var cquery = "declare @Inserted table (AccAchieveId int, ExtraJSON nvarchar(max));"
+				cquery += " insert into AccountAchievements (AccountPermaId, AchievementId, ExtraJSON)"
+				cquery += " output Inserted.AccAchieveId, Inserted.ExtraJSON into @Inserted"
+				cquery += " values (@AccountPermaId, @AchievementId, @ExtraJSON);"
+				cquery += " select AccAchieveId, ExtraJSON from @Inserted"
+				pool.request()
+					.input("AccountPermaId", sql.Int, input.permaid)
+					.input("AchievementId", sql.Int, achid)
+					.input("ExtraJSON", sql.VarChar, ej)
+					.query(cquery, (err, result2) => {
+						if (err) {
+							callback(err, null, achid)
+							return
+						}
+						if (result2.recordset.length === 0) {
+							callback("Achievement not found but could not insert", result2, achid)
+						} else {
+							dbAch = result2.recordset[0]
+							getNewCount()
+						}
+					})
+			} else {
+				dbAch = result.recordset[0]
+				getNewCount()
+			}
+		}
+
+		// Get the new count to assign to the progress of the achievement
+		function getNewCount() {
+			var ej = JSON.parse(dbAch.ExtraJSON)
+			var from = new Date(ej.reactionsFrom)
+			var ncquery = "select count(distinct r.MessageId) as Amount from ChatReactions r"
+			ncquery += " inner join ChatMessages m"
+			ncquery += " on r.MessageId = m.MessageId"
+			ncquery += " where r.AccountPermaId = @AccountPermaId"
+			ncquery += " and m.SenderAccountId != @AccountPermaId"
+			ncquery += " and r.UnreactionDate is null"
+			ncquery += " and r.ReactionDate >= @FromDate"
+			pool.request()
+				.input("AccountPermaId", sql.Int, input.permaid)
+				.input("FromDate", sql.DateTime, from)
+				.query(ncquery, (err, result) => {
+					if (err) {
+						callback(err, null, achid)
+					} else {
+						updateAchievement(result)
+					}
+				})
+		}
+
+		// Update the achievement, awarding it if necessary
+		function updateAchievement(result) {
+			var ej = JSON.parse(dbAch.ExtraJSON)
+			ej.progressCurrent = result.recordset[0].Amount
+			var uquery = "update AccountAchievements"
+			uquery += " set ExtraJSON = @ExtraJSON"
+			uquery += (ej.progressCurrent >= max ? ", AwardedDate = getutcdate()" : "")
+			uquery += " from AccountAchievements"
+			uquery += " where AccAchieveId = @AccAchieveId"
+
+			ej = JSON.stringify(ej)
+
+			pool.request()
+				.input("AccAchieveId", sql.Int, dbAch.AccAchieveId)
+				.input("ExtraJSON", sql.VarChar, ej)
+				.query(uquery, (err, result) => {
+					callback(err, result, achid)
+				})
+		}
+	},
 	//2031	consumer - 2
+	2031: (input, callback) => {
+		var achid = 2031
+		var max = 100
+		
+		var rn = (new Date).toISOString()
+		var dbAch = null
+
+		// Get the achievement if they have one in progress
+		var query = "select AccAchieveId, ExtraJSON "
+		query += "from AccountAchievements "
+		query += "where AchievementId = @AchievementId and AwardedDate is null and "
+		pool.request()
+			.input("AchievementId", sql.Int, achid)
+			.input("AccountPermaId", sql.Int, input.permaid)
+			.query(query + "AccountPermaId = @AccountPermaId", (err, result) => {
+				if (err) {
+					callback(err, null, achid)
+				} else {
+					considerCreating(result)
+				}
+			})
+
+		// If one is not in progress, create it
+		function considerCreating(result) {
+			if (result.recordset.length === 0) {
+				var ej = {
+					progressCurrent: 0,
+					progressMax: max,
+					reactionsFrom: (new Date()).toISOString()
+				}
+				ej = JSON.stringify(ej)
+				var cquery = "declare @Inserted table (AccAchieveId int, ExtraJSON nvarchar(max));"
+				cquery += " insert into AccountAchievements (AccountPermaId, AchievementId, ExtraJSON)"
+				cquery += " output Inserted.AccAchieveId, Inserted.ExtraJSON into @Inserted"
+				cquery += " values (@AccountPermaId, @AchievementId, @ExtraJSON);"
+				cquery += " select AccAchieveId, ExtraJSON from @Inserted"
+				pool.request()
+					.input("AccountPermaId", sql.Int, input.permaid)
+					.input("AchievementId", sql.Int, achid)
+					.input("ExtraJSON", sql.VarChar, ej)
+					.query(cquery, (err, result2) => {
+						if (err) {
+							callback(err, null, achid)
+							return
+						}
+						if (result2.recordset.length === 0) {
+							callback("Achievement not found but could not insert", result2, achid)
+						} else {
+							dbAch = result2.recordset[0]
+							getNewCount()
+						}
+					})
+			} else {
+				dbAch = result.recordset[0]
+				getNewCount()
+			}
+		}
+
+		// Get the new count to assign to the progress of the achievement
+		function getNewCount() {
+			var ej = JSON.parse(dbAch.ExtraJSON)
+			var from = new Date(ej.reactionsFrom)
+			var ncquery = "select count(distinct r.MessageId) as Amount from ChatReactions r"
+			ncquery += " inner join ChatMessages m"
+			ncquery += " on r.MessageId = m.MessageId"
+			ncquery += " where r.AccountPermaId = @AccountPermaId"
+			ncquery += " and m.SenderAccountId != @AccountPermaId"
+			ncquery += " and r.UnreactionDate is null"
+			ncquery += " and r.ReactionDate >= @FromDate"
+			pool.request()
+				.input("AccountPermaId", sql.Int, input.permaid)
+				.input("FromDate", sql.DateTime, from)
+				.query(ncquery, (err, result) => {
+					if (err) {
+						callback(err, null, achid)
+					} else {
+						updateAchievement(result)
+					}
+				})
+		}
+
+		// Update the achievement, awarding it if necessary
+		function updateAchievement(result) {
+			var ej = JSON.parse(dbAch.ExtraJSON)
+			ej.progressCurrent = result.recordset[0].Amount
+			var uquery = "update AccountAchievements"
+			uquery += " set ExtraJSON = @ExtraJSON"
+			uquery += (ej.progressCurrent >= max ? ", AwardedDate = getutcdate()" : "")
+			uquery += " from AccountAchievements"
+			uquery += " where AccAchieveId = @AccAchieveId"
+
+			ej = JSON.stringify(ej)
+
+			pool.request()
+				.input("AccAchieveId", sql.Int, dbAch.AccAchieveId)
+				.input("ExtraJSON", sql.VarChar, ej)
+				.query(uquery, (err, result) => {
+					callback(err, result, achid)
+				})
+		}
+	},
 	//2032	consumer - 3
+	2032: (input, callback) => {
+		var achid = 2032
+		var max = 250
+
+		var rn = (new Date).toISOString()
+		var dbAch = null
+
+		// Get the achievement if they have one in progress
+		var query = "select AccAchieveId, ExtraJSON "
+		query += "from AccountAchievements "
+		query += "where AchievementId = @AchievementId and AwardedDate is null and "
+		pool.request()
+			.input("AchievementId", sql.Int, achid)
+			.input("AccountPermaId", sql.Int, input.permaid)
+			.query(query + "AccountPermaId = @AccountPermaId", (err, result) => {
+				if (err) {
+					callback(err, null, achid)
+				} else {
+					considerCreating(result)
+				}
+			})
+
+		// If one is not in progress, create it
+		function considerCreating(result) {
+			if (result.recordset.length === 0) {
+				var ej = {
+					progressCurrent: 0,
+					progressMax: max,
+					reactionsFrom: (new Date()).toISOString()
+				}
+				ej = JSON.stringify(ej)
+				var cquery = "declare @Inserted table (AccAchieveId int, ExtraJSON nvarchar(max));"
+				cquery += " insert into AccountAchievements (AccountPermaId, AchievementId, ExtraJSON)"
+				cquery += " output Inserted.AccAchieveId, Inserted.ExtraJSON into @Inserted"
+				cquery += " values (@AccountPermaId, @AchievementId, @ExtraJSON);"
+				cquery += " select AccAchieveId, ExtraJSON from @Inserted"
+				pool.request()
+					.input("AccountPermaId", sql.Int, input.permaid)
+					.input("AchievementId", sql.Int, achid)
+					.input("ExtraJSON", sql.VarChar, ej)
+					.query(cquery, (err, result2) => {
+						if (err) {
+							callback(err, null, achid)
+							return
+						}
+						if (result2.recordset.length === 0) {
+							callback("Achievement not found but could not insert", result2, achid)
+						} else {
+							dbAch = result2.recordset[0]
+							getNewCount()
+						}
+					})
+			} else {
+				dbAch = result.recordset[0]
+				getNewCount()
+			}
+		}
+
+		// Get the new count to assign to the progress of the achievement
+		function getNewCount() {
+			var ej = JSON.parse(dbAch.ExtraJSON)
+			var from = new Date(ej.reactionsFrom)
+			var ncquery = "select count(distinct datediff(minute, 0, r.ReactionDate) / 10) as Amount from ChatReactions r"
+			ncquery += " inner join ChatMessages m"
+			ncquery += " on r.MessageId = m.MessageId"
+			ncquery += " where r.AccountPermaId = @AccountPermaId"
+			ncquery += " and m.SenderAccountId != @AccountPermaId"
+			ncquery += " and r.UnreactionDate is null"
+			ncquery += " and r.ReactionDate >= @FromDate"
+			pool.request()
+				.input("AccountPermaId", sql.Int, input.permaid)
+				.input("FromDate", sql.DateTime, from)
+				.query(ncquery, (err, result) => {
+					if (err) {
+						callback(err, null, achid)
+					} else {
+						updateAchievement(result)
+					}
+				})
+		}
+
+		// Update the achievement, awarding it if necessary
+		function updateAchievement(result) {
+			var ej = JSON.parse(dbAch.ExtraJSON)
+			ej.progressCurrent = result.recordset[0].Amount
+			var uquery = "update AccountAchievements"
+			uquery += " set ExtraJSON = @ExtraJSON"
+			uquery += (ej.progressCurrent >= max ? ", AwardedDate = getutcdate()" : "")
+			uquery += " from AccountAchievements"
+			uquery += " where AccAchieveId = @AccAchieveId"
+
+			ej = JSON.stringify(ej)
+
+			pool.request()
+				.input("AccAchieveId", sql.Int, dbAch.AccAchieveId)
+				.input("ExtraJSON", sql.VarChar, ej)
+				.query(uquery, (err, result) => {
+					callback(err, result, achid)
+				})
+		}
+	},
 	//2040	populist - 1
 	//2041	populist - 2
 	//2050	emancipated - 1
@@ -885,6 +1592,88 @@ var acheck = {
 	//2061	inspirer - 2
 	//2062	inspirer - 3
 	//2070	all - day - all - night
+	2070: (input, callback) => {
+		var achid = 2070
+		var res
+
+		var querymsgs = "select dateadd(hour, (datediff(hour, 0, m.SentDate) / 6) * 6, 0) as BlockStart, count(1) as [Messages]"
+		querymsgs += " from ChatMessages m"
+		querymsgs += " where m.SenderAccountId = @AccountPermaId"
+		querymsgs += "     and datediff(hour, 0, m.SentDate) / 6 > datediff(hour, 0, getutcdate()) / 6 - 4"
+		querymsgs += " group by dateadd(hour, (datediff(hour, 0, m.SentDate) / 6) * 6, 0)"
+		pool.request()
+			.input("AccountPermaId", sql.Int, input.permaid)
+			.query(querymsgs, (err, result) => {
+				if (err) {
+					callback(err, result, achid)
+				} else {
+					res = result.recordset
+					considerEligibility()
+				}
+			})
+
+		function considerEligibility() {
+			var msgs = 0
+			var blocks = 0
+			for (i in res) {
+				msgs += res[i].Messages
+				blocks++
+			}
+			if (msgs >= 20 && blocks === 4) {
+				checkAlreadyGranted()
+			} else {
+				callback(null, null, achid)
+			}
+		}
+
+		function checkAlreadyGranted() {
+			// here we will check whether they were already granted
+			// the award in the relevant 6 - hour blocks
+			var querycheck = "select top (1) datediff(hour, 0, AwardedDate) / 6 as LastAwardedBlock, datediff(hour, 0, getutcdate()) / 6 as CurrentBlock"
+			querycheck += " from AccountAchievements"
+			querycheck += " where AchievementId = @AchievementId and AccountPermaId = @AccountPermaId"
+			querycheck += " and AwardedDate is not null"
+			querycheck += " order by AwardedDate desc"
+			pool.request()
+				.input("AchievementId", sql.Int, achid)
+				.input("AccountPermaId", sql.Int, input.permaid)
+				.query(querycheck, (err, result) => {
+					if (err) {
+						callback(null, null, achid)
+						return
+					}
+					if (result.recordset.length === 0) {
+						grant()
+					} else if (result.recordset[0].LastAwardedBlock !== result.recordset[0].CurrentBlock) {
+						grant()
+					} else {
+						callback(null, null, achid)
+					}
+				})
+		}
+
+		function grant() {
+			var bsdate = new Date(res[0].BlockStart)
+			var bs = new Date(bsdate)
+			var be = new Date(Math.abs(bsdate) + 864e5)
+
+			var ej = {
+				blockStart: bs.toISOString(),
+				blockEnd: be.toISOString()
+			}
+			ej = JSON.stringify(ej)
+
+			var querygr = "insert into AccountAchievements (AccountPermaId, AchievementId, AwardedDate, ExtraJSON)"
+			querygr += " values (@AccountPermaId, @AchievementId, getutcdate(), @ExtraJSON)"
+			pool.request()
+				.input("AccountPermaId", sql.Int, input.permaid)
+				.input("AchievementId", sql.Int, achid)
+				.input("ExtraJSON", sql.VarChar, ej)
+				.query(querygr, (err, result) => {
+						callback(err, result, achid)
+				})
+		}
+	},
 	//2080	chevblocked
 	//2090	janitor - 1
 	//2091	janitor - 2
@@ -893,12 +1682,292 @@ var acheck = {
 	//2102	overtalker - 3
 	//2110	vandalist
 	//2120	naughty - 1
+	2120: (input, callback) => {
+		var achid = 2120
+		var max = 2
+
+		var messageId = input.params.messageId
+		var targetPermaId = null
+
+		// Load sender of message and count reactions to message
+		var qsr = "select m.SenderAccountId, r.Amount"
+		qsr += " from ChatMessages m"
+		qsr += "	cross join ("
+		qsr += "		select count(1) as Amount"
+		qsr += "		from ChatReactions ri"
+		qsr += " 			inner join ChatMessages mi on mi.MessageId = @MessageId"
+		qsr += "		where ri.MessageId = @MessageId and Reaction = 'negative'"
+		qsr += "			and UnreactionDate is null and ri.AccountPermaId != mi.SenderAccountId"
+		qsr += "	) r"
+		qsr += " where m.MessageId = @MessageId"
+		pool.request()
+			.input("MessageId", sql.Int, messageId)
+			.query(qsr, (err, result) => {
+				if (err) {
+					callback(err, result, achid)
+					return
+				}
+				processResult(result)
+			})
+
+		// Set target ID and check whether the message has received sufficient negative reaction
+		function processResult(result) {
+			targetPermaId = result.recordset[0].SenderAccountId
+			if (result.recordset[0].Amount >= max) {
+				loadAll()
+			} else {
+				callback(null, null, achid)
+			}
+		}
+
+		// Load all achievements to see if the message already has an achievement
+		function loadAll() {
+			var qlaa = "select ExtraJSON from AccountAchievements"
+			qlaa += " where AccountPermaId = @AccountPermaId"
+			qlaa += " and AchievementId = @AchievementId and AwardedDate is not null"
+			pool.request()
+				.input("AccountPermaId", sql.Int, targetPermaId)
+				.input("AchievementId", sql.Int, achid)
+				.query(qlaa, (err, result) => {
+					if (err) {
+						callback(err, result, achid)
+						return
+					}
+					checkAll(result)
+				})
+		}
+
+		// Actually search through to see if the message already has an ach
+		function checkAll(result) {
+			var found = false
+			for (i in result.recordset) {
+				var ej = result.recordset[i].ExtraJSON
+				ej = JSON.parse(ej)
+				found = (ej.messageId === messageId ? true : found)
+			}
+			if (!found) {
+				createAchievement()
+			} else {
+				callback(null, null, achid)
+			}
+		}
+
+		function createAchievement() {
+			var ej = { messageId: messageId }
+			ej = JSON.stringify(ej)
+			var qca = "insert into AccountAchievements (AccountPermaId, AchievementId, AwardedDate, ExtraJSON)"
+			qca += " values (@AccountPermaId, @AchievementId, getutcdate(), @ExtraJSON)"
+			pool.request()
+				.input("AccountPermaId", sql.Int, targetPermaId)
+				.input("AchievementId", sql.Int, achid)
+				.input("ExtraJSON", sql.VarChar, ej)
+				.query(qca, (err, result) => {
+					var meme = "hello"
+					callback(err, result, achid)
+				})
+		}
+	},
 	//2121	naughty - 2
+	2121: (input, callback) => {
+		var achid = 2121
+		var max = 4
+
+		var messageId = input.params.messageId
+		var targetPermaId = null
+
+		// Load sender of message and count reactions to message
+		var qsr = "select m.SenderAccountId, r.Amount"
+		qsr += " from ChatMessages m"
+		qsr += "	cross join ("
+		qsr += "		select count(1) as Amount"
+		qsr += "		from ChatReactions ri"
+		qsr += " 			inner join ChatMessages mi on mi.MessageId = @MessageId"
+		qsr += "		where ri.MessageId = @MessageId and Reaction = 'negative'"
+		qsr += "			and UnreactionDate is null and ri.AccountPermaId != mi.SenderAccountId"
+		qsr += "	) r"
+		qsr += " where m.MessageId = @MessageId"
+		pool.request()
+			.input("MessageId", sql.Int, messageId)
+			.query(qsr, (err, result) => {
+				if (err) {
+					callback(err, result, achid)
+					return
+				}
+				processResult(result)
+			})
+
+		// Set target ID and check whether the message has received sufficient negative reaction
+		function processResult(result) {
+			targetPermaId = result.recordset[0].SenderAccountId
+			if (result.recordset[0].Amount >= max) {
+				loadAll()
+			} else {
+				callback(null, null, achid)
+			}
+		}
+
+		// Load all achievements to see if the message already has an achievement
+		function loadAll() {
+			var qlaa = "select ExtraJSON from AccountAchievements"
+			qlaa += " where AccountPermaId = @AccountPermaId"
+			qlaa += " and AchievementId = @AchievementId and AwardedDate is not null"
+			pool.request()
+				.input("AccountPermaId", sql.Int, targetPermaId)
+				.input("AchievementId", sql.Int, achid)
+				.query(qlaa, (err, result) => {
+					if (err) {
+						callback(err, result, achid)
+						return
+					}
+					checkAll(result)
+				})
+		}
+
+		// Actually search through to see if the message already has an ach
+		function checkAll(result) {
+			var found = false
+			for (i in result.recordset) {
+				var ej = result.recordset[i].ExtraJSON
+				ej = JSON.parse(ej)
+				found = (ej.messageId === messageId ? true : found)
+			}
+			if (!found) {
+				createAchievement()
+			} else {
+				callback(null, null, achid)
+			}
+		}
+
+		function createAchievement() {
+			var ej = { messageId: messageId }
+			ej = JSON.stringify(ej)
+			var qca = "insert into AccountAchievements (AccountPermaId, AchievementId, AwardedDate, ExtraJSON)"
+			qca += " values (@AccountPermaId, @AchievementId, getutcdate(), @ExtraJSON)"
+			pool.request()
+				.input("AccountPermaId", sql.Int, targetPermaId)
+				.input("AchievementId", sql.Int, achid)
+				.input("ExtraJSON", sql.VarChar, ej)
+				.query(qca, (err, result) => {
+					var meme = "hello"
+					callback(err, result, achid)
+				})
+		}
+	},
 	//2122	naughty - 3
+	2122: (input, callback) => {
+		var achid = 2122
+		var max = 6
+
+		var messageId = input.params.messageId
+		var targetPermaId = null
+
+		// Load sender of message and count reactions to message
+		var qsr = "select m.SenderAccountId, r.Amount"
+		qsr += " from ChatMessages m"
+		qsr += "	cross join ("
+		qsr += "		select count(1) as Amount"
+		qsr += "		from ChatReactions ri"
+		qsr += " 			inner join ChatMessages mi on mi.MessageId = @MessageId"
+		qsr += "		where ri.MessageId = @MessageId and Reaction = 'negative'"
+		qsr += "			and UnreactionDate is null and ri.AccountPermaId != mi.SenderAccountId"
+		qsr += "	) r"
+		qsr += " where m.MessageId = @MessageId"
+		pool.request()
+			.input("MessageId", sql.Int, messageId)
+			.query(qsr, (err, result) => {
+				if (err) {
+					callback(err, result, achid)
+					return
+				}
+				processResult(result)
+			})
+
+		// Set target ID and check whether the message has received sufficient negative reaction
+		function processResult(result) {
+			targetPermaId = result.recordset[0].SenderAccountId
+			if (result.recordset[0].Amount >= max) {
+				loadAll()
+			} else {
+				callback(null, null, achid)
+			}
+		}
+
+		// Load all achievements to see if the message already has an achievement
+		function loadAll() {
+			var qlaa = "select ExtraJSON from AccountAchievements"
+			qlaa += " where AccountPermaId = @AccountPermaId"
+			qlaa += " and AchievementId = @AchievementId and AwardedDate is not null"
+			pool.request()
+				.input("AccountPermaId", sql.Int, targetPermaId)
+				.input("AchievementId", sql.Int, achid)
+				.query(qlaa, (err, result) => {
+					if (err) {
+						callback(err, result, achid)
+						return
+					}
+					checkAll(result)
+				})
+		}
+
+		// Actually search through to see if the message already has an ach
+		function checkAll(result) {
+			var found = false
+			for (i in result.recordset) {
+				var ej = result.recordset[i].ExtraJSON
+				ej = JSON.parse(ej)
+				found = (ej.messageId === messageId ? true : found)
+			}
+			if (!found) {
+				createAchievement()
+			} else {
+				callback(null, null, achid)
+			}
+		}
+
+		function createAchievement() {
+			var ej = { messageId: messageId }
+			ej = JSON.stringify(ej)
+			var qca = "insert into AccountAchievements (AccountPermaId, AchievementId, AwardedDate, ExtraJSON)"
+			qca += " values (@AccountPermaId, @AchievementId, getutcdate(), @ExtraJSON)"
+			pool.request()
+				.input("AccountPermaId", sql.Int, targetPermaId)
+				.input("AchievementId", sql.Int, achid)
+				.input("ExtraJSON", sql.VarChar, ej)
+				.query(qca, (err, result) => {
+					var meme = "hello"
+					callback(err, result, achid)
+				})
+		}
+	},
 	//2130	cheer
 	//2140	old - cheer - 1
 	//2141	old - cheer - 2
 	//2150	vox - populi
+	2150: (input, callback) => {
+		var achid = 2150
+		var max = 40
+
+		var tquery = "insert into AccountAchievements (AccountPermaId, AchievementId, AwardedDate)"
+		tquery += " select @AccountPermaId, @AchievementId, getutcdate()"
+		tquery += " from ("
+		tquery += "		select count(1) as Amount from ChatReactions"
+		tquery += "		where AccountPermaId = @AccountPermaId and UnreactionDate is null"
+		tquery += "			and datediff(day, 0, ReactionDate) = datediff(day, 0, getutcdate())"
+		tquery += " ) r "
+		tquery += "		left join AccountAchievements a"
+		tquery += "		on a.AccountPermaId = @AccountPermaId and a.AchievementId = @AchievementId"
+		tquery += "			and a.AwardedDate is not null"
+		tquery += "			and datediff(day, 0, getutcdate()) = datediff(day, 0, a.AwardedDate)"
+		tquery += " where r.Amount >= @Max and a.AccAchieveId is null"
+		pool.request()
+			.input("AccountPermaId", sql.Int, input.permaid)
+			.input("AchievementId", sql.Int, achid)
+			.input("Max", sql.Int, max)
+			.query(tquery, (err, result) => {
+				callback(err, result, achid)
+			})
+
+	},
 	//2160	curator - 1
 	//2161	curator - 2
 	//2162	curator - 3
@@ -924,7 +1993,7 @@ var acheck = {
 			var ej = { messageId: messageId }
 			ej = JSON.stringify(ej)
 			var queryins = "insert into AccountAchievements (AccountPermaId, AchievementId, AwardedDate, ExtraJSON) "
-			queryins += "select @AccountPermaId, @AchievementId, getdate(), @ExtraJSON "
+			queryins += "select @AccountPermaId, @AchievementId, getutcdate(), @ExtraJSON "
 			queryins += "from Achievements "
 			queryins += "where AchievementId = @AchievementId and "
 			queryins += "(select count(1) from AccountAchievements where AccountPermaId = @AccountPermaId and AwardedDate is not null and AchievementId = @AchievementId) = 0"
@@ -1003,10 +2072,14 @@ var acheck = {
 			})
 
 		function processSelect(result) {
-			targetPermaId = result.SenderAccountId
-			amountStarred = result.Amount
-			if (amountStarred  >= max) {
-				getAchsCount()
+			if (typeof result !== "undefined") {
+				targetPermaId = result.SenderAccountId
+				amountStarred = result.Amount
+				if (amountStarred >= max) {
+					getAchsCount()
+				} else {
+					callback(null, null, achid)
+				}
 			} else {
 				callback(null, null, achid)
 			}
@@ -1032,7 +2105,7 @@ var acheck = {
 		function considerInsert(awardedAlready) {
 			if (Math.floor(amountStarred / max) > awardedAlready) {
 				var queryins = "insert into AccountAchievements (AccountPermaId, AchievementId, AwardedDate)"
-				queryins += "select @AccountPermaId, @AchievementId, getdate()"
+				queryins += "select @AccountPermaId, @AchievementId, getutcdate()"
 				pool.request()
 					.input("AccountPermaId", sql.Int, targetPermaId)
 					.input("AchievementId", sql.Int, achid)
@@ -1047,7 +2120,113 @@ var acheck = {
 	},
 	//2180	early - squad
 	//2190	welcome - back
+	2190: (input, callback) => {
+		var achid = 2190
+
+		var querylm = "select MessageId as messageid, SentDate as lm from"
+		querylm += " (select MessageId, SentDate, row_number() over(order by SentDate desc) as rn from ChatMessages where SenderAccountId = @AccountPermaId) a"
+		querylm += " where a.rn = 2"
+		pool.request()
+			.input("AccountPermaId", sql.Int, input.permaid)
+			.query(querylm, (err, result) => {
+				if (err || result.recordset.length === 0) {
+					callback(err, result, achid)
+				} else {
+					processLastMessage(result.recordset[0])
+				}
+			})
+
+		function processLastMessage(r) {
+			if (typeof r === "undefined") {
+				callback(null, null, achid)
+				return
+			}
+			if (r.lm === null) {
+				callback(null, null, achid)
+				return
+			}
+			var lmDate = new Date(r.lm)
+			var currentDate = new Date()
+			var diffDays = Math.abs(currentDate - lmDate) / 864e5
+
+			if (diffDays >= 5 && diffDays < 30) {
+				awardAchievement(r, diffDays)
+			} else {
+				callback(null, null, achid)
+			}
+		}
+
+		function awardAchievement(r, diffDays) {
+			var ej = {
+				messageId: r.messageid,
+				diffDays: diffDays
+			}
+			ej = JSON.stringify(ej)
+			var queryins = "insert into AccountAchievements (AccountPermaId, AchievementId, AwardedDate, ExtraJSON)"
+			queryins += " values (@AccountPermaId, @AchievementId, getutcdate(), @ExtraJSON)"
+			pool.request()
+				.input("AccountPermaId", sql.Int, input.permaid)
+				.input("AchievementId", sql.Int, achid)
+				.input("ExtraJSON", sql.VarChar, ej)
+				.query(queryins, (err, result) => {
+					callback(err, result, achid)
+				})
+		}
+	},
 	//2191	from - the - dead
+	2191: (input, callback) => {
+		var achid = 2191
+
+		var querylm = "select MessageId as messageid, SentDate as lm from"
+		querylm += " (select MessageId, SentDate, row_number() over(order by SentDate desc) as rn from ChatMessages where SenderAccountId = @AccountPermaId) a"
+		querylm += " where a.rn = 2"
+		pool.request()
+			.input("AccountPermaId", sql.Int, input.permaid)
+			.query(querylm, (err, result) => {
+				if (err || result.recordset.length === 0) {
+					callback(err, result, achid)
+				} else {
+					processLastMessage(result.recordset[0])
+				}
+			})
+
+		function processLastMessage(r) {
+			if (typeof r === "undefined") {
+				callback(null, null, achid)
+				return
+			}
+			if (r.lm === null) {
+				callback(null, null, achid)
+				return
+			}
+			var lmDate = new Date(r.lm)
+			var currentDate = new Date()
+			var diffDays = Math.abs(currentDate - lmDate) / 864e5
+
+			if (diffDays >= 30) {
+				awardAchievement(r, diffDays)
+			} else {
+				callback(null, null, achid)
+			}
+		}
+
+		function awardAchievement(r, diffDays) {
+			var ej = {
+				messageId: r.messageid,
+				diffDays: diffDays
+			}
+			ej = JSON.stringify(ej)
+			var queryins = "insert into AccountAchievements (AccountPermaId, AchievementId, AwardedDate, ExtraJSON)"
+			queryins += " values (@AccountPermaId, @AchievementId, getutcdate(), @ExtraJSON)"
+			pool.request()
+				.input("AccountPermaId", sql.Int, input.permaid)
+				.input("AchievementId", sql.Int, achid)
+				.input("ExtraJSON", sql.VarChar, ej)
+				.query(queryins, (err, result) => {
+					callback(err, result, achid)
+				})
+		}
+	},
 	//2200	desecrator
 	//3000	mvp - weekly
 	//3001	mvp - monthly
@@ -1079,7 +2258,7 @@ module.exports = {
 			//console.log(todo)
 			for (ti in todo) {
 				var achid = todo[ti]
-				console.log("doing " + achid)
+				//console.log("doing " + achid)
 				acheck[achid](forcheck, (err, result, doneAchievementId) => {
 					if (err) {
 						console.log(err)

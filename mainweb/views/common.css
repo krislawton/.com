@@ -1,6 +1,10 @@
 ﻿* {
 	box-sizing: border-box;
 }
+@font-face {
+	font-family: "Fira Sans";
+	src: url(/c/FiraSans-Regular.ttf);
+}
 body {
 	margin: 0;
 	font-family: "Fira Sans", "Arial", sans;

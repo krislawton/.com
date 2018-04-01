@@ -41,6 +41,9 @@
     <Compile Include="datastore.js">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="devorlive.js">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="model.js">
       <SubType>Code</SubType>
     </Compile>

@@ -66,18 +66,23 @@
 	background: white;
 }
 .ach-info {
-	width: calc(100% - 350px);
+	width: calc(100% - 370px);
 	word-wrap: break-word;
 	vertical-align: middle;
 }
 .ach-counts {
-	width: 100px;
+	width: 120px;
 	text-align: right;
 	opacity: 0.4;
 }
 .ach-countnumber {
 	font-size: 85%;
 	font-weight: bold;
+}
+.ach-counts.ni {
+	color: hsl(0, 100%, 25%);
+	font-weight: bold;
+	font-size: 90%;
 }
 .ach-extrainfo {
 	margin: 15px 20px;

@@ -1,9 +1,10 @@
 /* ===================================== */
 /* LOADING MODULES AND SETTING UP SERVER */
 /* ===================================== */
+const devOrLive = require("./devorlive.js")
 const express = require("express")
 const app = express()
-const port = 1338
+const port = devOrLive.usePort
 const server = app.listen(port, (err) => {
 	if (err) {
 		return console.log("Sum ting wong", err)
@@ -99,14 +100,20 @@ var storeconfig = {
 }
 var storeoptions = {
 	table: "NodeSessions",
-	ttl: 69 * 864e5, // 864e5
+	ttl: 666 * 864e5, // 864e5
 }
 
 // Set up sessions
-var defaultSession = { userData: { loggedIn: false, sites: [0], usmev: resmgr.usmev } }
+var defaultSession = {
+	maxAge: storeoptions.ttl,
+	userData: {
+		loggedIn: false,
+		sites: [0],
+		usmev: resmgr.usmev,
+	}
+}
 var sessionMiddleware = session({
 	store: new storesessions(storeconfig, storeoptions),
-	maxAge: storeoptions.ttl,
 	genid: (req) => { return generateSessionId() },
 	name: "kiwi",
 	secret: seecret.sessionSecret,
@@ -478,7 +485,10 @@ io.on('connection', function (socket) {
 
 // Chat
 var ioChat = io.of('/chat')
+var accountsInChat = []
 ioChat.on('connection', (socket) => {
+	accountsInChat.push(socket.handshake.session.userData.permaid)
+
 	socket.on('chat send', (input) => {
 		try {
 			var input = (typeof input === "object" ? input : null)
@@ -553,6 +563,40 @@ ioChat.on('connection', (socket) => {
 			var ret = { success: false, err: e }
 			ioChat.emit('chat sent', ret)
 		}
+	})
+	socket.on('react send', (input) => {
+		try {
+			var ret = { success: false, result: null, err: null, input: input }
+			
+			if (typeof (input.messageId * 1) !== "number" || typeof input.reaction !== "string") {
+				ret.err = "Invalid parameters"
+				socket.emit('react sent', ret)
+			} else {
+				pool.request()
+					.input("AccountPermaId", sql.Int, socket.handshake.session.userData.permaid)
+					.input("MessageId", sql.Int, input.messageId)
+					.input("Reaction", sql.VarChar, input.reaction)
+					.execute("spChatReact", (err, result) => {
+						ret.success = true
+						ret.err = err
+						ret.result = result
+						if (err) {
+							socket.emit('react sent', ret)
+						} else {
+							ioChat.emit('react sent', ret)
+							achiev.updateAchievements({ justdone: "reactSend", userData: socket.handshake.session.userData, params: { messageId: input.messageId } })
+						}
+					})
+			}
+		}
+		catch (e) {
+			var ret = { success: false, err: e }
+			socket.emit('react sent', ret)
+		}
+	})
+	socket.on('disconnect', () => {
+		var i = accountsInChat.indexOf(socket.handshake.session.userData.permaid)
+		accountsInChat.splice(i, 1)
 	})
 })
 // Chat helper for adding system messages

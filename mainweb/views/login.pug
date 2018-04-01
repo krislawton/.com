@@ -15,6 +15,9 @@ html
         input(type="text",placeholder="Token",style="display: none")#token
         input(type="text",placeholder="User name")#username
         input(type="text",placeholder="Password")#password
+        p.only-signup(style="display: none") Warning: Your password is stored as plaintext in the database for now, 
+          | and your connection to this site is not secure. 
+          | DO NOT use a sensitive password.
         button.button.raised.colored.login Log in
         div.error(style="display: none")
         p.aint Bitch I ain't got an account, #[span.signmeup sign me up].

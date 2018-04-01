@@ -36,7 +36,11 @@
 				html += '<div class="ach-inner">' + r.AchievementName + ': ' + r.ExtraJSON.progressCurrent + '/' + r.ExtraJSON.progressMax + '</div>'
 				html += '<div class="ach-progress" style="width: ' + percent + '%"></div>'
 				html += '</div>'
-				$('#ach-working').append(html)
+
+				console.log(r.MinimumPercentage)
+				if (r.MinimumPercentage === null || r.ExtraJSON.progressCurrent / r.ExtraJSON.progressMax > r.MinimumPercentage) {
+					$('#ach-working').append(html)
+				}
 			}
 		}
 	})

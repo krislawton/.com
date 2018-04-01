@@ -23,13 +23,20 @@
 		chatInitialized = false,
 		initialSocketsWIP = 2,
 		users = {},
-		stars = {}
+		stars = {},
+		reactions = {}
 
 	// Socket responses
 	socket.on('data response', (response) => {
 		console.log(response)
 		// On receive initial chat
 		if (response.input.request === "chatMessagesLoad") {
+			// Reactions
+			var dbReactions = response.recordset.recordsets[1]
+			for (var i in dbReactions) {
+				addReactionToMemory(dbReactions[i])
+			}
+			// Messages
 			var msgs = response.recordset.recordset
 			for (var i in msgs) {
 				//addMessage(msgs[i], true)
@@ -132,7 +139,9 @@
 				var element = document.createElement("div")
 				element.className = "star-snippet"
 
-				element.appendChild(nameTag(stars[i].permaid))
+				if (stars[i].permaid !== null) {
+					element.appendChild(nameTag(stars[i].permaid))
+				}
 
 				var content = document.createElement("div")
 				content.className = "content"
@@ -141,12 +150,13 @@
 
 				var posted = document.createElement("div")
 				posted.className = "posted"
-				posted.innerHTML = "Posted in #" + stars[i].room + " x ago"
+				posted.innerHTML = "Posted in #" + stars[i].room
 				element.appendChild(posted)
 
 				var whenstar = document.createElement("div")
 				whenstar.className = "date-starred"
-				whenstar.innerHTML = "Starred x ago"
+				var whenstardate = dataTransformer("datetime short", stars[i].dateStarred)
+				whenstar.innerHTML = "Starred on " + whenstardate
 				element.appendChild(whenstar)
 
 				$('#starred').append(element)
@@ -160,6 +170,9 @@
 	function addChatToMemory(dbRecord, bottomOrTop) {
 		var room = dbRecord.Room,
 			justAdded = null
+
+		// Add reactions array to message
+		dbRecord.reactions = []
 
 		if (typeof log[room] === "undefined") {
 			console.error('Attempted to add chat to memory but log object did not have that room')
@@ -190,7 +203,12 @@
 
 		var starred = (typeof stars[dbRecord.MessageId] === "object" ? " starred" : "")
 
-		var toAdd = '<tr class="achat ' + classType + starred + '" data-messageid="' + dbRecord.MessageId + '" data-timestamp="' + dbRecord.SentDate + '">'
+		// Begin element
+		var toAdd = '<tr '
+		toAdd += 'class="achat ' + classType + starred + '" '
+		toAdd += 'data-messageid="' + dbRecord.MessageId + '" '
+		toAdd += 'data-timestamp="' + dbRecord.SentDate + '" '
+		toAdd += 'data-room="' + dbRecord.Room + '"> '
 		toAdd += '<td class="timestamp" title="' + dateTitle + '">' + dateString + '</div>'
 		toAdd += '<td class="else">'
 		if (dbRecord.SenderAccountId !== null) {
@@ -205,6 +223,11 @@
 		toAdd += contents
 		toAdd += '</div>'
 		toAdd += '<button class="options">o</button>'
+		// Reactions
+		var messageId = dbRecord.MessageId
+		var reactionHtml = messageReactionHtml(messageId)
+		toAdd += reactionHtml
+		// End element
 		toAdd += '</td></tr>'
 
 		if (bottomOrTop === "top") {
@@ -233,7 +256,7 @@
 			cLT = new Date(cLater)
 		if (typeof cLater !== "undefined") {
 			var hourDiff = Math.abs(cLT - cET) / 36e5
-			if (hourDiff >= 0.25) {
+			if (hourDiff >= 4.5 / 60) {
 				var ts = diffSeparator(hourDiff)
 				$('#chatContainer .achat').eq(0).after(ts)
 			}
@@ -256,7 +279,7 @@
 		var cET = new Date(cEarlier),
 			cLT = new Date(cLater)
 		var hourDiff = Math.abs(cLT - cET) / 36e5
-		if (hourDiff >= 0.25) {
+		if (hourDiff >= 4.5 / 60) {
 			var ts = diffSeparator(hourDiff)
 			if (hasDateHeader) {
 				$('#chatContainer .dateHeader').eq(-1).before(ts)
@@ -277,16 +300,26 @@
 		var days = Math.floor(diffIn / 24)
 		var hours = Math.floor(diffIn % 24)
 		var quarterHorus = Math.round(diffIn * 4) % 4 * 15
+		var minutes = Math.round(diffIn * 60)
 
-		var padding = 10 + Math.pow(days * 24 * 4 + hours * 4 + quarterHorus / 15 - 1, 0.4) * 10
+		var padding = 10 + Math.pow(diffIn * 3.5 - 1, 0.45) * 10
 		padding = 'style="padding-top: ' + padding + 'px; padding-bottom: ' + padding + 'px"'
 
+		// Minutes: From 5 min to 60 min
+		// Quarter-hours: From 1 hr to 8 hrs
+		// Hours: 8 hours and up
 		var diffString = ""
-		diffString += days + " day" + (days === 1 ? "" : "s") + " "
-		diffString += hours + " hour" + (hours === 1 ? "" : "s") + " "
-		diffString += quarterHorus + " minutes later..."
-		diffString = diffString.replace(/ 0 (hours|minutes)/m, "")
-		diffString = diffString.replace(/^0 days /m, "")
+		if (diffIn < 1 - (1 / 120)) {
+			diffString += minutes + " minutes"
+		} else if (diffIn < 8) {
+			diffString += hours + " hours"
+			diffString += (quarterHorus !== 0 ? " " + quarterHorus + " minutes" : "")
+		} else {
+			diffString += (days > 0 ? days + " days" : "")
+			diffString += (days > 0 && hours > 0 ? " " : "")
+			diffString += (hours > 0 ? hours + " hours" : "")
+		}
+		diffString += " later..."
 
 		var ret = '<tr class="diffSeparator"><td colspan="2"><div ' + padding + '>' + diffString + '</div></td></tr>'
 		return ret
@@ -360,8 +393,9 @@
 		var unicodeCombined = 0
 		for (var i in characters) {
 			var char = characters[i]
-			unicodeCombined += char.charCodeAt(0)
+			unicodeCombined += Math.pow(char.charCodeAt(0), 1.3 - (i * 0.01))
 		}
+		unicodeCombined += Math.pow(characters.length, 1.2)
 
 		var randHue = Math.pow(unicodeCombined, 0.755) // default 0.755
 		randHue = Math.round((randHue % 1) * 10000) % 360
@@ -371,9 +405,16 @@
 		randSat = Math.round((randSat % 0.1) * 10 * 60)
 		randSat += 40
 
+		// Compress to result in less greens to get more reds-yellows
+		//if (randHue <= 140) {
+		//	randHue = randHue * (100 / 140)
+		//} else if (randHue > 140 && randHue <= 180) {
+		//	randHue = 180 - (180 - randHue) * 2
+		//}
+
 		if (randHue >= 40 && randHue <= 200) {
-			// Between yellow and sky blue, lightness is 35-65
-			randLig = 35 + (randLig % 30)
+			// Between yellow and sky blue, lightness is 35-60
+			randLig = 35 + (randLig % 25)
 		} else {
 			// Else, 30-80.
 			randLig = 30 + (randLig % 50)
@@ -482,6 +523,15 @@
 		// Base element
 		var optionsEl = document.createElement("div")
 		optionsEl.className = "options"
+		// Reacts
+		var reapos = document.createElement("button")
+		reapos.className = "option react positive"
+		reapos.innerHTML = "React positively"
+		optionsEl.appendChild(reapos)
+		var reaneg = document.createElement("button")
+		reaneg.className = "option react negative"
+		reaneg.innerHTML = "React negatively"
+		optionsEl.appendChild(reaneg)
 		// Star
 		var star = document.createElement("button")
 		star.className = "option star"
@@ -518,11 +568,14 @@
 			$('button.options:disabled').parent().find('div.options .close').trigger("click")
 		}
 	})
+
 	// Handle starring message
 	$(document).on("click", "button.option.star", (e) => {
 		var messageId = $(e.target).parents('.achat').attr("data-messageid")
 		socket.emit("db procedure request", { procedure: "chatStarMessage", params: { messageid: messageId } })
 		e.target.innerHTML = "Starring..."
+		// Disable other
+		$(e.target).parents('.achat').find('button.option:not(.close, .star)').remove()
 	})
 	// Handle starring message conf
 	socket.on("db procedure response", (response) => {
@@ -533,5 +586,94 @@
 			loadStars()
 		}
 	})
+
+	// Handle reacting positively
+	$(document).on("click", "button.option.react.positive", (e) => {
+		var messageId = $(e.target).parents('.achat').attr("data-messageid")
+		socketChat.emit("react send", { messageId: messageId, reaction: "positive" })
+		e.target.innerHTML = "Reacting..."
+		// Disable other
+		$(e.target).parents('.achat').find('button.option:not(.close, .react.positive)').remove()
+	})
+	// Handle reacting negatively
+	$(document).on("click", "button.option.react.negative", (e) => {
+		var messageId = $(e.target).parents('.achat').attr("data-messageid")
+		socketChat.emit("react send", { messageId: messageId, reaction: "negative" })
+		e.target.innerHTML = "Reacting..."
+		// Disable other
+		$(e.target).parents('.achat').find('button.option:not(.close, .react.negative)').remove()
+	})
+	// Handle starring message conf
+	socketChat.on("react sent", (response) => {
+		console.log(response)
+
+		// Calculate whether the user is scrolled to the bottom and store for later
+		var userScrolled = $('#tableContainer').scrollTop() + $('#tableContainer').height()
+		var userIsScrolledDown = userScrolled === $('#tableContainer')[0].scrollHeight ? true : false
+
+		var messageId = response.input.messageId
+		$('[data-messageid="' + messageId + '"] div.options .close').trigger("click")
+
+		// Flush existing reactions from message memory and refresh
+		reactions[messageId] = []
+		for (i in response.result.recordset) {
+			addReactionToMemory(response.result.recordset[i])
+		}
+
+		var newReactionHtml = messageReactionHtml(messageId)
+		$('[data-messageid="' + messageId + '"] .reactions').remove()
+		$('[data-messageid="' + messageId + '"] .else').append(newReactionHtml)
+
+		// If the user was scrolled down all the way before 
+		// the reaction HTML was inserted, rescroll to bottom
+		if (userIsScrolledDown) {
+			$('#tableContainer').scrollTop($('#tableContainer')[0].scrollHeight)
+		}
+	})
+
+	// Helper for adding reaction in to memory
+	function addReactionToMemory(dbRecord) {
+		var messageId = dbRecord.MessageId
+		// If the reactions object doens't have a member for this messageId, create one
+		if (typeof reactions[messageId] !== "object") {
+			reactions[messageId] = []
+		}
+		// Add this reaction to it
+		reactions[messageId].push(dbRecord)
+	}
+	// Helper for returning HTML of message reactions
+	function messageReactionHtml(messageId) {
+		var html = ""
+		
+		if (typeof reactions[messageId] === "object") {
+			html += '<div class="reactions">'
+			// First build an object which groups reactions so they
+			// can be processed per reaction given
+			var mr = {}
+			for (i in reactions[messageId]) {
+				var reactiontype = reactions[messageId][i].Reaction
+				var userPermaId = reactions[messageId][i].AccountPermaId
+				if (typeof mr[reactiontype] !== "object") {
+					mr[reactiontype] = { count: 0, who: "" }
+				}
+				mr[reactiontype].count++
+				mr[reactiontype].who += ", " + users[userPermaId].displayName
+			}
+			// Then process from that object
+			for (i in mr) {
+				var whoString = (mr[i].who).replace(/^, /, "")
+				var reactionString = i
+				reactionString = reactionString.replace('positive', '👍')
+				reactionString = reactionString.replace('negative', '👎')
+				html += '<button class="reaction" data-reaction="' + i + '" data-who="' + whoString + '">'
+				html += '<span class="reactionname">' + reactionString + '</span>'
+				html += '<span class="reactioncount"> ' + mr[i].count + '</span>'
+				html += '</button>'
+			}
+			html += '</div>'
+		}
+
+		return html
+	}
 
 })

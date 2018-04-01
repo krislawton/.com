@@ -191,6 +191,19 @@ div.options button.option:hover {
 div.options button.option:active {
 	background: rgba(0, 0, 0, 0.16);
 }
+.achat .else .reactions {
+	display: block;
+	margin-bottom: 4px;
+}
+.reaction {
+	display: inline-block;
+	margin: 4px 10px 0 0;
+	padding: 4px;
+	box-shadow: 0 0 2px rgba(0, 0, 0, 0.1), 1px 1px 4px rgba(0, 0, 0, 0.1);
+	background: #fbfbfb;
+	font-size: small;
+	color: rgba(0, 0, 0, 0.7);
+}
 .dateHeader td {
 	font-weight: bold;
 	text-align: center;

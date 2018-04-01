@@ -271,6 +271,21 @@ module.exports = {
 					callback(err, result)
 				})
 		},
+		chatReact: (params, callback) => {
+			permaid = typeof params.session.userData.permaid === "undefined" ? null : params.session.userData.permaid
+			if (typeof (params.messageId * 1) !== "number" || typeof params.reaction !== "string") {
+				callback("Invalid parameters", null)
+				return
+			}
+
+			pool.request()
+				.input("AccountPermaId", sql.Int, permaid)
+				.input("MessageId", sql.Int, params.messageid)
+				.input("Reaction", sql.VarChar, params.reaction)
+				.execute("spChatReact", (err, result) => {
+					callback(err, result)
+				})
+		},
 		nomicRulesAdminEdit: (params, callback) => {
 			pool.request()
 				.input("RuleId", sql.Int, params.ruleId)
