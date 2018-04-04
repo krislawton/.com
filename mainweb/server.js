@@ -2,9 +2,56 @@
 /* LOADING MODULES AND SETTING UP SERVER */
 /* ===================================== */
 const devOrLive = require("./devorlive.js")
+const http = require('http')
+const port = devOrLive.usePort
+
+// SSL / HTTPS
+//const https = require('https')
+//const httpsredir = require('redirect-https')
+//const letscert = require('le-store-certbot')
+//const lex = require('greenlock-express').create({
+//	// https://acme-v01.api.letsencrypt.org/directory or staging
+//	server: 'staging',
+//	approveDomains: approveDomains,
+//	challenges: {
+//		'http-01': require('le-challenge-fs').create({ webrootPath: '/tmp/acme-challenges' }),
+//		'tls-sni-01': require('le-challenge-sni').create({ webrootPath: '/tmp/acme-challenges' }),
+//	},
+//	store: letscert.create({
+//		webrootPath: '/tmp/acme-challenges',
+//		 configDir: '/etc/letsencrypt',
+//		privkeyPath: ':configDir/live/:hostname/privkey.pem',
+//		fullchainPath: ':configDir/live/:hostname/fullchain.pem',
+//		certPath: ':configDir/live/:hostname/cert.pem',
+//		chainPath: ':configDir/live/:hostname/chain.pem',
+//		workDir: '/var/lib/letsencrypt',
+//		logsDir: '/var/log/letsencrypt',
+//		debug: true
+//	}),
+//});
+//function approveDomains(opts, certs, callback) {
+//	if (certs) {
+//		opts.domains = ['n.krislawton.com']
+//	} else {
+//		opts.email = 'kris.lawton@gmail.com';
+//		opts.agreeTos = true;
+//	}
+//	callback(null, { options: opts, certs: certs })
+//}
+
+// HTTP requests (inc for cert)
+//http.createServer(lex.middleware(require('redirect-https')())).listen(80, function () {
+//	console.log("Listening for ACME http - 01 challenges on", this.address())
+//})
+// Enter express
 const express = require("express")
 const app = express()
-const port = devOrLive.usePort
+// HTTPS requests (all redirected)
+//const server = https.createServer(lex.httpsOptions, lex.middleware(app)).listen(443, function () {
+//	console.log("Listening for ACME tls-sni-01 challenges and serve app on", this.address())
+//})
+
+// Run server
 const server = app.listen(port, (err) => {
 	if (err) {
 		return console.log("Sum ting wong", err)
@@ -12,6 +59,7 @@ const server = app.listen(port, (err) => {
 	console.log(`Server is listening on port ${port}`)
 })
 
+// Other modules
 const path = require("path")
 
 const sql = require("mssql/msnodesqlv8")
@@ -112,8 +160,9 @@ var defaultSession = {
 		usmev: resmgr.usmev,
 	}
 }
+var store = new storesessions(storeconfig, storeoptions)
 var sessionMiddleware = session({
-	store: new storesessions(storeconfig, storeoptions),
+	store: store,
 	genid: (req) => { return generateSessionId() },
 	name: "kiwi",
 	secret: seecret.sessionSecret,
@@ -136,7 +185,7 @@ io.of('/chat').use(iosession(sessionMiddleware, {
 /* ======= */
 // Routing
 app.use((request, response, next) => {
-    next()
+	next()
 })
 // Routing error
 app.use((err, request, response, next) => {
@@ -468,9 +517,52 @@ io.on('connection', function (socket) {
 					params: params
 				}
 				socket.emit('db procedure response', ret)
+
+				// Extra
+				var extrasFor = [ 'rootUserChangeDisplayName', 'rootUserChangeUserId' ]
+				if (!err && extrasFor.includes(input.procedure)) {
+					// Change display name
+					if (input.procedure === "rootUserChangeDisplayName") {
+						var permaid = socket.handshake.session.userData.permaid
+						// Tell chat
+						var em = { permaid: permaid, changedTo: input.params.displayName }
+						ioChat.emit('display name changed', em)
+						// Update all user's sessions
+						var sq_q = "select * from NodeSessions"
+						pool.request()
+							.query(sq_q, (err2, result2) => {
+								for (i in result2.recordset) {
+									var r = result2.recordset[i]
+									var s = JSON.parse(r.session)
+									if (typeof s.userData === "object" && s.userData.permaid === permaid) {
+										s.userData.displayas = input.params.displayName
+									}
+									store.set(r.sid, s)
+								}
+							})
+					}
+					// Change user ID
+					if (input.procedure === "rootUserChangeUserId") {
+						var sq_q = "select * from NodeSessions"
+						pool.request()
+							.query(sq_q, (err, result) => {
+								for (i in result.recordset) {
+									var r = result.recordset[i]
+									var s = JSON.parse(r.session)
+									var permaid = socket.handshake.session.userData.permaid
+									if (typeof s.userData === "object" && s.userData.permaid === permaid) {
+										s.userData.username = input.params.userId
+									}
+									store.set(r.sid, s)
+								}
+							})
+					}
+				}
+				// End extra
 			})
 		}
 		catch (e) {
+			console.log(e)
 			delete params.session
 			var ret = {
 				input: input,
@@ -485,9 +577,33 @@ io.on('connection', function (socket) {
 
 // Chat
 var ioChat = io.of('/chat')
-var accountsInChat = []
+var accountsInChat = {}
 ioChat.on('connection', (socket) => {
-	accountsInChat.push(socket.handshake.session.userData.permaid)
+	var permaid = socket.handshake.session.userData.permaid
+	if (typeof accountsInChat[permaid] === "undefined") {
+		var ej = {
+			accountPermaId: permaid,
+			customId: socket.handshake.session.userData.username,
+			displayName: socket.handshake.session.userData.displayas
+		}
+		var p = { room: "tournytime", content: "{player} is now online", extra: JSON.stringify(ej) }
+		chatAddSystemMessage(p, (err, result) => {
+			if (!err) {
+				var ret = {
+					err: err,
+					fromDb: result
+				}
+				console.log(ret)
+				ioChat.emit('chat sent', ret)
+			} else {
+				console.log(err)
+			}
+		})
+	}
+	accountsInChat[permaid] = { lastEntered: new Date(), lastLeft: null }
+	console.log("--------------")
+	console.log("SOMEONE ENTERED CHAT") 
+	console.log(accountsInChat)
 
 	socket.on('chat send', (input) => {
 		try {
@@ -504,6 +620,7 @@ ioChat.on('connection', (socket) => {
 			})
 		}
 		catch (e) {
+			console.log(e)
 			var ret = {
 				input: input,
 				err: e,
@@ -595,8 +712,36 @@ ioChat.on('connection', (socket) => {
 		}
 	})
 	socket.on('disconnect', () => {
-		var i = accountsInChat.indexOf(socket.handshake.session.userData.permaid)
-		accountsInChat.splice(i, 1)
+		if (accountsInChat[permaid] !== "undefined") {
+			console.log("--------------")
+			console.log("SOMEONE LEFT CHAT") 
+			accountsInChat[permaid].lastLeft = new Date()
+			console.log(accountsInChat)
+			setTimeout(() => {
+				for (i in accountsInChat) {
+					var ll = new Date(accountsInChat[i].lastLeft + 30 * 6e4)
+					var n = new Date()
+					if (accountsInChat[i].lastLeft !== null && Math.abs(ll - n) > 0) {
+						delete accountsInChat[i]
+						var ej = {
+							accountPermaId: permaid,
+							customId: socket.handshake.session.userData.username,
+							displayName: socket.handshake.session.userData.displayas
+						}
+						var p = { room: "tournytime", content: "{player} is probably no longer looking at chat", extra: JSON.stringify(ej) }
+						chatAddSystemMessage(p, (err, result) => {
+							if (!err) {
+								var ret = {
+									err: err,
+									fromDb: result
+								}
+								ioChat.emit('chat sent', ret)
+							}
+						})
+					}
+				}
+			}, 20000)
+		}
 	})
 })
 // Chat helper for adding system messages
@@ -606,6 +751,7 @@ function chatAddSystemMessage(params, callback) {
 		.input("Room", sql.VarChar, params.room)
 		.input("Sender", sql.Int, null)
 		.input("Message", sql.VarChar, params.content)
+		.input("ContentHTML", sql.VarChar, params.content)
 		.input("MessageType", sql.VarChar, "Action")
 		.input("ExtraJSON", sql.VarChar, params.extra)
 		.execute("spChatSend", (err, result) => {

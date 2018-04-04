@@ -14,6 +14,9 @@ body {
 	position: fixed;
 	top: 40px;
 }
+#topDialogues {
+	top: 60px;
+}
 #chats {
 	width: 200px;
 	height: calc(100% - 60px);
@@ -152,6 +155,76 @@ body {
 .achat .else .content {
 	white-space: pre-wrap;
 }
+.achat .else .content .bold {
+	font-weight: bold;
+}
+.achat .else .content .italics {
+	font-style: italic;
+}
+.achat .else .content .greentext {
+	color: hsl(77, 64%, 37%);
+}
+.achat .else .content .code {
+	padding: 0 3px;
+	border-radius: 3px;
+	border: 1px solid hsl(216, 31%, 39%);
+	background: hsl(216, 31%, 95%);
+	color: hsl(216, 31%, 39%);
+	font-family: "Fira Code", monospace;
+	font-size: 87%;
+}
+@keyframes triggered {
+	0% { top: 0px; left: 0px; }
+	5% { top: 3px; left: -2px; }
+	10% { top: -1px; left: -1px; }
+	15% { top: 0px; left: 3px; }
+	20% { top: 0px; left: 0px; }
+	25% { top: -1px; left: -3px; }
+	30% { top: 0px; left: 1px; }
+	35% { top: 3px; left: -2px; }
+	40% { top: 0px; left: 3px; }
+	45% { top: 0px; left: 1px; }
+	50% { top: 0px; left: 0px; }
+	55% { top: -2px; left: 3px; }
+	60% { top: -3px; left: 0px; }
+	65% { top: 2px; left: -3px; }
+	70% { top: 0px; left: 1px; }
+	75% { top: 0px; left: -2px; }
+	80% { top: 1px; left: 2px; }
+	85% { top: -3px; left: -3px; }
+	90% { top: 3px; left: 2px; }
+	95% { top: 2px; left: -2px; }
+	100% { top: 0px; left: 0px; }
+}
+@keyframes triggered2 {
+	0% { top: 0px; left: 0px; filter: blur(0.26px); color: hsl(0, 25.14%, 50%); }
+	5% { top: -2px; left: 0px; filter: blur(0.09px); color: hsl(0, 1.50%, 50%); }
+	10% { top: 0px; left: 3px; filter: blur(0.15px); color: hsl(0, 6.07%, 50%); }
+	15% { top: 2px; left: -2px; filter: blur(0.27px); color: hsl(0, 1.91%, 50%); }
+	20% { top: 3px; left: 2px; filter: blur(0.28px); color: hsl(0, 18.98%, 50%); }
+	25% { top: 1px; left: 3px; filter: blur(2.66px); color: hsl(0, 0.12%, 50%); }
+	30% { top: 2px; left: 0px; filter: blur(0.01px); color: hsl(0, 93.52%, 50%); }
+	35% { top: 0px; left: 1px; filter: blur(0.21px); color: hsl(0, 10.83%, 50%); }
+	40% { top: -1px; left: -2px; filter: blur(2.51px); color: hsl(0, 34.31%, 50%); }
+	45% { top: -1px; left: 0px; filter: blur(0.89px); color: hsl(0, 12.90%, 50%); }
+	50% { top: 3px; left: -1px; filter: blur(2.69px); color: hsl(0, 58.97%, 50%); }
+	55% { top: -2px; left: 1px; filter: blur(2.42px); color: hsl(0, 23.39%, 50%); }
+	60% { top: -3px; left: 0px; filter: blur(0.79px); color: hsl(0, 88.39%, 50%); }
+	65% { top: 1px; left: 0px; filter: blur(1.98px); color: hsl(0, 29.55%, 50%); }
+	70% { top: 3px; left: 2px; filter: blur(2.01px); color: hsl(0, 9.74%, 50%); }
+	75% { top: 2px; left: 3px; filter: blur(0.00px); color: hsl(0, 1.04%, 50%); }
+	80% { top: 3px; left: 3px; filter: blur(0.87px); color: hsl(0, 21.76%, 50%); }
+	85% { top: 2px; left: -2px; filter: blur(0.84px); color: hsl(0, 5.48%, 50%); }
+	90% { top: -2px; left: 2px; filter: blur(2.90px); color: hsl(0, 1.02%, 50%); }
+	95% { top: -2px; left: -1px; filter: blur(1.82px); color: hsl(0, 77.72%, 50%); }
+	100% { top: 0px; left: 0px; filter: blur(0.49px); color: hsl(0, 32.39%, 50%); }
+}
+.achat .else .content .triggered {
+	position: relative;
+	animation-name: triggered;
+	animation-duration: 0.5s;
+	animation-iteration-count: infinite;
+}
 .achat .from {
 	font-weight: bold;
 }
@@ -200,9 +273,21 @@ div.options button.option:active {
 	margin: 4px 10px 0 0;
 	padding: 4px;
 	box-shadow: 0 0 2px rgba(0, 0, 0, 0.1), 1px 1px 4px rgba(0, 0, 0, 0.1);
-	background: #fbfbfb;
+	background: hsl(0, 0%, 98%);
 	font-size: small;
 	color: rgba(0, 0, 0, 0.7);
+	border-radius: 3px;
+}
+.reaction:hover {
+	background: hsl(216, 31%, 90%);
+}
+.reaction:active {
+	background: hsl(216, 31%, 80%);
+}
+.reaction.reacted-by-me {
+	font-weight: bold;
+	box-shadow: 0 0 0 1px hsla(216, 50%, 39%, 0.7), 1px 2px 4px 1px hsla(216, 31%, 39%, 0.3);
+	color: hsl(216, 31%, 39%);
 }
 .dateHeader td {
 	font-weight: bold;

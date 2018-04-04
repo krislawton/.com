@@ -1,0 +1,72 @@
+﻿doctype html
+html
+  head
+    title User settings - krislawton.com
+    include /includes/htmlHead.pug
+    include /includes/rootHtmlHead.pug
+    link(rel="stylesheet", href="/u/settings.css")
+    script(src="/u/settings.js")
+    - var permaid = userData.permaid
+    meta#accountPermaId(data-permaid=permaid)
+  body
+    include /includes/rootPageHead.pug
+    +header(userData)
+    main.default
+      h1 Your settings
+      p On this page, you can configure yourself.
+      h2 Display name
+      p.smol
+        | Your display name is your nickname. Whenever the site makes reference to you, 
+        | it will usually use your display name. It doesn't have to be unique, and you 
+        | can change it as often as you want.
+      form.setting(name="displayName")
+        label(for="displayName") Display name
+        div.mid-col
+          input(type="text")#displayName
+        input(type="submit", value="Save this change", disabled).button.raised.colored
+      h2 User ID
+      p.smol
+        | Your user ID is your own custom unique identifier. It is displayed discretely 
+        | (if the site makes reference to you, it will use your display name explicitly, 
+        | but it might have a hovercard with your user ID in it). It should help people 
+        | identify you if you're memeing about with your display name. Please don't
+        | change your user ID too often.
+      form.setting(name="userId")
+        label(for="userId") User ID
+        div.mid-col
+          input(type="text")#userId
+        input(type="submit", value="Save this change", disabled).button.raised.colored
+      h2 Permanent ID
+      p.smol
+        | For technical reasons, you are assigned a fairly-random permanent ID number
+        | on creating your account. You cannot change this number.
+      form.setting
+        p(style="width: auto") 
+          | Your permanent ID is 
+          span.yourPermaId
+          | .
+      h2 Password
+      p.smol Remember: Your password is stored as plain text and your connection is not secure.
+      form.setting(name="password")
+        label(for="password") New password
+        div.mid-col
+          input(type="text")#password
+        input(type="submit", value="Change password").button.raised.colored
+      h2 Nametag color
+      p.smol
+        | Your name has a color in chat. You can choose between a pool of three that 
+        | the site randomly generates for you. You may only change your pick once every 
+        | 28 days.
+      form.setting(name="color")
+        p Your color
+        div.mid-col.color
+          label.radio-container
+            input(type="radio", name="color", value="1").color1
+            span.radio-checked
+          label.radio-container
+            input(type="radio", name="color", value="2").color2
+            span.radio-checked
+          label.radio-container
+            input(type="radio", name="color", value="3").color3
+            span.radio-checked
+        input(type="submit", value="Save this change", disabled).button.raised.colored

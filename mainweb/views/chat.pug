@@ -3,10 +3,11 @@ html
   head
     title Chat - krislawton.com
     include /includes/htmlHead.pug
-    link(rel="stylesheet", href="/u/common.css")
-    script(src="/c/dataTransformers.js")
+    include /includes/rootHtmlHead.pug
     script(src="/u/chat.js")
     link(rel="stylesheet", href="/u/chat.css")
+    - var permaid = userData.permaid
+    meta#accountPermaId(data-permaid=permaid)
   body.chats-open.info-open
     include /includes/rootPageHead.pug
     +header(userData)

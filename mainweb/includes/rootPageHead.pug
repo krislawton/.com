@@ -2,14 +2,49 @@
   header#topBanner
     div.inner 
       div.header 
-        a(href="/") krislawton.com
+        a(href="/")
+          img(src="/c/LogoWhite.png")
+          | krislawton.com
       div.right
-        - 
-          var loggedIn = userData.loggedIn
-          var linkTo = "/" + (loggedIn ? "user/" + userData.permaid + "-" + userData.username : "login")
-        a.user(href=linkTo) us
+        button.about
+          img(src="/c/IconAbout.png")
+          div.badge 0
+        button.user
           img(src="/c/IconProfile.png")
+          div.badge 0
         div.inbox-button in
-        a.achievements-button(href="/achievements")
+          div.badge 0
+        button.achievements
           img(src="/c/IconAchievement.png")
+          div.badge 0
         div.nav-button na
+          div.badge 0
+  div#topDialogues
+    div.top-dialogue.about-dialogue
+      h2 About
+      div.inner
+        p Eventually, boring help articles and policies/notices will be here. For now though, we've just got a changelog.
+        h3 Changelog
+        div.changelog
+    div.top-dialogue.profile-dialogue
+      - 
+        var loggedIn = userData.loggedIn
+        var username = loggedIn ? userData.username : "not logged in"
+      h2 Profile (#{username})
+      div.inner
+        p
+          - 
+            var linkTo = "/" + (loggedIn ? "user/" + userData.permaid + "-" + userData.username : "login")
+          a(href=linkTo) My profile
+        p
+          a(href="/settings") Settings
+        p
+          a(href="/users") All users
+    div.top-dialogue.achievements-dialogue
+      h2 Achievements
+      div.inner
+        p
+          a(href=linkTo) Achievements on my profile
+        p
+          a(href="/achievements") All acheivements
+        p List of my recent achievements here

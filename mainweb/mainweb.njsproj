@@ -19,8 +19,9 @@
     <OutputPath>.</OutputPath>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <ProjectTypeGuids>{3AF33F2E-1136-4D97-BBB7-1795711AC8B8};{349c5851-65df-11da-9384-00065b846f21};{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}</ProjectTypeGuids>
-    <NodejsPort>1337</NodejsPort>
-    <StartWebBrowser>True</StartWebBrowser>
+    <NodejsPort>
+    </NodejsPort>
+    <StartWebBrowser>False</StartWebBrowser>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -60,6 +61,9 @@
     <Compile Include="views\chat.js">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="views\common.js">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="views\homepage.js">
       <SubType>Code</SubType>
     </Compile>
@@ -90,15 +94,24 @@
     <Compile Include="views\nomic\rules.js">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="views\settings.js">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="views\user.js">
       <SubType>Code</SubType>
       <TestFramework>ExportRunner</TestFramework>
     </Compile>
     <Content Include="common\FiraCode-Regular.ttf" />
     <Content Include="common\FiraSans-Regular.ttf" />
+    <Content Include="common\IconAbout.png" />
     <Content Include="common\IconAchievement.png" />
     <Content Include="common\IconProfile.png" />
+    <Content Include="common\Logo.png" />
+    <Content Include="common\LogoWhite.png" />
     <Content Include="common\socket.io.js.map" />
+    <Content Include="common\SoundMGS.mp3" />
+    <Content Include="common\SoundPop.mp3" />
+    <Content Include="common\SoundTOS.ogg" />
     <Content Include="includes\htmlHead.pug">
       <SubType>Code</SubType>
     </Content>
@@ -112,6 +125,9 @@
       <SubType>Code</SubType>
     </Content>
     <Content Include="includes\nomicPageHead.pug">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="includes\rootHtmlHead.pug">
       <SubType>Code</SubType>
     </Content>
     <Content Include="includes\rootPageHead.pug">
@@ -201,6 +217,12 @@
       <SubType>Code</SubType>
     </Content>
     <Content Include="views\nomic\rules.pug">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="views\settings.css">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="views\settings.pug">
       <SubType>Code</SubType>
     </Content>
     <Content Include="views\user.css">

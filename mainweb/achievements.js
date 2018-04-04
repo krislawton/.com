@@ -629,7 +629,7 @@ var acheck = {
 			var extraj = { progressMax: max, progressCurrent: 0, lastMessage: null }
 			extraj.lastMessage = rn
 			extraj.progressCurrent = 1
-			var extraj = JSON.stringify(extraj)
+			extraj = JSON.stringify(extraj)
 			// Update DB
 			var query = "insert into AccountAchievements (AccountPermaId, AchievementId, ExtraJSON)"
 			query += " values (@AccountPermaId, " + achid + ", @ExtraJSON)"
@@ -646,12 +646,12 @@ var acheck = {
 			if (rn.slice(0, 16) !== (rj.lastMessage).slice(0, 16)) {
 				rj.lastMessage = rn
 				rj.progressCurrent++
-				rj = JSON.stringify(rj)
 				var query = "update aa"
 				query += " set ExtraJSON = @ExtraJSON"
 				query += (rj.progressCurrent >= max ? ", AwardedDate = getutcdate()" : "")
 				query += " from AccountAchievements aa"
 				query += " where AccAchieveId = @AccAchieveId"
+				rj = JSON.stringify(rj)
 				pool.request()
 					.input("ExtraJSON", sql.VarChar, rj)
 					.input("AccAchieveId", sql.Int, r.AccAchieveId)
@@ -697,7 +697,7 @@ var acheck = {
 			var extraj = { progressMax: max, progressCurrent: 0, lastMessage: null }
 			extraj.lastMessage = rn
 			extraj.progressCurrent = 1
-			var extraj = JSON.stringify(extraj)
+			extraj = JSON.stringify(extraj)
 			// Update DB
 			var query = "insert into AccountAchievements (AccountPermaId, AchievementId, ExtraJSON)"
 			query += " values (@AccountPermaId, " + achid + ", @ExtraJSON)"
@@ -714,12 +714,12 @@ var acheck = {
 			if (rn.slice(0, 16) !== (rj.lastMessage).slice(0, 16)) {
 				rj.lastMessage = rn
 				rj.progressCurrent++
-				rj = JSON.stringify(rj)
 				var query = "update aa"
 				query += " set ExtraJSON = @ExtraJSON"
 				query += (rj.progressCurrent >= max ? ", AwardedDate = getutcdate()" : "")
 				query += " from AccountAchievements aa"
 				query += " where AccAchieveId = @AccAchieveId"
+				rj = JSON.stringify(rj)
 				pool.request()
 					.input("ExtraJSON", sql.VarChar, rj)
 					.input("AccAchieveId", sql.Int, r.AccAchieveId)
@@ -765,7 +765,7 @@ var acheck = {
 			var extraj = { progressMax: max, progressCurrent: 0, lastMessage: null }
 			extraj.lastMessage = rn
 			extraj.progressCurrent = 1
-			var extraj = JSON.stringify(extraj)
+			extraj = JSON.stringify(extraj)
 			// Update DB
 			var query = "insert into AccountAchievements (AccountPermaId, AchievementId, ExtraJSON)"
 			query += " values (@AccountPermaId, " + achid  + ", @ExtraJSON)"
@@ -782,12 +782,12 @@ var acheck = {
 			if (rn.slice(0, 16) !== (rj.lastMessage).slice(0, 16)) {
 				rj.lastMessage = rn
 				rj.progressCurrent++
-				rj = JSON.stringify(rj)
 				var query = "update aa"
 				query += " set ExtraJSON = @ExtraJSON"
 				query += (rj.progressCurrent >= max ? ", AwardedDate = getutcdate()" : "")
 				query += " from AccountAchievements aa"
 				query += " where AccAchieveId = @AccAchieveId"
+				rj = JSON.stringify(rj)
 				pool.request()
 					.input("ExtraJSON", sql.VarChar, rj)
 					.input("AccAchieveId", sql.Int, r.AccAchieveId)
@@ -835,7 +835,7 @@ var acheck = {
 			var extraj = { progressMax: max, progressCurrent: 0, lastMessage: null }
 			extraj.lastMessage = rn
 			extraj.progressCurrent = 1
-			var extraj = JSON.stringify(extraj)
+			extraj = JSON.stringify(extraj)
 			// Update DB
 			var query = "insert into AccountAchievements (AccountPermaId, AchievementId, ExtraJSON)"
 			query += " values (@AccountPermaId, " + achid + ", @ExtraJSON)"
@@ -852,12 +852,12 @@ var acheck = {
 			if (rn.slice(0, 16) !== (rj.lastMessage).slice(0, 16)) {
 				rj.lastMessage = rn
 				rj.progressCurrent = r.AmountSent
-				rj = JSON.stringify(rj)
 				var query = "update aa"
 				query += " set ExtraJSON = @ExtraJSON"
 				query += (rj.progressCurrent >= max ? ", AwardedDate = getutcdate()" : "")
 				query += " from AccountAchievements aa"
 				query += " where AccAchieveId = @AccAchieveId"
+				rj = JSON.stringify(rj)
 				pool.request()
 					.input("ExtraJSON", sql.VarChar, rj)
 					.input("AccAchieveId", sql.Int, r.AccAchieveId)

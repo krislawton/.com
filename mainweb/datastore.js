@@ -151,6 +151,22 @@ module.exports = {
 					callback(err, result)
 				})
 		},
+		rootUserLoadChangelog: (params, callback) => {
+			permaid = typeof params.session.userData.permaid === "undefined" ? null : params.session.userData.permaid
+			pool.request()
+				.input("AccountPermaId", sql.Int, permaid)
+				.execute("spChangelogGetForAccount", (err, result) => {
+					callback(err, result)
+				})
+		},
+		rootUserSettings: (params, callback) => {
+			permaid = typeof params.session.userData.permaid === "undefined" ? null : params.session.userData.permaid
+			pool.request()
+				.input("AccountPermaId", sql.Int, permaid)
+				.execute("spAccountSettingsGet", (err, result) => {
+					callback(err, result)
+				})
+		},
 		chatMessagesLoad: (params, callback) => {
 			pool.request()
 				.input("From", sql.VarChar, params.from)
@@ -160,7 +176,7 @@ module.exports = {
 		},
 		chatAccountsLoad: (params, callback) => {
 			pool.request()
-				.query("select AccountPermaId, CustomId, DisplayName from Accounts", (err, result) => {
+				.query("select AccountPermaId, CustomId, DisplayName, ColorChoiceId from Accounts", (err, result) => {
 					callback(err, { recordset: result })
 				})
 		},
@@ -251,11 +267,62 @@ module.exports = {
 				.execute("dbo.spPageLoadInsert")
 				// don't care whether it succeeds or not
 		},
+		rootUserChangeDisplayName: (params, callback) => {
+			permaid = typeof params.session.userData.permaid === "undefined" ? null : params.session.userData.permaid
+			pool.request()
+				.input("AccountPermaId", sql.Int, permaid)
+				.input("SettingType", sql.VarChar, "displayName")
+				.input("ChangeTo", sql.VarChar, params.displayName)
+				.execute("spAccountUpdateSettings", (err, result) => {
+					callback(err, result)
+				})
+		},
+		rootUserChangeUserId: (params, callback) => {
+			permaid = typeof params.session.userData.permaid === "undefined" ? null : params.session.userData.permaid
+			pool.request()
+				.input("AccountPermaId", sql.Int, permaid)
+				.input("SettingType", sql.VarChar, "userId")
+				.input("ChangeTo", sql.VarChar, params.userId)
+				.execute("spAccountUpdateSettings", (err, result) => {
+					callback(err, result)
+				})
+		},
+		rootUserChangePassword: (params, callback) => {
+			permaid = typeof params.session.userData.permaid === "undefined" ? null : params.session.userData.permaid
+			pool.request()
+				.input("AccountPermaId", sql.Int, permaid)
+				.input("SettingType", sql.VarChar, "password")
+				.input("ChangeTo", sql.VarChar, params.password)
+				.execute("spAccountUpdateSettings", (err, result) => {
+					callback(err, result)
+				})
+		},
+		rootUserChangeColor: (params, callback) => {
+			permaid = typeof params.session.userData.permaid === "undefined" ? null : params.session.userData.permaid
+			pool.request()
+				.input("AccountPermaId", sql.Int, permaid)
+				.input("SettingType", sql.VarChar, "color")
+				.input("ChangeTo", sql.VarChar, params.color)
+				.execute("spAccountUpdateSettings", (err, result) => {
+					callback(err, result)
+				})
+		},
+		rootUserChangelogAcknowledge: (params, callback) => {
+			permaid = typeof params.session.userData.permaid === "undefined" ? null : params.session.userData.permaid
+			pool.request()
+				.input("AccountPermaId", sql.Int, permaid)
+				.input("ChangeId", sql.Int, params.changeId)
+				.execute("spChangelogMarkSeen", (err, result) => {
+					callback(err, result)
+				})
+		},
 		chatSend: (params, callback) => {
+			var contentHtml = (typeof params.contentHtml === "string" ? params.contentHtml : content)
 			pool.request()
 				.input("Room", sql.VarChar, params.room)
 				.input("Sender", sql.VarChar, params.from)
 				.input("Message", sql.VarChar, params.content)
+				.input("ContentHTML", sql.VarChar, contentHtml)
 				.input("MessageType", sql.VarChar, "Message")
 				.input("ExtraJSON", sql.VarChar, null)
 				.execute("dbo.spChatSend", (err, result) => {

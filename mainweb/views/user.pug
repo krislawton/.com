@@ -3,7 +3,7 @@ html
   head
     title User profile - krislawton.com
     include /includes/htmlHead.pug
-    link(rel="stylesheet", href="/u/common.css")
+    include /includes/rootHtmlHead.pug
     link(rel="stylesheet", href="/u/user.css")
     script(src="/u/user.js")
     - var username = urlParameter.slice(urlParameter.indexOf("-") + 1)

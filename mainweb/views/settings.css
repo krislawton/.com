@@ -1,0 +1,66 @@
+﻿h2 {
+	font-size: 120%;
+	border-top: 1px solid rgba(0, 0, 0, 0.2);
+	padding-top: 10px;
+}
+p.smol {
+	font-size: 10pt;
+	color: rgba(0, 0, 0, 0.6);
+}
+
+form.setting > * {
+	display: inline-block;
+}
+form.setting > *:first-child {
+	margin-left: 30px;
+	width: 150px;
+}
+form.setting .mid-col {
+	width: 300px;
+}
+
+/* Color picker */
+.radio-container {
+	display: inline-block;
+	position: relative;
+	padding-left: 75px;
+	bottom: 25px;
+	cursor: pointer;
+}
+.radio-container input {
+	position: absolute;
+	opacity: 0;
+	left: 0;
+}
+.radio-container .radio-checked {
+	position: absolute;
+	top: 5px;
+	left: 5px;
+	width: 30px;
+	height: 30px;
+	background: black;
+	box-shadow: 0 0 2px rgba(0, 0, 0, 0.1), 1px 2px 4px rgba(0, 0, 0, 0.15);
+	transition: box-shadow 0.2s, all 0.2s;
+}
+.radio-container .radio-checked:after {
+	content: "";
+	position: absolute;
+	background: transparent;
+	width: 14px;
+	height: 14px;
+	top: 13px;
+	left: 13px;
+	transition: background 0.2s;
+}
+.radio-container:hover .radio-checked {
+	box-shadow: 1px 1px 6px 2px rgba(0, 0, 0, 0.3);
+}
+.radio-container input:checked ~ .radio-checked {
+	top: 0;
+	left: 0;
+	width: 40px;
+	height: 40px;
+}
+.radio-container input:checked ~ .radio-checked:after {
+	background: white;
+}

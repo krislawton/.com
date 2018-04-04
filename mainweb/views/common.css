@@ -5,6 +5,10 @@
 	font-family: "Fira Sans";
 	src: url(/c/FiraSans-Regular.ttf);
 }
+@font-face {
+	font-family: "Fira Code";
+	src: url(/c/FiraCode-Regular.ttf);
+}
 body {
 	margin: 0;
 	font-family: "Fira Sans", "Arial", sans;
@@ -36,6 +40,12 @@ body {
 	display: inline-block;
 	padding: 0 10px;
 }
+#topBanner .header img {
+	width: 32px;
+	position: relative;
+	top: 7px;
+	margin-right: 7px;
+}
 #topBanner .right {
 }
 #topBanner .right > * {
@@ -60,7 +70,23 @@ body {
 	top: 20px;
 	left: 20px;
 }
-#topBanner .achievements-button img.animate {
+#topBanner .right .badge {
+	display: none;
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	line-height: 9pt;
+	min-width: 14px;
+	padding: 2px;
+	border-radius: 7px;
+	background: hsl(0, 71%, 55%);
+	font-size: small;
+	color: white;
+}
+#topBanner .right .badge.show {
+	display: block;
+}
+#topBanner .achievements img.animate {
 	animation-iteration-count: 1;
 	animation-duration: 1s;
 	animation-timing-function: ease;
@@ -84,6 +110,98 @@ main.default {
 	margin: 10px auto 40px;
 	padding: 5px 10px 40px;
 	box-shadow: 1px 1px 2px hsla(0, 0%, 0%, 0.05);
+}
+
+/*********************/
+/*** TOP DIALOGUES ***/
+/*********************/
+#topDialogues {
+	position: relative;
+	font-size: 10pt;
+}
+#topDialogues > * {
+	display: none;
+	background: White;
+	position: absolute;
+	width: 400px;
+	height: 300px;
+	z-index: 3;
+	box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.2);
+}
+.top-dialogue h2 {
+	margin: 0;
+	padding: 6px;
+	background: hsl(216, 31%, 39%);
+	color: white;
+	font-size: 10pt;
+	font-weight: normal;
+	text-transform: uppercase;
+}
+.top-dialogue .inner {
+	padding: 0 5px;
+	overflow-y: auto;
+	height: 272px;
+}
+.top-dialogue h3 {
+	margin: 5px 0;
+}
+.top-dialogue p {
+	margin: 5px 0;
+}
+/* Changelog */
+.changelog {
+	margin-bottom: 5px;
+}
+.changelog .change {
+	display: flex;
+	border-top: 1px solid rgba(0, 0, 0, 0.1);
+	transition: background 0.5s;
+}
+.change:hover, .change.unreleased:hover {
+	opacity: 1;
+	background: rgba(0, 0, 0, 0.02);
+}
+.change.attention {
+	background: hsl(0, 90%, 99%);
+}
+.change.attention:hover {
+	background: hsl(0, 90%, 96%);
+}
+.change.unreleased {
+	opacity: 0.3;
+}
+.change .left {
+	flex-grow: 1;
+	padding: 5px 0;
+}
+.change h4 {
+	margin: 0 0 5px 0;
+}
+.change .description p:last-child {
+	margin-bottom: 0;
+}
+.change.unreleased .when {
+	display: none;
+}
+.change .when {
+	text-align: right;
+	margin: 5px 0;
+	color: rgba(0, 0, 0, 0.6);
+}
+.change .mark-as-read {
+	display: none;
+}
+.change.attention .mark-as-read {
+	display: block;
+	background: hsl(0, 71%, 55%);
+	color: white;
+	margin-left: 5px;
+}
+.change.attention .mark-as-read:hover {
+	background: hsl(0, 71%, 67%);
+}
+.change.attention .mark-as-read:active {
+	background: hsl(0, 71%, 75%);
 }
 
 /*********************/
@@ -130,6 +248,9 @@ button.button:active, a.button:active, input.button:active {
 }
 button.button:focus {
 	outline: 0;
+}
+button.button:disabled, a.button:disabled, input.button:disabled {
+	opacity: 0.5;
 }
 
 button.button.raised, a.button.raised, input.button.raised {

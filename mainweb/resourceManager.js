@@ -43,11 +43,32 @@ var resources = {
 	"/c/socket.io.js": new cr({
 		send: "/common/socket.io.js"
 	}),
+	"/c/socket.io.js.map": new cr({
+		send: "/common/socket.io.js.map"
+	}),
+	"/c/IconAbout.png": new cr({
+		send: "/common/IconAbout.png"
+	}),
 	"/c/IconAchievement.png": new cr({
 		send: "/common/IconAchievement.png"
 	}),
 	"/c/IconProfile.png": new cr({
 		send: "/common/IconProfile.png"
+	}),
+	"/c/Logo.png": new cr({
+		send: "/common/Logo.png"
+	}),
+	"/c/LogoWhite.png": new cr({
+		send: "/common/LogoWhite.png"
+	}),
+	"/c/SoundMGS.mp3": new cr({
+		send: "/common/SoundMGS.mp3"
+	}),
+	"/c/SoundPop.mp3": new cr({
+		send: "/common/SoundPop.mp3"
+	}),
+	"/c/SoundTOS.ogg": new cr({
+		send: "/common/SoundTOS.ogg"
 	}),
 	// Root
 	"/": new cr({
@@ -57,6 +78,9 @@ var resources = {
 	}),
 	"/u/common.css": new cr({
 		send: "/views/common.css"
+	}),
+	"/u/common.js": new cr({
+		send: "/views/common.js"
 	}),
 	"/u/homepage.js": new cr({
 		send: "/views/homepage.js",
@@ -111,6 +135,20 @@ var resources = {
 	}),
 	"/u/user.js": new cr({
 		send: "/views/user.js",
+		loggedInOnly: true
+	}),
+	"/settings": new cr({
+		type: "render",
+		send: "settings",
+		loggedInOnly: true,
+		siteId: [0]
+	}),
+	"/u/settings.css": new cr({
+		send: "/views/settings.css",
+		loggedInOnly: true
+	}),
+	"/u/settings.js": new cr({
+		send: "/views/settings.js",
 		loggedInOnly: true
 	}),
 	// Nomic
