@@ -35,7 +35,7 @@
 		users = {},
 		stars = {},
 		reactions = {},
-		viewingAsPermaid = $('#accountPermaId').attr('data-permaid'),
+		viewingAsPermaId = $('#accountPermaId').attr('data-permaid'),
 		chunkSize = 100
 
 	// Socket responses
@@ -55,7 +55,7 @@
 				addChatToMemory(msgs[i], "top")
 			}
 			$('.room[data-roomid="' + viewingRoom +'"]').trigger("click")
-			$('#tableContainer').scrollTop($('#tableContainer')[0].scrollHeight)
+			$('#logViewPort').scrollTop($('#logViewPort')[0].scrollHeight)
 			// Load stars after chat
 			loadStars()
 		}
@@ -225,20 +225,20 @@
 		var starred = (typeof stars[dbRecord.MessageId] === "object" ? " starred" : "")
 
 		// Begin element
-		var toAdd = '<tr '
+		var toAdd = '<div '
 		toAdd += 'class="achat ' + classType + starred + '" '
 		toAdd += 'data-messageid="' + dbRecord.MessageId + '" '
 		toAdd += 'data-timestamp="' + dbRecord.SentDate + '" '
 		toAdd += 'data-room="' + dbRecord.Room + '"> '
-		toAdd += '<td class="timestamp" title="' + dateTitle + '">' + dateString + '</div>'
-		toAdd += '<td class="else">'
+		toAdd += '<div class="timestamp" title="' + dateTitle + '">' + dateString + '</div>'
+		toAdd += '<div class="else">'
 		if (dbRecord.SenderAccountId !== null) {
 			var nt = nameTag(dbRecord.SenderAccountId, dbRecord.SenderDisplayName)
 			nt.className += " from"
 			toAdd += nt.outerHTML
 		}
 		if (dbRecord.MessageType === "Action") {
-			toAdd += '<div class="systemmessage">Action taken</div>'
+			toAdd += '<div class="systemmessage">System message</div>'
 		}
 		toAdd += '<div class="content">'
 		toAdd += contents
@@ -249,28 +249,37 @@
 		var reactionHtml = messageReactionHtml(messageId)
 		toAdd += reactionHtml
 		// End element
-		toAdd += '</td></tr>'
+		toAdd += '</div></div>'
 
 		if (bottomOrTop === "top") {
-			$('#chatContainer tr.showAll').after(toAdd)
+			$('#logContainer .showAll').after(toAdd)
 			addChatDividersTop()
 		} else {
-			$('#chatContainer').append(toAdd)
+			$('#logContainer').append(toAdd)
+			// Animate
+			var tar = $('.achat[data-messageid="' + dbRecord.MessageId + '"]')[0]
+			var chatHeight = $(tar).height()
+			var logHeight = $('#logViewPort')[0].scrollHeight + chatHeight
+			$(tar).css('height', '0px').animate({ height: "+=" + chatHeight}, 200, "easeOutCirc", () => {
+				$(tar).attr('style', '')
+			})
+			$('#logViewPort').animate({ scrollTop: logHeight }, 200)
+			// Dividers
 			addChatDividersBottom()
 			// Scroll to bottom, where a new message has been added
-			$('#tableContainer').scrollTop($('#tableContainer')[0].scrollHeight)
+			$('#logViewPort').scrollTop($('#logViewPort')[0].scrollHeight)
 		}
 	}
 	// Helper for adding dividers (top)
 	function addChatDividersTop() {
 		// Date headers
-		var cEarlier = new Date($('#chatContainer .achat').eq(0).attr('data-timestamp'))
-		var cLater = new Date($('#chatContainer .achat').eq(1).attr('data-timestamp'))
+		var cEarlier = new Date($('#logContainer .achat').eq(0).attr('data-timestamp'))
+		var cLater = new Date($('#logContainer .achat').eq(1).attr('data-timestamp'))
 		// Always add date separator to top
 		var ds = dateHeader(cEarlier)
-		$('#chatContainer .achat').eq(0).before(ds)
+		$('#logContainer .achat').eq(0).before(ds)
 		// Remove any that are not just-added
-		$('#chatContainer .dateHeader[data-timestamp^="' + cEarlier.toDateString() + '"]').not(':eq(0)').remove()
+		$('#logContainer .dateHeader[data-timestamp^="' + cEarlier.toDateString() + '"]').not(':eq(0)').remove()
 
 		// Diff separators
 		var cET = new Date(cEarlier),
@@ -279,22 +288,22 @@
 			var hourDiff = Math.abs(cLT - cET) / 36e5
 			if (hourDiff >= 4.5 / 60) {
 				var ts = diffSeparator(hourDiff)
-				$('#chatContainer .achat').eq(0).after(ts)
+				$('#logContainer .achat').eq(0).after(ts)
 			}
 		}
 	}
 	// Helper for adding dividers (bottom)
 	function addChatDividersBottom() {
 		// Date headers
-		var cEarlier = new Date($('#chatContainer .achat').eq(-2).attr('data-timestamp'))
+		var cEarlier = new Date($('#logContainer .achat').eq(-2).attr('data-timestamp'))
 		var cEstring = cEarlier.getFullYear() + "" + cEarlier.getMonth + "" + cEarlier.getDate
-		var cLater = new Date($('#chatContainer .achat').eq(-1).attr('data-timestamp'))
+		var cLater = new Date($('#logContainer .achat').eq(-1).attr('data-timestamp'))
 		var cLstring = cLater.getFullYear() + "" + cLater.getMonth + "" + cLater.getDate
 		var hasDateHeader = false
 
 		if (cEarlier === null || cEstring !== cLstring) {
 			var ds = dateHeader(cLater)
-			$('#chatContainer .achat').eq(-1).before(ds)
+			$('#logContainer .achat').eq(-1).before(ds)
 			hasDateHeader = true
 		}
 
@@ -305,9 +314,9 @@
 		if (hourDiff >= 4.5 / 60) {
 			var ts = diffSeparator(hourDiff)
 			if (hasDateHeader) {
-				$('#chatContainer .dateHeader').eq(-1).before(ts)
+				$('#logContainer .dateHeader').eq(-1).before(ts)
 			} else {
-				$('#chatContainer .achat').eq(-1).before(ts)
+				$('#logContainer .achat').eq(-1).before(ts)
 			}
 		}
 	}
@@ -316,7 +325,7 @@
 	function dateHeader(dateIn) {
 		var dateOut = new Date(dateIn)
 		dateOut = dataTransformer("date long", dateOut)
-		var ret = '<tr class="dateHeader" data-timestamp="' + dateIn.toDateString() + '"><td colspan="2">~ ' + dateOut + ' ~</td></tr>'
+		var ret = '<div class="dateHeader" data-timestamp="' + dateIn.toDateString() + '">~ ' + dateOut + ' ~</tr>'
 		return ret
 	}
 	function diffSeparator(diffIn) {
@@ -354,7 +363,7 @@
 		}
 		diffString += " later..."
 
-		var ret = '<tr class="diffSeparator"><td colspan="2"><div ' + padding + '>' + diffString + '</div></td></tr>'
+		var ret = '<div class="diffSeparator"><div ' + padding + '>' + diffString + '</div></div>'
 		return ret
 	}
 
@@ -374,11 +383,20 @@
 			addChatToMemory(r, "bottom")
 
 			// Play sound
-			var msgsound = new Audio('/c/SoundTOS.ogg')
+			var msgsound
+			if (r.MessageType === "Action") {
+				if ((r.Content).match(/is now online/gi) !== null) {
+					msgsound = new Audio('/c/SoundMGS.mp3')
+				} else {
+					msgsound = new Audio('/c/SoundTOS.ogg')
+				}
+			} else {
+				msgsound = new Audio("/c/SoundPop.mp3")
+			}
 			msgsound.play()
 
 			// Send notification
-			if (viewingAsPermaid != r.SenderAccountId) {
+			if (viewingAsPermaId != r.SenderAccountId) {
 				if (Notification.permission === "granted") {
 					var nopt = {
 						body: r.DisplayName + ": " + r.Content,
@@ -399,10 +417,18 @@
 
 	// Send message helper
 	function sendMessage(content) {
-		var uid = Math.random()
-		socketChat.emit('chat send', { content: content, contentHtml: markdownContent(content), uid: uid, room: viewingRoom })
-		//console.log(content)
-		//console.log(markdownContent(content))
+		if (content.match(/^[0-9]+px$/gi) !== null) {
+			$('#logContainer').css('margin-bottom', content)
+		} else {
+			if (content.match(/^\^+$/gi) !== null) {
+				var amount = content.length
+				var reactMessageId = $('#logContainer .achat').eq(-amount).attr('data-messageid')
+				reactPositively(reactMessageId)
+			}
+
+			var uid = Math.random()
+			socketChat.emit('chat send', { content: content, contentHtml: markdownContent(content), uid: uid, room: viewingRoom })
+		}
 	}
 	// Message format markdown
 	function markdownContent(inputContent) {
@@ -582,6 +608,11 @@
 		outputContent = outputContent.replace(rr, '<a target="_blank" href="$&">$&</a>')
 		outputContent = outputContent.replace(/(href=")(?!http)/gi, '$1http://')
 
+		// Reddit links
+		outputContent = outputContent.replace(/(^|\s)(\/r\/[a-z0-9_]+)($|\s)/gi, '$1<a href="https://reddit.com$2">$2</a>$3')
+		// 4chan links
+		outputContent = outputContent.replace(/(^|\s)(\/[a-z0-9]{1,4}\/)($|\s)/gi, '$1<a href="http://4chan.org$2">$2</a>$3')
+
 		return outputContent
 	}
 
@@ -601,13 +632,13 @@
 		var room = $(e.target).attr('data-roomid')
 		viewingRoom = room
 		// Clear chat
-		$('#chatContainer > .achat, #chatContainer > .diffSeparator, #chatContainer > .dateHeader').remove()
+		$('#logContainer > .achat, #logContainer > .diffSeparator, #logContainer > .dateHeader').remove()
 		// Loop through chat of room and add
 		var chatToAdd = log[room]
 		for (var c = chatToAdd.length - 1; c >= 0 && c >= chatToAdd.length - chunkSize; c--) {
 			addChatToView(chatToAdd[c], "top")
 		}
-		$('#tableContainer').scrollTop($('#tableContainer')[0].scrollHeight)
+		$('#logViewPort').scrollTop($('#logViewPort')[0].scrollHeight)
 		refreshRoomHighlight()
 	})
 	// Highlight chosen room
@@ -889,8 +920,8 @@
 		console.log(response)
 
 		// Calculate whether the user is scrolled to the bottom and store for later
-		var userScrolled = $('#tableContainer').scrollTop() + $('#tableContainer').height()
-		var userIsScrolledDown = userScrolled === $('#tableContainer')[0].scrollHeight ? true : false
+		var userScrolled = $('#logViewPort').scrollTop() + $('#logViewPort').height()
+		var userIsScrolledDown = userScrolled === $('#logViewPort')[0].scrollHeight ? true : false
 
 		var messageId = response.input.messageId
 		$('[data-messageid="' + messageId + '"] div.options .close').trigger("click")
@@ -908,7 +939,7 @@
 		// If the user was scrolled down all the way before 
 		// the reaction HTML was inserted, rescroll to bottom
 		if (userIsScrolledDown) {
-			$('#tableContainer').scrollTop($('#tableContainer')[0].scrollHeight)
+			$('#logViewPort').scrollTop($('#logViewPort')[0].scrollHeight)
 		}
 	})
 
@@ -939,7 +970,7 @@
 				}
 				mr[reactiontype].count++
 				mr[reactiontype].who += ", " + users[userPermaId].displayName
-				mr[reactiontype].me = (userPermaId == viewingAsPermaid ? true : mr[reactiontype].me)
+				mr[reactiontype].me = (userPermaId == viewingAsPermaId ? true : mr[reactiontype].me)
 			}
 			// Then process from that object
 			for (i in mr) {

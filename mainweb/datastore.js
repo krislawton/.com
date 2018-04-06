@@ -167,6 +167,12 @@ module.exports = {
 					callback(err, result)
 				})
 		},
+		rootUsersAll: (params, callback) => {
+			pool.request()
+				.execute("spAccountsGetAll", (err, result) => {
+					callback(err, result)
+				})
+		},
 		chatMessagesLoad: (params, callback) => {
 			pool.request()
 				.input("From", sql.VarChar, params.from)

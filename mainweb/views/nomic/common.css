@@ -87,13 +87,13 @@ table.grid th {
 	text-align: left;
 }
 
-button, a.button {
+button.button, a.button {
 	background: initial;
 	border: initial;
 	text-transform: uppercase;
 	font-family: inherit;
 	font-size: initial;
-	color: hsl(0, 0%, 50%); 
+	color: hsl(0, 0%, 50%);
 	font-weight: bold;
 	border-radius: 2px;
 	display: inline-block;
@@ -102,35 +102,35 @@ button, a.button {
 	padding: 8px 12px;
 	transition: box-shadow 0.1s;
 }
-button:hover, a.button:hover {
+button.button:hover, a.button:hover {
 	background: hsl(0, 0%, 96%);
 }
-button:active, a.button:active {
+button.button:active, a.button:active {
 	background: hsl(0, 0%, 88%);
 }
-button:focus {
+button.button:focus {
 	outline: 0;
 }
 
-button.raised, a.button.raised {
+button.button.raised, a.button.raised {
 	background: hsl(20, 50%, 96%);
 	box-shadow: 0 0 2px 0 hsl(0, 0%, 70%);
 }
-button.raised:hover, a.button.raised:hover {
+button.button.raised:hover, a.button.raised:hover {
 	background: hsl(20, 30%, 88%);
 	box-shadow: 0 0 2px 0 hsl(0, 0%, 70%), 0 2px 6px 0 hsl(0, 0%, 60%);
 }
-button.raised:active, a.button.raised:active {
+button.button.raised:active, a.button.raised:active {
 	background: hsl(20, 10%, 80%);
 	box-shadow: 0 0 2px 0 hsl(0, 0%, 70%), 0 4px 8px 0 hsl(0, 0%, 60%);
 }
-button.raised.colored, a.button.raised.colored {
+button.button.raised.colored, a.button.raised.colored {
 	background: hsl(15, 85%, 70%);
 	color: white;
 }
-button.raised.colored:hover, a.button.raised.colored:hover {
+button.button.raised.colored:hover, a.button.raised.colored:hover {
 	background: hsl(15,60%, 64%);
 }
-button.raised.colored:active, a.button.raised.colored:active {
+button.button.raised.colored:active, a.button.raised.colored:active {
 	background: hsl(15, 40%, 58%);
 }

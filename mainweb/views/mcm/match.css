@@ -45,6 +45,8 @@ span.change {
 	font-size: 70%;
 	color: white;
 	letter-spacing: 1px;
+	position: relative;
+	bottom: 2px;
 }
 span.change.gain {
 	background: #009900;

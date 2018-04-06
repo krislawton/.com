@@ -32,13 +32,11 @@ html
           | No one else can see what messages you've starred.
         div#starred
     div#center
-      div#tableContainer
-        table
-          tbody#chatContainer
-            tr.showAll
-              td(colspan="2")
-                label
-                  input(type="checkbox")#chkShowAll
-                  | Show all chat
+      div#logViewPort
+        div#logContainer
+          div.showAll
+            label
+              input(type="checkbox")#chkShowAll
+              | Show all chat
       div#sendContainer
         textarea(autofocus)

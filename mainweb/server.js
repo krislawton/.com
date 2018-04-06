@@ -580,6 +580,9 @@ var ioChat = io.of('/chat')
 var accountsInChat = {}
 ioChat.on('connection', (socket) => {
 	var permaid = socket.handshake.session.userData.permaid
+
+	// Track new connections
+	var c = 0
 	if (typeof accountsInChat[permaid] === "undefined") {
 		var ej = {
 			accountPermaId: permaid,
@@ -599,11 +602,15 @@ ioChat.on('connection', (socket) => {
 				console.log(err)
 			}
 		})
+	} else {
+		c = accountsInChat[permaid].connectionCount
 	}
-	accountsInChat[permaid] = { lastEntered: new Date(), lastLeft: null }
+	accountsInChat[permaid] = { lastEntered: new Date(), lastLeft: null, connectionCount: c + 1 }
 	console.log("--------------")
 	console.log("SOMEONE ENTERED CHAT") 
 	console.log(accountsInChat)
+
+	// Object.keys(io.sockets.sockets),
 
 	socket.on('chat send', (input) => {
 		try {
@@ -613,7 +620,7 @@ ioChat.on('connection', (socket) => {
 				var ret = {
 					input: input,
 					err: err,
-					fromDb: response
+					fromDb: response,
 				}
 				ioChat.emit('chat sent', ret)
 				achiev.updateAchievements({ justdone: "chatSend", userData: socket.handshake.session.userData })
@@ -716,12 +723,13 @@ ioChat.on('connection', (socket) => {
 			console.log("--------------")
 			console.log("SOMEONE LEFT CHAT") 
 			accountsInChat[permaid].lastLeft = new Date()
+			accountsInChat[permaid].connectionCount--
 			console.log(accountsInChat)
 			setTimeout(() => {
 				for (i in accountsInChat) {
 					var ll = new Date(accountsInChat[i].lastLeft + 30 * 6e4)
 					var n = new Date()
-					if (accountsInChat[i].lastLeft !== null && Math.abs(ll - n) > 0) {
+					if (accountsInChat[i].connectionCount === 0 && accountsInChat[i].lastLeft !== null && Math.abs(ll - n) > 0) {
 						delete accountsInChat[i]
 						var ej = {
 							accountPermaId: permaid,

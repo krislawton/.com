@@ -44,10 +44,11 @@
 	$('.datePicker').on("keypress", (e) => {
 		e.preventDefault()
 		var entered = e.originalEvent.key
+		var eClass = document.activeElement.classList
 		if ($.isNumeric(entered)) {
 			var position = document.activeElement.selectionStart
 			var value = document.activeElement.value
-			var maxChar = ((document.activeElement.className).includes("dpYear") ? 4 : 2)
+			var maxChar = (eClass.contains("dpYear") ? 4 : 2)
 
 			// If the cursor is at the end of the field,
 			if (position >= maxChar) {
@@ -67,6 +68,52 @@
 			//if (position + 1 === maxChar) {
 
 			//}
+		}
+		var classToFocus
+		console.log(entered)
+	})
+
+	$('.datePicker').on("keydown", (e) => {
+		var entered = e.originalEvent.key
+		var eClass = document.activeElement.classList
+
+		var position = document.activeElement.selectionStart
+		var isOneChar = (document.activeElement.selectionEnd === position ? true : false)
+		var maxChar = (eClass.contains("dpYear") ? 4 : 2)
+
+		if (position === maxChar && isOneChar && entered === "ArrowRight" && !eClass.contains("dpMinute")) {
+			if (eClass.contains("dpYear")) {
+				classToFocus = "dpMonth"
+			} else if (eClass.contains("dpMonth")) {
+				classToFocus = "dpDay"
+			} else if (eClass.contains("dpDay")) {
+				classToFocus = "dpHour"
+			} else if (eClass.contains("dpHour")) {
+				classToFocus = "dpMinute"
+			}
+
+			if (classToFocus) {
+				var eToFocus = $(document.activeElement).parent().find('.' + classToFocus)
+				$(eToFocus).focus()
+				$(eToFocus).get(0).setSelectionRange(0, 0)
+			}
+		}
+		if (position === 0 && isOneChar && entered === "ArrowLeft" && !eClass.contains("dpYear")) {
+			if (eClass.contains("dpMonth")) {
+				classToFocus = "dpYear"
+			} else if (eClass.contains("dpDay")) {
+				classToFocus = "dpMonth"
+			} else if (eClass.contains("dpHour")) {
+				classToFocus = "dpDay"
+			} else if (eClass.contains("dpMinute")) {
+				classToFocus = "dpHour"
+			}
+
+			if (classToFocus) {
+				var eToFocus = $(document.activeElement).parent().find('.' + classToFocus)
+				$(eToFocus).focus()
+				$(eToFocus).get(0).setSelectionRange(0, 0)
+			}
 		}
 	})
 

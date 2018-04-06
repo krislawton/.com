@@ -1596,11 +1596,11 @@ var acheck = {
 		var achid = 2070
 		var res
 
-		var querymsgs = "select dateadd(hour, (datediff(hour, 0, m.SentDate) / 6) * 6, 0) as BlockStart, count(1) as [Messages]"
+		var querymsgs = "select dateadd(hour, (datediff(hour, 0, m.SentDate) / 4) * 4, 0) as BlockStart, count(1) as [Messages]"
 		querymsgs += " from ChatMessages m"
 		querymsgs += " where m.SenderAccountId = @AccountPermaId"
-		querymsgs += "     and datediff(hour, 0, m.SentDate) / 6 > datediff(hour, 0, getutcdate()) / 6 - 4"
-		querymsgs += " group by dateadd(hour, (datediff(hour, 0, m.SentDate) / 6) * 6, 0)"
+		querymsgs += "     and datediff(hour, 0, m.SentDate) / 4 > datediff(hour, 0, getutcdate()) / 4 - 6"
+		querymsgs += " group by dateadd(hour, (datediff(hour, 0, m.SentDate) / 4) * 4, 0)"
 		pool.request()
 			.input("AccountPermaId", sql.Int, input.permaid)
 			.query(querymsgs, (err, result) => {
@@ -1619,7 +1619,7 @@ var acheck = {
 				msgs += res[i].Messages
 				blocks++
 			}
-			if (msgs >= 20 && blocks === 4) {
+			if (msgs >= 20 && blocks === 6) {
 				checkAlreadyGranted()
 			} else {
 				callback(null, null, achid)

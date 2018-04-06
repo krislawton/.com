@@ -101,6 +101,9 @@
       <SubType>Code</SubType>
       <TestFramework>ExportRunner</TestFramework>
     </Compile>
+    <Compile Include="views\users.js">
+      <SubType>Code</SubType>
+    </Compile>
     <Content Include="common\FiraCode-Regular.ttf" />
     <Content Include="common\FiraSans-Regular.ttf" />
     <Content Include="common\IconAbout.png" />
@@ -229,6 +232,12 @@
       <SubType>Code</SubType>
     </Content>
     <Content Include="views\user.pug">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="views\users.css">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="views\users.pug">
       <SubType>Code</SubType>
     </Content>
   </ItemGroup>

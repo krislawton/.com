@@ -1,0 +1,15 @@
+﻿doctype html
+html
+  head
+    title All users - krislawton.com
+    include /includes/htmlHead.pug
+    include /includes/rootHtmlHead.pug
+    link(rel="stylesheet", href="/u/users.css")
+    script(src="/u/users.js")
+    meta(name="viewport",content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0")
+  body
+    include /includes/rootPageHead.pug
+    +header(userData)
+    main.default
+      h1 All users
+      div#all-users

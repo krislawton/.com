@@ -1,0 +1,62 @@
+﻿.player {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	padding: 5px 0;
+}
+.player + .player {
+	border-top: 1px solid rgba(0 , 0, 0, 0.1);
+}
+.player > * {
+	padding: 5px;
+}
+.profile-link {
+	width: 200px;
+	text-decoration: initial;
+	color: initial;
+	padding: 10px 5px;
+}
+.profile-link:hover {
+	background: rgba(0, 0, 0 , 0.05);
+}
+.profile-link:active {
+	background: rgba(0, 0, 0, 0.1);
+}
+.profile-link .display-name {
+	font-weight: bold;
+}
+.last-activity {
+	width: 350px;
+	font-size: small;
+}
+.page-loads {
+	font-size: small;
+	width: 120px;
+}
+.achievement {
+	display: inline-block;
+	width: 50px;
+}
+.achievement .icon {
+	position: relative;
+	width: 8px;
+	height: 8px;
+	border-radius: 4px;
+	background: black;
+	display: inline-block;
+	margin-right: 7px;
+	bottom: 2px;
+}
+.level1 .icon {
+	background: hsl(20, 40%, 50%);
+}
+.level2 .icon {
+	background: hsl(200, 10%, 75%);
+}
+.level3 .icon {
+	background: hsl(45, 90%, 60%);
+}
+.level4 .icon {
+	background: hsl(260, 100%, 70%);
+	background: linear-gradient(45deg, hsl(170, 80%, 60%), hsl(200, 90%, 50%));
+}

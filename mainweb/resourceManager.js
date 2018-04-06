@@ -96,19 +96,6 @@ var resources = {
 	"/u/login.js": new cr({
 		send: "/views/login.js"
 	}),
-	"/chat": new cr({
-		type: "render",
-		send: "chat",
-		loggedInOnly: true
-	}),
-	"/u/chat.css": new cr({
-		send: "/views/chat.css",
-		loggedInOnly: true
-	}),
-	"/u/chat.js": new cr({
-		send: "/views/chat.js",
-		loggedInOnly: true
-	}),
 	"/achievements": new cr({
 		type: "render",
 		send: "achievements",
@@ -122,19 +109,17 @@ var resources = {
 		send: "/views/achievements.js",
 		loggedInOnly: true
 	}),
-	"/user": new cr({
+	"/chat": new cr({
 		type: "render",
-		send: "user",
-		loggedInOnly: true,
-		siteId: [0],
-		parameterized: true
-	}),
-	"/u/user.css": new cr({
-		send: "/views/user.css",
+		send: "chat",
 		loggedInOnly: true
 	}),
-	"/u/user.js": new cr({
-		send: "/views/user.js",
+	"/u/chat.css": new cr({
+		send: "/views/chat.css",
+		loggedInOnly: true
+	}),
+	"/u/chat.js": new cr({
+		send: "/views/chat.js",
 		loggedInOnly: true
 	}),
 	"/settings": new cr({
@@ -149,6 +134,35 @@ var resources = {
 	}),
 	"/u/settings.js": new cr({
 		send: "/views/settings.js",
+		loggedInOnly: true
+	}),
+	"/user": new cr({
+		type: "render",
+		send: "user",
+		loggedInOnly: true,
+		siteId: [0],
+		parameterized: true
+	}),
+	"/u/user.css": new cr({
+		send: "/views/user.css",
+		loggedInOnly: true
+	}),
+	"/users": new cr({
+		type: "render",
+		send: "users",
+		loggedInOnly: true,
+		siteId: [0]
+	}),
+	"/u/users.css": new cr({
+		send: "/views/users.css",
+		loggedInOnly: true
+	}),
+	"/u/users.js": new cr({
+		send: "/views/users.js",
+		loggedInOnly: true
+	}),
+	"/u/user.js": new cr({
+		send: "/views/user.js",
 		loggedInOnly: true
 	}),
 	// Nomic
