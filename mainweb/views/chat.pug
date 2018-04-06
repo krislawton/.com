@@ -8,6 +8,7 @@ html
     link(rel="stylesheet", href="/u/chat.css")
     - var permaid = userData.permaid
     meta#accountPermaId(data-permaid=permaid)
+    meta(name="viewport",content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0")
   body.chats-open.info-open
     include /includes/rootPageHead.pug
     +header(userData)
@@ -34,5 +35,10 @@ html
       div#tableContainer
         table
           tbody#chatContainer
+            tr.showAll
+              td(colspan="2")
+                label
+                  input(type="checkbox")#chkShowAll
+                  | Show all chat
       div#sendContainer
         textarea(autofocus)

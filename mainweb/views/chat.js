@@ -36,7 +36,7 @@
 		stars = {},
 		reactions = {},
 		viewingAsPermaid = $('#accountPermaId').attr('data-permaid'),
-		chunkSize = 1000
+		chunkSize = 100
 
 	// Socket responses
 	socket.on('data response', (response) => {
@@ -204,9 +204,9 @@
 			justAdded = log[room].push(dbRecord)
 		}
 
-		//if (room === viewingRoom) {
-		//	addChatToView(dbRecord, bottomOrTop)
-		//}
+		if (room === viewingRoom) {
+			addChatToView(dbRecord, bottomOrTop)
+		}
 	}
 	// Helper for adding messages to screen
 	function addChatToView(dbRecord, bottomOrTop) {
@@ -252,7 +252,7 @@
 		toAdd += '</td></tr>'
 
 		if (bottomOrTop === "top") {
-			$('#chatContainer').prepend(toAdd)
+			$('#chatContainer tr.showAll').after(toAdd)
 			addChatDividersTop()
 		} else {
 			$('#chatContainer').append(toAdd)
@@ -357,6 +357,14 @@
 		var ret = '<tr class="diffSeparator"><td colspan="2"><div ' + padding + '>' + diffString + '</div></td></tr>'
 		return ret
 	}
+
+	// On "show all chat" changed
+	$('#chkShowAll').change(function () {
+		var showAll = this.checked
+		console.log(this.checked)
+		chunkSize = (showAll ? 9999 : 100)
+		$('button[data-roomid="' + viewingRoom + '"]').trigger("click")
+	})
 
 	// On message received
 	socketChat.on('chat sent', (response) => {
@@ -593,7 +601,7 @@
 		var room = $(e.target).attr('data-roomid')
 		viewingRoom = room
 		// Clear chat
-		$('#chatContainer').html("")
+		$('#chatContainer > .achat, #chatContainer > .diffSeparator, #chatContainer > .dateHeader').remove()
 		// Loop through chat of room and add
 		var chatToAdd = log[room]
 		for (var c = chatToAdd.length - 1; c >= 0 && c >= chatToAdd.length - chunkSize; c--) {
@@ -697,9 +705,14 @@
 		reconsiderSend()
 	})
 
+	// Listen for window size changes
+	$(window).on('resize', (e) => {
+		reconsiderSend()
+	})
+
 	// Change size of sendContainer when sidebars are open/closed
 	function reconsiderSend() {
-		var width = window.innerWidth
+		var width = window.innerWidth - 20
 		var left = 0
 
 		if ($('body').hasClass('chats-open')) {

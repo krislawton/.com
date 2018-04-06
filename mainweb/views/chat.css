@@ -101,12 +101,13 @@ body {
 /* Text entry area */
 #sendContainer {
 	width: 100%;
-	height: 70px;
+	height: 50px;
 	position: fixed;
 	bottom: 0;
-	padding: 10px;
+	margin: 10px;
 	background: white;
 	transition: all 0.3s;
+	box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.1);
 }
 #sendContainer textarea {
 	font-family: inherit;
@@ -115,7 +116,6 @@ body {
 	box-sizing: border-box;
 	border: 0;
 	width: 100%;
-	box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.1);
 	padding: 5px;
 }
 #sendContainer textarea:focus {
@@ -145,6 +145,8 @@ body {
 .achat .else {
 	padding: 3px 1.3em 3px 0.6em;
 	position: relative;
+	word-wrap: break-word;
+	max-width: calc(100vw - 76px);
 }
 .achat .else > div {
 	display: inline;
