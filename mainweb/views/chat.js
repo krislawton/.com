@@ -40,6 +40,8 @@
 		if (response.input.request === "chatMessagesLoad") {
 			var p = response.input.params
 			if (!response.err && p.room === viewingRoom) {
+				// Get scroll height
+				var prevScroll = $('#logViewPort')[0].scrollHeight
 				// NOTE: Results are left joined to reactions
 				var jrc = response.recordset.recordset
 				if (p.earlier) {
@@ -70,6 +72,13 @@
 				// Recurse through the reactions we've just been processing and render all
 				for (i in rea) {
 					addReactionsToView(i, rea[i])
+				}
+				// Scroll to bottom if first load
+				if (p.when === "now") {
+					$('#logViewPort').scrollTop($('#logViewPort')[0].scrollHeight)
+				} else {
+					var newHeight = $('#logViewPort')[0].scrollHeight
+					$('#logViewPort').scrollTop(newHeight - prevScroll)
 				}
 			}
 		}
@@ -125,6 +134,7 @@
 	function loadStars() {
 		socket.emit('data request', { request: "chatStarsLoad" })
 	}
+	loadStars()
 	// Helper for loaded stars
 	function refreshStars(dbStars) {
 		var amountOfStars = 0
@@ -163,8 +173,8 @@
 				}
 
 				var content = document.createElement("div")
-				content.className = "content"
-				content.innerHTML = stars[i].content
+				content.className = "content chatformat"
+				content.innerHTML = stars[i].contentHtml
 				element.appendChild(content)
 
 				var posted = document.createElement("div")
@@ -178,7 +188,7 @@
 				whenstar.innerHTML = "Starred on " + whenstardate
 				element.appendChild(whenstar)
 
-				$('#starred').append(element)
+				$('#starred').prepend(element)
 			}
 		} else {
 			$('#nostars').show()
@@ -197,27 +207,6 @@
 		}
 	}
 
-	// Helper for putting DB-received messages in to memory
-	function addChatToMemory(dbRecord, bottomOrTop) {
-		var room = dbRecord.Room,
-			justAdded = null
-
-		// Add reactions array to message
-		dbRecord.reactions = []
-
-		if (typeof log[room] === "undefined") {
-			console.error('Attempted to add chat to memory but log object did not have that room')
-			return
-		} else if (bottomOrTop === "top") {
-			justAdded = log[room].unshift(dbRecord)
-		} else {
-			justAdded = log[room].push(dbRecord)
-		}
-
-		if (room === viewingRoom) {
-			addChatToView(dbRecord, bottomOrTop)
-		}
-	}
 	// Helper for adding messages to screen
 	function addChatToView(dbRecord, bottomOrTop) {
 
@@ -250,7 +239,7 @@
 		if (dbRecord.MessageType === "Action") {
 			toAdd += '<div class="systemmessage">System message</div>'
 		}
-		toAdd += '<div class="content">'
+		toAdd += '<div class="content chatformat">'
 		toAdd += contents
 		toAdd += '</div>'
 		toAdd += '<button class="options">o</button>'
@@ -374,9 +363,10 @@
 	}
 
 	// On "show earlier" changed
-	//$('button.showAll').on("click", () => {
-	//	socket.emit('data request', { request: "chatMessagesLoad", params: {  } } )
-	//})
+	$('button.showEarlier').on("click", () => {
+		var stamp = $('.achat').eq(0).attr('data-timestamp')
+		socket.emit('data request', { request: "chatMessagesLoad", params: { earlier: true, room: viewingRoom, when: stamp } })
+	})
 
 	// On message received
 	socketChat.on('chat sent', (response) => {

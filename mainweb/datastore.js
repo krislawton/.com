@@ -151,6 +151,14 @@ module.exports = {
 					callback(err, result)
 				})
 		},
+		rootUserLoadAchievementsRecent: (params, callback) => {
+			permaid = typeof params.session.userData !== "undefined" && typeof params.session.userData.permaid !== "undefined" ? params.session.userData.permaid : null
+			pool.request()
+				.input("AccountPermaId", sql.Int, permaid)
+				.execute("dbo.spAccountAchievementsRecent", (err, result) => {
+					callback(err, result)
+				})
+		},
 		rootUserLoadChangelog: (params, callback) => {
 			permaid = typeof params.session.userData.permaid === "undefined" ? null : params.session.userData.permaid
 			pool.request()
@@ -276,6 +284,13 @@ module.exports = {
 				.input("PageRequested", sql.VarChar, params.page)
 				.execute("dbo.spPageLoadInsert")
 				// don't care whether it succeeds or not
+		},
+		rootUserAchievementAcknowledge: (params, callback) => {
+			pool.request()
+				.input("AccAchieveId", sql.Int, params.accAchieveId)
+				.execute("spAccountAchievementMarkSeen", (err, result) => {
+					callback(err, result)
+				})
 		},
 		rootUserChangeDisplayName: (params, callback) => {
 			permaid = typeof params.session.userData.permaid === "undefined" ? null : params.session.userData.permaid

@@ -83,25 +83,25 @@ body {
 	font-size: small;
 	color: white;
 }
-#topBanner .right .badge.show {
+#topBanner .right > .attention .badge {
 	display: block;
 }
-#topBanner .achievements img.animate {
-	animation-iteration-count: 1;
-	animation-duration: 1s;
+#topBanner .right > .attention img {
+	animation-iteration-count: infinite;
+	animation-duration: 3s;
 	animation-timing-function: ease;
-	animation-name: ac;
+	animation-name: iconwiggle;
 }
-@keyframes ac {
-	0%   { transform: scale(1.00) rotate(0); }
-	20%  { transform: scale(1.40) rotate(-10deg); }
-	30%  { transform: scale(1.20) rotate(10deg); }
-	40%  { transform: scale(1.20) rotate(-10deg); }
-	50%  { transform: scale(1.20) rotate(5deg); }
-	60%  { transform: scale(1.15) rotate(-5deg); }
-	70%  { transform: scale(1.10) rotate(2deg); }
-	80%  { transform: scale(1.05) rotate(-2deg); }
-	100% { transform: scale(1.00) rotate(0deg); }
+@keyframes iconwiggle {
+	0%  { transform: scale(1.00) rotate(0); }
+	6% { transform: scale(1.50) rotate(-10deg); }
+	10% { transform: scale(1.30) rotate(10deg); }
+	13% { transform: scale(1.30) rotate(-10deg); }
+	17% { transform: scale(1.30) rotate(5deg); }
+	20% { transform: scale(1.25) rotate(-5deg); }
+	23% { transform: scale(1.20) rotate(2deg); }
+	27% { transform: scale(1.10) rotate(-2deg); }
+	33% { transform: scale(1.00) rotate(0deg); }
 }
 
 main.default {
@@ -148,16 +148,16 @@ main.default {
 .top-dialogue p {
 	margin: 5px 0;
 }
-/* Changelog */
-.changelog {
+/* Changelog & achievements */
+.changelog, .recent-achievements {
 	margin-bottom: 5px;
 }
-.changelog .change {
+.changelog .change, .recent-achievements .achievement {
 	display: flex;
 	border-top: 1px solid rgba(0, 0, 0, 0.1);
 	transition: background 0.5s;
 }
-.change:hover, .change.unreleased:hover {
+.change:hover, .change.unreleased:hover, .acheivement:hover {
 	opacity: 1;
 	background: rgba(0, 0, 0, 0.02);
 }
@@ -170,11 +170,11 @@ main.default {
 .change.unreleased {
 	opacity: 0.3;
 }
-.change .left {
+.change .left, .achievement .left {
 	flex-grow: 1;
 	padding: 5px 0;
 }
-.change h4 {
+.change h4, .achievement h4 {
 	margin: 0 0 5px 0;
 }
 .change .description p:last-child {
@@ -188,10 +188,10 @@ main.default {
 	margin: 5px 0;
 	color: rgba(0, 0, 0, 0.6);
 }
-.change .mark-as-read {
+.change .mark-as-read, .achievement .mark-as-seen {
 	display: none;
 }
-.change.attention .mark-as-read {
+.change.attention .mark-as-read, .achievement.unseen .mark-as-seen {
 	display: block;
 	background: hsl(0, 71%, 55%);
 	color: white;
@@ -202,6 +202,70 @@ main.default {
 }
 .change.attention .mark-as-read:active {
 	background: hsl(0, 71%, 75%);
+}
+
+.achievement.unseen .mark-as-seen {
+	background: hsl(120, 71%, 45%);
+}
+.achievement.unseen .mark-as-seen:hover {
+	background: hsl(120, 71%, 57%);
+}
+.achievement.unseen .mark-as-seen:active {
+	background: hsl(120, 71%, 65%);
+}
+.recent-achievements .achievement h4 {
+	position: relative;
+	display: inline-block;
+	background: #f0f0f0;
+	font-weight: normal;
+	border: 1px solid #c0c0c0;
+	padding: 4px 8px 4px 22px;
+	border-radius: 4px;
+	position: relative;
+}
+.recent-achievements .achievement h4::before {
+	display: inline-block;
+	width: 8px;
+	height: 8px;
+	border-radius: 4px;
+	content: " ";
+	position: absolute;
+	left: 9px;
+	top: 7px;
+	background: black;
+}
+.recent-achievements .achievement.lvl1 h4::before {
+	background: hsl(20, 40%, 50%);
+}
+.recent-achievements .achievement.lvl2 h4::before {
+	background: hsl(200, 10%, 75%);
+}
+.recent-achievements .achievement.lvl3 h4::before {
+	background: hsl(45, 90%, 60%);
+}
+.recent-achievements .achievement.lvl4 h4::before {
+	background: hsl(260, 100%, 70%);
+	background: linear-gradient(45deg, hsl(170, 80%, 60%), hsl(200, 90%, 50%));
+}
+.recent-achievements .achievement.lvl-1 h4 {
+	background: #c0c0c0;
+}
+.recent-achievements .achievement.lvl-1 h4::before {
+	background: black;
+}
+.recent-achievements .achievement.lvl-2 h4 {
+	background: black;
+	color: white;
+}
+.recent-achievements .achievement.lvl-2 h4::before::before {
+	background: white;
+}
+.recent-achievements .achievement.lvl-3 h4 {
+	background: hsl(0, 80%, 40%);
+	color: white;
+}
+.recent-achievements .achievement.lvl-3 h4::before {
+	background: white;
 }
 
 /*********************/

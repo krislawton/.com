@@ -9,11 +9,11 @@
 		fromLeft -= 340
 
 		var selector = ''
-		if (button.className === "user") {
+		if (button.classList.contains("user")) {
 			selector = 'profile'
-		} else if (button.className === "achievements") {
+		} else if (button.classList.contains("achievements")) {
 			selector = 'achievements'
-		} else if (button.className === "about") {
+		} else if (button.classList.contains("about")) {
 			selector = 'about'
 		}
 
@@ -66,7 +66,8 @@
 
 			// Update badge
 			if (unreadCount > 0) {
-				$('#topBanner .right > .about .badge').addClass('show').html(unreadCount)
+				$('#topBanner .right > .about').addClass('attention')
+				$('#topBanner .right > .about .badge').html(unreadCount)
 			}
 		}
 	})
@@ -75,7 +76,6 @@
 		var changeId = $(e.target).parents('.change').attr('data-changeid')
 		globalSocket.emit('db procedure request', { procedure: "rootUserChangelogAcknowledge", params: { changeId: changeId } })
 	})
-	// Handle changelog ok success
 	globalSocket.on('db procedure response', (response) => {
 		console.log(response)
 		if (!response.err && response.input.procedure === "rootUserChangelogAcknowledge") {
@@ -86,7 +86,78 @@
 			newUnreadCount--
 			$(sel).html(newUnreadCount)
 			if (newUnreadCount === 0) {
-				$(sel).removeClass("show")
+				$('#topBanner .right > .about').removeClass("attention")
+			}
+		}
+	})
+
+	// Load achievements
+	globalSocket.emit('recent achievements request')
+	globalSocket.on('recent achievements response', (response) => {
+		console.log(response)
+		if (!response.err) {
+			$('.achievements-dialogue .recent-achievements').html("")
+			
+			var achs = response.result.recordset
+			var newCount = 0
+			for (i in achs) {
+				newCount += (!achs[i].Seen? 1 : 0)
+
+				var ach = document.createElement("div")
+				ach.className = "achievement"
+				ach.className += " lvl" + achs[i].LevelId
+				ach.className += (!achs[i].Seen ? " unseen" : "")
+				ach.dataset.dbid = achs[i].AccAchieveId
+
+				var left = document.createElement("div")
+				left.className = "left"
+
+				var chead = document.createElement("h4")
+				chead.innerHTML = achs[i].AchievementName
+
+				var cdesc = document.createElement("div")
+				cdesc.className = "description"
+				cdesc.innerHTML = achs[i].Information
+
+				var when = document.createElement("div")
+				when.className = "when"
+				when.innerHTML = "Awarded " + dataTransformer("datetime long", achs[i].AwardedDate)
+
+				var markAsSeen = document.createElement("button")
+				markAsSeen.className = "mark-as-seen"
+				markAsSeen.innerHTML = "ok"
+
+				left.appendChild(chead)
+				left.appendChild(cdesc)
+				left.appendChild(when)
+				ach.appendChild(left)
+				ach.appendChild(markAsSeen)
+
+				$('.achievements-dialogue > .inner > .recent-achievements').append(ach)
+			}
+
+			// Update badge
+			if (newCount > 0) {
+				$('#topBanner .right > .achievements').addClass('attention')
+				$('#topBanner .right > .achievements .badge').html(newCount)
+			}
+		}
+	})
+	// Handle pressing achievement ok button
+	$(document).on("click", '.achievement .mark-as-seen', (e) => {
+		var accAchieveId = $(e.target).parents('.achievement').attr('data-dbid')
+		globalSocket.emit('db procedure request', { procedure: "rootUserAchievementAcknowledge", params: { accAchieveId: accAchieveId } })
+	})
+	globalSocket.on('db procedure response', (response) => {
+		if (!response.err && response.input.procedure === "rootUserAchievementAcknowledge") {
+			var accAchieveId = response.input.params.accAchieveId
+			$('.achievement[data-dbid="' + accAchieveId + '"]').removeClass('unseen')
+			var sel = '#topBanner .right > .achievements .badge'
+			var newUnseenCount = $(sel).html()
+			newUnseenCount--
+			$(sel).html(newUnseenCount)
+			if (newUnseenCount === 0) {
+				$('#topBanner .right > .achievements').removeClass("attention")
 			}
 		}
 	})

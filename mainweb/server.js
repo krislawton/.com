@@ -77,6 +77,14 @@ const resmgr = require("./resourceManager.js")
 const seecret = require("./seecret.js")
 // Achievements
 const achiev = require("./achievements.js")
+function distributeAchievementUpdate(accountPermaId, called) {
+	var socc = io.sockets.sockets
+	for (i in socc) {
+		if (!called.err && socc[i].nsp.name === "/" && accountPermaId === socc[i].handshake.session.userData.permaid) {
+			io.to(i).emit('recent achievements response', called)
+		}
+	}
+}
 
 /* ================== */
 /* SETTING UP MODULES */
@@ -215,7 +223,11 @@ app.get('/*', (request, response) => {
 		if ((request.headers.accept || "").match(/text\/html/)) {
 			var params = { permaid: passUserData.permaid || null, page: request.path, ip: request.connection.remoteAddress }
 			datastore.procedure.serverPageLoadAudit(params)
-			achiev.updateAchievements({ justdone: "serverPageLoadAudit", userData: passUserData })
+			achiev.updateAchievements({ justdone: "serverPageLoadAudit", userData: passUserData }, (uaerr, uaresult) => {
+				if (typeof params.permaid !== "undefined") {
+					distributeAchievementUpdate(params.permaid, { err: uaerr, result: uaresult })
+				}
+			})
 		}
 
 		if (!err) {
@@ -250,10 +262,6 @@ app.get('/*', (request, response) => {
 /* SOCKETS ARE VERY IMPORTANT OK? */
 /* ============================== */
 io.on('connection', function (socket) {
-
-	// With the right manipulation, any socket request can be sent to the 
-	// server. Therefore, put the request in a try block to prevent the 
-	// server from crashing if it encounters such a manipulation.
 
 	/* ==================== */
 	/* OI OI LOGIN / SIGNUP */
@@ -443,6 +451,21 @@ io.on('connection', function (socket) {
 	/* DATA-RELATED STUFF (TILL NEAR END OF FILE) */
 	/* ========================================== */
 
+	socket.on('recent achievements request', () => {
+		params = { session: socket.handshake.session }
+		datastore.data["rootUserLoadAchievementsRecent"](params, (err, response) => {
+			var ret = {
+				err: err,
+				result: response
+			}
+			socket.emit('recent achievements response', ret)
+		})
+	})
+
+	// With the right manipulation, any socket request can be sent to the 
+	// server. Therefore, put the request in a try block to prevent the 
+	// server from crashing if it encounters such a manipulation.
+
 	socket.on('grid request', (input) => {
 		try {
 			var params = (typeof input.params === "object" ? input.params : {})
@@ -490,7 +513,6 @@ io.on('connection', function (socket) {
 		}
 		catch (e) {
 			delete params.session
-			console.log(e)
 			var ret = {
 				input: input,
 				err: e,
@@ -507,7 +529,11 @@ io.on('connection', function (socket) {
 			datastore.procedure[input.procedure](params, (err, response) => {
 				if (!err) {
 					var pass = { justdone: input.procedure, userData: params.session.userData, params: input.params }
-					achiev.updateAchievements(pass)
+					achiev.updateAchievements(pass, (uaerr, uaresult) => {
+						if (typeof pass.userData.permaid !== "undefined") {
+							distributeAchievementUpdate(pass.userData.permaid, { err: uaerr, result: uaresult })
+						}
+					})
 				}
 				delete params.session
 				var ret = {
@@ -562,7 +588,6 @@ io.on('connection', function (socket) {
 			})
 		}
 		catch (e) {
-			console.log(e)
 			delete params.session
 			var ret = {
 				input: input,
@@ -623,7 +648,11 @@ ioChat.on('connection', (socket) => {
 					fromDb: response,
 				}
 				ioChat.emit('chat sent', ret)
-				achiev.updateAchievements({ justdone: "chatSend", userData: socket.handshake.session.userData })
+				achiev.updateAchievements({ justdone: "chatSend", userData: socket.handshake.session.userData }, (uaerr, uaresult) => {
+					if (typeof socket.handshake.session.userData.permaid !== "undefined") {
+						distributeAchievementUpdate(socket.handshake.session.userData.permaid, { err: uaerr, result: uaresult })
+					}
+				})
 			})
 		}
 		catch (e) {
@@ -708,7 +737,12 @@ ioChat.on('connection', (socket) => {
 							socket.emit('react sent', ret)
 						} else {
 							ioChat.emit('react sent', ret)
-							achiev.updateAchievements({ justdone: "reactSend", userData: socket.handshake.session.userData, params: { messageId: input.messageId } })
+							var pass = { justdone: "reactSend", userData: socket.handshake.session.userData, params: { messageId: input.messageId } }
+							achiev.updateAchievements(pass, (uaerr, uaresult) => {
+								if (typeof pass.userData.permaid !== "undefined") {
+									distributeAchievementUpdate(pass.userData.permaid, { err: uaerr, result: uaresult })
+								}
+							})
 						}
 					})
 			}

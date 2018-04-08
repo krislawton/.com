@@ -2235,7 +2235,7 @@ var acheck = {
 
 // Function for running on other pages. Input should be the operation the user just performed
 module.exports = {
-	updateAchievements: (input) => {
+	updateAchievements: (input, callback) => {
 		//console.log("updateAchievements with input")
 		//console.log(input)
 		if (typeof input.userData.permaid !== "undefined" && typeof checklookup[input.justdone] !== "undefined") {
@@ -2277,11 +2277,24 @@ module.exports = {
 				if (toRemove !== -1) {
 					todo.splice(toRemove, 1)
 				}
+				if (todo.length === 0) {
+					checkForNewAchs()
+				}
 				//console.log("s4: todo after is")
 				//console.log(todo)
 				//console.log("------------------")
 			}
 
+			function checkForNewAchs() {
+				pool.request()
+					.input("AccountPermaId", sql.Int, forcheck.permaid)
+					.execute("spAccountAchievementsRecent", (err, result) => {
+						callback(err, result)
+					})
+			}
+
+		} else {
+			callback("did not pass requirements for achievement check", null)
 		}
 	}
 }
