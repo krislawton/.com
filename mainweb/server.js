@@ -729,7 +729,7 @@ ioChat.on('connection', (socket) => {
 				for (i in accountsInChat) {
 					var ll = new Date(accountsInChat[i].lastLeft + 30 * 6e4)
 					var n = new Date()
-					if (accountsInChat[i].connectionCount === 0 && accountsInChat[i].lastLeft !== null && Math.abs(ll - n) > 0) {
+					if (accountsInChat[i].connectionCount === 0 && accountsInChat[i].lastLeft !== null && Math.abs(n - ll) > 0) {
 						delete accountsInChat[i]
 						var ej = {
 							accountPermaId: permaid,

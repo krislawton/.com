@@ -13,51 +13,65 @@
 		$('#sendContainer textarea').removeClass("error").prop("disabled", false).val("" + storedText)
 	})
 
-	// Emit a request for the initial chat history
-	function initializeChat() {
-		if (initialSocketsWIP === 0) {
-			socket.emit('data request', { request: "chatMessagesLoad", params: { from: null } })
-		}
-	}
-	// And players please
+	// Get players
 	socket.emit('data request', { request: "chatAccountsLoad" })
 	// And rooms please
 	function refreshRooms() {
 		socket.emit('data request', { request: "chatRoomsLoad" })
 	}
 	refreshRooms() // onload
+	// And load main chat when everything is done
+	function initializeChat() {
+		$('button[data-roomid="' + viewingRoom + '"]').trigger('click')
+	}
 
 	// Globals
 	var viewingRoom = 'tournytime',
-		log = {},
 		chatInitialized = false,
 		initialSocketsWIP = 2,
 		users = {},
 		stars = {},
-		reactions = {},
-		viewingAsPermaId = $('#accountPermaId').attr('data-permaid'),
-		chunkSize = 100
+		viewingAsPermaId = $('#accountPermaId').attr('data-permaid')
 
 	// Socket responses
 	socket.on('data response', (response) => {
 		console.log(response)
-		// On receive initial chat
+		// On receive chat
 		if (response.input.request === "chatMessagesLoad") {
-			// Reactions
-			var dbReactions = response.recordset.recordsets[1]
-			for (var i in dbReactions) {
-				addReactionToMemory(dbReactions[i])
+			var p = response.input.params
+			if (!response.err && p.room === viewingRoom) {
+				// NOTE: Results are left joined to reactions
+				var jrc = response.recordset.recordset
+				if (p.earlier) {
+					jrc.reverse()
+				}
+				var rea = {}
+				for (i in jrc) {
+					// Only render chats once (since having more than
+					// one reaction means the results obj has more 
+					// than one row)
+					if (jrc[i].ReactionOrder === 1) {
+						addChatToView(jrc[i], p.earlier ? "top" : "bottom")
+					}
+					// now handle reaction
+					if (jrc[i].ReactorPermaId !== null) {
+						// test if object exists and create if not
+						if (typeof rea[jrc[i].MessageId] !== "object") {
+							rea[jrc[i].MessageId] = []
+						}
+						// create obj
+						var ro = {
+							permaId: jrc[i].ReactorPermaId,
+							reaction: jrc[i].Reaction
+						}
+						rea[jrc[i].MessageId].push(ro)
+					}
+				}
+				// Recurse through the reactions we've just been processing and render all
+				for (i in rea) {
+					addReactionsToView(i, rea[i])
+				}
 			}
-			// Messages
-			var msgs = response.recordset.recordset
-			for (var i in msgs) {
-				//addMessage(msgs[i], true)
-				addChatToMemory(msgs[i], "top")
-			}
-			$('.room[data-roomid="' + viewingRoom +'"]').trigger("click")
-			$('#logViewPort').scrollTop($('#logViewPort')[0].scrollHeight)
-			// Load stars after chat
-			loadStars()
 		}
 		// On receive player list
 		if (response.input.request === "chatAccountsLoad") {
@@ -88,10 +102,6 @@
 				for (r in rooms) {
 					// Button in #chats
 					toAppend += '<button class="room" data-roomid="' + rooms[r].RoomPermanentId + '">#' + rooms[r].RoomName + '</button>'
-					// Add to log object if it's not there
-					if (typeof log[rooms[r].RoomPermanentId] === "undefined") {
-						log[rooms[r].RoomPermanentId] = []
-					}
 				}
 				$('#chats .rooms').html(toAppend)
 				$('#chats .addRoom').remove()
@@ -244,15 +254,11 @@
 		toAdd += contents
 		toAdd += '</div>'
 		toAdd += '<button class="options">o</button>'
-		// Reactions
-		var messageId = dbRecord.MessageId
-		var reactionHtml = messageReactionHtml(messageId)
-		toAdd += reactionHtml
 		// End element
 		toAdd += '</div></div>'
 
 		if (bottomOrTop === "top") {
-			$('#logContainer .showAll').after(toAdd)
+			$('#logContainer button.showEarlier').after(toAdd)
 			addChatDividersTop()
 		} else {
 			$('#logContainer').append(toAdd)
@@ -367,20 +373,21 @@
 		return ret
 	}
 
-	// On "show all chat" changed
-	$('#chkShowAll').change(function () {
-		var showAll = this.checked
-		console.log(this.checked)
-		chunkSize = (showAll ? 9999 : 100)
-		$('button[data-roomid="' + viewingRoom + '"]').trigger("click")
-	})
+	// On "show earlier" changed
+	//$('button.showAll').on("click", () => {
+	//	socket.emit('data request', { request: "chatMessagesLoad", params: {  } } )
+	//})
 
 	// On message received
 	socketChat.on('chat sent', (response) => {
 		console.log(response)
 		if (!response.err) {
 			var r = response.fromDb.recordset[0]
-			addChatToMemory(r, "bottom")
+
+			// Add to view
+			if (r.Room === viewingRoom) {
+				addChatToView(r, "bottom")
+			}
 
 			// Play sound
 			var msgsound
@@ -634,11 +641,7 @@
 		// Clear chat
 		$('#logContainer > .achat, #logContainer > .diffSeparator, #logContainer > .dateHeader').remove()
 		// Loop through chat of room and add
-		var chatToAdd = log[room]
-		for (var c = chatToAdd.length - 1; c >= 0 && c >= chatToAdd.length - chunkSize; c--) {
-			addChatToView(chatToAdd[c], "top")
-		}
-		$('#logViewPort').scrollTop($('#logViewPort')[0].scrollHeight)
+		socket.emit('data request', { request: "chatMessagesLoad", params: { earlier: true, room: viewingRoom, when: "now" } })
 		refreshRoomHighlight()
 	})
 	// Highlight chosen room
@@ -926,15 +929,18 @@
 		var messageId = response.input.messageId
 		$('[data-messageid="' + messageId + '"] div.options .close').trigger("click")
 
-		// Flush existing reactions from message memory and refresh
-		reactions[messageId] = []
+		// Flush existing reactions from message memory and rebuild
+		var reas = []
 		for (i in response.result.recordset) {
-			addReactionToMemory(response.result.recordset[i])
+			var r = response.result.recordset[i]
+			var bo = {
+				permaId: r.AccountPermaId,
+				reaction: r.Reaction
+			}
+			reas.push(bo)
 		}
-
-		var newReactionHtml = messageReactionHtml(messageId)
 		$('[data-messageid="' + messageId + '"] .reactions').remove()
-		$('[data-messageid="' + messageId + '"] .else').append(newReactionHtml)
+		addReactionsToView(messageId, reas)
 
 		// If the user was scrolled down all the way before 
 		// the reaction HTML was inserted, rescroll to bottom
@@ -943,28 +949,18 @@
 		}
 	})
 
-	// Helper for adding reaction in to memory
-	function addReactionToMemory(dbRecord) {
-		var messageId = dbRecord.MessageId
-		// If the reactions object doens't have a member for this messageId, create one
-		if (typeof reactions[messageId] !== "object") {
-			reactions[messageId] = []
-		}
-		// Add this reaction to it
-		reactions[messageId].push(dbRecord)
-	}
-	// Helper for returning HTML of message reactions
-	function messageReactionHtml(messageId) {
+	// Helper for rendering reactions
+	function addReactionsToView(messageId, reactions) {
 		var html = ""
-		
-		if (typeof reactions[messageId] === "object") {
+
+		if (reactions.length > 0) {
 			html += '<div class="reactions">'
 			// First build an object which groups reactions so they
 			// can be processed per reaction given
 			var mr = {}
-			for (i in reactions[messageId]) {
-				var reactiontype = reactions[messageId][i].Reaction
-				var userPermaId = reactions[messageId][i].AccountPermaId
+			for (i in reactions) {
+				var reactiontype = reactions[i].reaction
+				var userPermaId = reactions[i].permaId
 				if (typeof mr[reactiontype] !== "object") {
 					mr[reactiontype] = { count: 0, who: "", me: false }
 				}
@@ -986,7 +982,7 @@
 			html += '</div>'
 		}
 
-		return html
+		$('.achat[data-messageid="' + messageId + '"] .else').append(html)
 	}
 
 	// Handle name being changed

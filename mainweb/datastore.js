@@ -174,8 +174,12 @@ module.exports = {
 				})
 		},
 		chatMessagesLoad: (params, callback) => {
+			var dbEarlier = params.earlier ? "earlier" : "later"
+			var dbWhen = params.when === "now" ? null : params.when
 			pool.request()
-				.input("From", sql.VarChar, params.from)
+				.input("EarlierOrLater", sql.VarChar, dbEarlier)
+				.input("Room", sql.VarChar, params.room)
+				.input("When", sql.DateTime, dbWhen)
 				.execute("dbo.spChatLoad", (err, result) => {
 					callback(err, { recordset: result })
 				})
