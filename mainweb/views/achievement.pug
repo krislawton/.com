@@ -1,0 +1,16 @@
+﻿doctype html
+html
+  head
+    title Achievement - krislawton.com
+    include /includes/htmlHead.pug
+    include /includes/rootHtmlHead.pug
+    link(rel="stylesheet", href="/u/achievement.css")
+    script(src="/u/achievement.js")
+    - var achievementId = urlParameter
+    meta#ids(data-achievementid=achievementId)
+  body
+    include /includes/rootPageHead.pug
+    +header(userData)
+    main.default
+      h1 Achievement
+      p This page is a work-in-progress.

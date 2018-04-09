@@ -28,9 +28,9 @@
 
 				toAppend += '<div class="ach-line">'
 				toAppend += '<div class="ach-badgecontainer">'
-				toAppend += '<div class="ach-badge lvl' + achs[i].LevelId + '">'
+				toAppend += '<a href="/achievement/' + achs[i].URLName + '" class="ach-badge lvl' + achs[i].LevelId + '">'
 				toAppend += achs[i].AchievementName
-				toAppend += '</div>'
+				toAppend += '</a>'
 				toAppend += '</div>'
 				toAppend += '<div class="ach-info">' + achs[i].Information
 				toAppend += (needsExtra ? '<sup class="dagger' + extraId + '" title="' + achs[i].Information2 + '">†' + extraId + '</sup>': "")

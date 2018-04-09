@@ -96,6 +96,20 @@ var resources = {
 	"/u/login.js": new cr({
 		send: "/views/login.js"
 	}),
+	"/achievement": new cr({
+		type: "render",
+		send: "achievement",
+		loggedInOnly: true,
+		parameterized: true
+	}),
+	"/u/achievement.css": new cr({
+		send: "/views/achievement.css",
+		loggedInOnly: true
+	}),
+	"/u/achievement.js": new cr({
+		send: "/views/achievement.js",
+		loggedInOnly: true
+	}),
 	"/achievements": new cr({
 		type: "render",
 		send: "achievements",

@@ -643,7 +643,7 @@ var acheck = {
 		function updateExisting(r) {
 			var rj = JSON.parse(r.ExtraJSON)
 			// Only if the 10 minute window is different
-			if (rn.slice(0, 16) !== (rj.lastMessage).slice(0, 16)) {
+			if (rn.slice(0, 15) !== (rj.lastMessage).slice(0, 15)) {
 				rj.lastMessage = rn
 				rj.progressCurrent++
 				var query = "update aa"
@@ -711,7 +711,7 @@ var acheck = {
 		function updateExisting(r) {
 			var rj = JSON.parse(r.ExtraJSON)
 			// Only if the 10 minute window is different
-			if (rn.slice(0, 16) !== (rj.lastMessage).slice(0, 16)) {
+			if (rn.slice(0, 15) !== (rj.lastMessage).slice(0, 15)) {
 				rj.lastMessage = rn
 				rj.progressCurrent++
 				var query = "update aa"
@@ -779,7 +779,7 @@ var acheck = {
 		function updateExisting(r) {
 			var rj = JSON.parse(r.ExtraJSON)
 			// Only if the 10 minute window is different
-			if (rn.slice(0, 16) !== (rj.lastMessage).slice(0, 16)) {
+			if (rn.slice(0, 15) !== (rj.lastMessage).slice(0, 15)) {
 				rj.lastMessage = rn
 				rj.progressCurrent++
 				var query = "update aa"
@@ -849,7 +849,7 @@ var acheck = {
 		function updateExisting(r) {
 			var rj = JSON.parse(r.ExtraJSON)
 			// Only if the 10 minute window is different
-			if (rn.slice(0, 16) !== (rj.lastMessage).slice(0, 16)) {
+			if (rn.slice(0, 15) !== (rj.lastMessage).slice(0, 15)) {
 				rj.lastMessage = rn
 				rj.progressCurrent = r.AmountSent
 				var query = "update aa"

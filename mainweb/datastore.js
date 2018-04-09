@@ -137,7 +137,7 @@ module.exports = {
 		},
 		rootUserLoadAchievements: (params, callback) => {
 			pool.request()
-				.input("CustomId", sql.VarChar, params.username)
+				.input("AccountPermaId", sql.VarChar, params.permaid)
 				.execute("dbo.spAccountAchievementsGet", (err, result) => {
 					if (!err) {
 						// For in-progress, filter JSON data so that it's only progress
@@ -164,6 +164,13 @@ module.exports = {
 			pool.request()
 				.input("AccountPermaId", sql.Int, permaid)
 				.execute("spChangelogGetForAccount", (err, result) => {
+					callback(err, result)
+				})
+		},
+		rootUserLoadInfo: (params, callback) => {
+			pool.request()
+				.input("AccountPermaId", sql.Int, params.permaid)
+				.execute("spAccountGetInfo", (err, result) => {
 					callback(err, result)
 				})
 		},

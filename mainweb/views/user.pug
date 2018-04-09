@@ -8,14 +8,44 @@ html
     script(src="/u/user.js")
     - var username = urlParameter.slice(urlParameter.indexOf("-") + 1)
     - var permaid = urlParameter.slice(0, urlParameter.indexOf("-"))
-    meta#username(data-username=username)
+    meta#ids(data-permaid=permaid, data-username=username)
   body
     include /includes/rootPageHead.pug
     +header(userData)
     main.default
       - headerText = "ID " + permaid + ": " + username
       h1= username + "'s profile"
-      p Profiles is pretty early in development, yo. We'll try to make this page show achievements and basic stats about the user.
+      p
+        span.here.username
+        | , AKA 
+        span.here.display-name
+        | , signed up on 
+        span.here.create-date
+        | , has been active on 
+        span.here.active-length 
+        | , and was last active 
+        span.here.last-activity-ago
+        | . 
+        span.here.display-name
+        |  has 
+        span.here.page-loads
+        |  and has 
+        span.here.messages-sent
+        | .
+      p
+        span.here.display-name
+        |  has the choice of the following colors: 
+        span.here.color1
+        | , 
+        span.here.color2
+        | , or 
+        span.here.color3
+        | .
+      p
+        | Here is a graph depicting the usual activity of 
+        span.here.display-name
+        |  throughout the hours of the day:
+        div#hourly-activity
       h2 Achievements gotten
       div#ach-gotten
       h2 Achievements working towards

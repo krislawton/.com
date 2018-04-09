@@ -33,11 +33,11 @@
 	font-size: small;
 	width: 120px;
 }
-.achievement {
+main .achievement {
 	display: inline-block;
 	width: 50px;
 }
-.achievement .icon {
+main .achievement .icon {
 	position: relative;
 	width: 8px;
 	height: 8px;
