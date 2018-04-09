@@ -80,7 +80,8 @@ const achiev = require("./achievements.js")
 function distributeAchievementUpdate(accountPermaId, called) {
 	var socc = io.sockets.sockets
 	for (i in socc) {
-		if (!called.err && socc[i].nsp.name === "/" && accountPermaId === socc[i].handshake.session.userData.permaid) {
+		var ud = socc[i].handshake.session.userData || { permaid: -99 }
+		if (!called.err && socc[i].nsp.name === "/" && accountPermaId === ud.permaid) {
 			io.to(i).emit('recent achievements response', called)
 		}
 	}
