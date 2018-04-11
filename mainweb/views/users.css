@@ -42,21 +42,20 @@ main .achievement .icon {
 	width: 8px;
 	height: 8px;
 	border-radius: 4px;
-	background: black;
 	display: inline-block;
 	margin-right: 7px;
 	bottom: 2px;
 }
-.level1 .icon {
+main .level1 .icon {
 	background: hsl(20, 40%, 50%);
 }
-.level2 .icon {
+main .level2 .icon {
 	background: hsl(200, 10%, 75%);
 }
-.level3 .icon {
+main .level3 .icon {
 	background: hsl(45, 90%, 60%);
 }
-.level4 .icon {
+main .level4 .icon {
 	background: hsl(260, 100%, 70%);
 	background: linear-gradient(45deg, hsl(170, 80%, 60%), hsl(200, 90%, 50%));
 }

@@ -19,6 +19,9 @@
 		if (logOrSign === "sign" && tk === "") {
 			er.push("Please enter a token.")
 		}
+		if (logOrSign === "sign" && un.match(/^[a-z0-9-_]{1,127}$/g) === null) {
+			er.push("Your user ID must only contain: Lowercase alphabet characters, numbers, hyphens, or underscores. Want more variety, hun? Talk to Kris.")
+		}
 
 		if (er.length === 0) {
 			if (logOrSign === "log") {

@@ -83,7 +83,7 @@
 
 				var idExtra = document.createElement("div")
 				idExtra.className = "extra-ids"
-				idExtra.textContent = "(#" + users[r].AccountPermaId + ": " + users[r].CustomId + ")"
+				idExtra.textContent = "(" + users[r].CustomId + "#" + users[r].AccountPermaId + ")"
 
 				linkToProfile.appendChild(displayName)
 				linkToProfile.appendChild(idExtra)

@@ -339,3 +339,25 @@ button.button.raised.colored:hover, a.button.raised.colored:hover, input.button.
 button.button.raised.colored:active, a.button.raised.colored:active, input.button.raised.colored:active {
 	background: hsl(216, 40%, 58%);
 }
+
+/**************/
+/*** ERRORS ***/
+/**************/
+.error {
+	background: hsl(0, 60%, 90%);
+	border: 1px solid hsl(0, 60%, 50%);
+	padding: 10px;
+	border-radius: 3px;
+	color: hsl(0, 60%, 50%);
+	box-shadow: 0 0 5px 0 hsl(0, 60%, 70%);
+	cursor: pointer;
+}
+.error:hover {
+	background: hsl(0, 60%, 85%);
+}
+.error:active {
+	background: hsl(0, 70%, 80%);
+}
+.error ul {
+	margin: 0;
+}

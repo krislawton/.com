@@ -98,8 +98,18 @@
 
 		if (e.target.name === "userId") {
 			var userId = $(e.target).find('#userId').val()
-			$(e.target).slideUp()
-			socket.emit('db procedure request', { procedure: "rootUserChangeUserId", params: { userId: userId } })
+
+			if (userId.match(/^[a-z0-9-_]{1,127}$/g) === null) {
+				var ertext = "Your user ID can only contian the following: lowercase alphabet characters, numbers, hyphens, and underscores. Want less limitations? Talk to Kris."
+				if (userId.length > 127) {
+					ertext = "Your user ID must be shorter than that."
+				}
+				printErrors('userId', ertext)
+			} else {
+				$(e.target).slideUp()
+				socket.emit('db procedure request', { procedure: "rootUserChangeUserId", params: { userId: userId } })
+			}
+
 		}
 
 		if (e.target.name === "password") {
@@ -133,6 +143,35 @@
 				$('form.setting[name="color"]').slideDown()
 			}
 		}
+	})
+
+	// Error handling
+	function printErrors(section, errors) {
+
+		$('[name="' + section + '"] .error').slideUp(() => {
+			var erHtml = ''
+
+			if (typeof errors === "object" && errors.length === 1) {
+				errors = errors[0]
+			}
+
+			if (typeof errors === "object") {
+				erHtml = 'Errors:<ul>'
+				for (e in errors) {
+					erHtml += '<li>' + errors[e] + '</li>'
+				}
+				erHtml += '</ul>'
+			} else if (typeof errors === "string") {
+				erHtml = 'Error: ' + errors
+			} else {
+				erHtml = 'Error: Page cannot determine type of error. Was it passed in correctly?'
+			}
+
+			$('[name="' + section + '"] .error').html(erHtml).slideDown()
+		})
+	}
+	$(document).on("click", '.error', (e) => {
+		$(e.target).slideUp()
 	})
 
 })

@@ -1629,7 +1629,7 @@ var acheck = {
 		function checkAlreadyGranted() {
 			// here we will check whether they were already granted
 			// the award in the relevant 6 - hour blocks
-			var querycheck = "select top (1) datediff(hour, 0, AwardedDate) / 6 as LastAwardedBlock, datediff(hour, 0, getutcdate()) / 6 as CurrentBlock"
+			var querycheck = "select top (1) datediff(hour, 0, AwardedDate) / 4 + 6 as LastAwardedEndBlock, datediff(hour, 0, getutcdate()) / 4 as CurrentBlock"
 			querycheck += " from AccountAchievements"
 			querycheck += " where AchievementId = @AchievementId and AccountPermaId = @AccountPermaId"
 			querycheck += " and AwardedDate is not null"
@@ -1644,7 +1644,7 @@ var acheck = {
 					}
 					if (result.recordset.length === 0) {
 						grant()
-					} else if (result.recordset[0].LastAwardedBlock !== result.recordset[0].CurrentBlock) {
+					} else if (result.recordset[0].CurrentBlock > result.recordset[0].LastAwardedEndBlock) {
 						grant()
 					} else {
 						callback(null, null, achid)

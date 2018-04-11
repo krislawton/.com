@@ -18,6 +18,9 @@ form.setting > *:first-child {
 form.setting .mid-col {
 	width: 300px;
 }
+form.settings .error {
+    margin: 20px auto 0;
+}
 
 /* Color picker */
 .radio-container {

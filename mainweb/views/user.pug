@@ -13,13 +13,14 @@ html
     include /includes/rootPageHead.pug
     +header(userData)
     main.default
+      a.button#allUsers(href="/users") < All users
       - headerText = "ID " + permaid + ": " + username
       h1= username + "'s profile"
       p
-        span.here.username
-        | , AKA 
         span.here.display-name
-        | , signed up on 
+        |  (
+        span.here.username
+        | ) signed up on 
         span.here.create-date
         | , has been active on 
         span.here.active-length 

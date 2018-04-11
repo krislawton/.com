@@ -24,6 +24,7 @@ html
         div.mid-col
           input(type="text")#displayName
         input(type="submit", value="Save this change", disabled).button.raised.colored
+        div.error(style="display: none")
       h2 User ID
       p.smol
         | Your user ID is your own custom unique identifier. It is displayed discretely 
@@ -36,6 +37,7 @@ html
         div.mid-col
           input(type="text")#userId
         input(type="submit", value="Save this change", disabled).button.raised.colored
+        div.error(style="display: none")
       h2 Permanent ID
       p.smol
         | For technical reasons, you are assigned a fairly-random permanent ID number
@@ -52,6 +54,7 @@ html
         div.mid-col
           input(type="text")#password
         input(type="submit", value="Change password").button.raised.colored
+        div.error(style="display: none")
       h2 Nametag color
       p.smol
         | Your name has a color in chat. You can choose between a pool of three that 
@@ -70,3 +73,4 @@ html
             input(type="radio", name="color", value="3").color3
             span.radio-checked
         input(type="submit", value="Save this change", disabled).button.raised.colored
+        div.error(style="display: none")
