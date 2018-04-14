@@ -115,6 +115,10 @@
     <Content Include="common\Logo.png" />
     <Content Include="common\LogoWhite.png" />
     <Content Include="common\socket.io.js.map" />
+    <Content Include="common\SoundCiv4Border.mp3" />
+    <Content Include="common\SoundCiv4Chat.mp3" />
+    <Content Include="common\SoundCiv4LossMiddle.mp3" />
+    <Content Include="common\SoundCiv4War.mp3" />
     <Content Include="common\SoundMGS.mp3" />
     <Content Include="common\SoundPop.mp3" />
     <Content Include="common\SoundTOS.ogg" />

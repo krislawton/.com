@@ -39,6 +39,39 @@ var dataTransformer = (method, input) => {
 		output = zeroPad(dateinfo.getHours())
 		output += ':' + zeroPad(dateinfo.getMinutes())
 		output += ':' + zeroPad(dateinfo.getSeconds())
+	} else if (method === "ago") {
+		var dateNow = new Date()
+		var dateComp = new Date(input)
+
+		var diffHr = Math.abs(dateNow - dateComp) / 36e5
+
+		var diffString = ""
+		if (diffHr < 1 - (1 / 120)) {
+			var minutes = Math.round(diffHr * 60)
+			diffString += minutes + " minutes"
+		} else if (diffHr < 2) {
+			var hours = Math.floor(diffHr + (2.5 / 60))
+			var minutes = Math.round(diffHr % 1 * 12) * 5 % 60
+			diffString += hours + " hour"
+			diffString += (hours > 1 ? "s" : "")
+			diffString += (minutes > 0 ? " " + minutes + " minutes" : "")
+		} else if (diffHr < 8) {
+			var hoursDecimal = Math.round(diffHr * 4) / 4
+			var hours = Math.floor(hoursDecimal)
+			var minutes = hoursDecimal % 1 * 60
+			diffString += hours + " hour" + (hours !== 1 ? "s" : "")
+			diffString += (minutes !== 0 ? " " + minutes + " minutes" : "")
+		} else {
+			var days = Math.floor((diffHr + (0.5 / 24)) / 24)
+			var hours = Math.round(diffHr) % 24
+			diffString += (days > 0 ? days + " day" : "")
+			diffString += (days > 1 ? "s" : "")
+			diffString += (days < 7 && days > 0 && hours > 0 ? " " : "")
+			diffString += (days < 7 && hours > 0 ? hours + " hour" : "")
+			diffString += (days < 7 && hours > 1 ? "s" : "")
+		}
+
+		output = diffString
 	}
 
 	return output

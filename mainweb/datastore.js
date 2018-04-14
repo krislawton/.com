@@ -135,6 +135,13 @@ module.exports = {
 					callback(err, { recordset: result })
 				})
 		},
+		rootAchievementLoadSingle: (params, callback) => {
+			pool.request()
+				.input("AchievementUrl", sql.VarChar, params.achievementUrl)
+				.execute("spAchievementGetSingle", (err, result) => {
+					callback(err, result)
+				})
+		},
 		rootUserLoadAchievements: (params, callback) => {
 			pool.request()
 				.input("AccountPermaId", sql.VarChar, params.permaid)

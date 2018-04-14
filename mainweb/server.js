@@ -95,7 +95,10 @@ app.set('view engine', 'pug')
 app.locals.basedir = __dirname + '/'
 
 // Socket IO
-io = require('socket.io').listen(server)
+io = require('socket.io').listen(server, {
+	pingTimeout: 7000,
+	pingInterval: 1000
+})
 
 // DB Configuration and connection string
 const dbconfig = {
@@ -157,7 +160,7 @@ var storeconfig = {
 }
 var storeoptions = {
 	table: "NodeSessions",
-	ttl: 666 * 864e5, // 864e5
+	ttl: 864e5, // 666 * 864e5, // 864e5 = 1 day
 }
 
 // Set up sessions
@@ -552,7 +555,8 @@ io.on('connection', function (socket) {
 					if (input.procedure === "rootUserChangeDisplayName") {
 						var permaid = socket.handshake.session.userData.permaid
 						// Tell chat
-						var em = { permaid: permaid, changedTo: input.params.displayName }
+						chatChecksum = generateSessionId()
+						var em = { permaid: permaid, changedTo: input.params.displayName, checksum: chatChecksum }
 						ioChat.emit('display name changed', em)
 						// Update all user's sessions
 						var sq_q = "select * from NodeSessions"
@@ -604,6 +608,7 @@ io.on('connection', function (socket) {
 // Chat
 var ioChat = io.of('/chat')
 var accountsInChat = {}
+var chatChecksum = generateSessionId()
 ioChat.on('connection', (socket) => {
 	var permaid = socket.handshake.session.userData.permaid
 
@@ -618,11 +623,13 @@ ioChat.on('connection', (socket) => {
 		var p = { room: "tournytime", content: "{player} is now online", extra: JSON.stringify(ej) }
 		chatAddSystemMessage(p, (err, result) => {
 			if (!err) {
+				console.log(ret)
+				chatChecksum = generateSessionId()
 				var ret = {
 					err: err,
-					fromDb: result
+					fromDb: result,
+					checksum: chatChecksum
 				}
-				console.log(ret)
 				ioChat.emit('chat sent', ret)
 			} else {
 				console.log(err)
@@ -636,17 +643,17 @@ ioChat.on('connection', (socket) => {
 	console.log("SOMEONE ENTERED CHAT") 
 	console.log(accountsInChat)
 
-	// Object.keys(io.sockets.sockets),
-
 	socket.on('chat send', (input) => {
 		try {
 			var input = (typeof input === "object" ? input : null)
 			input.from = socket.handshake.session.userData.permaid
 			datastore.procedure.chatSend(input, (err, response) => {
+				chatChecksum = generateSessionId()
 				var ret = {
 					input: input,
 					err: err,
 					fromDb: response,
+					checksum: chatChecksum
 				}
 				ioChat.emit('chat sent', ret)
 				achiev.updateAchievements({ justdone: "chatSend", userData: socket.handshake.session.userData }, (uaerr, uaresult) => {
@@ -701,10 +708,12 @@ ioChat.on('connection', (socket) => {
 					if (!err) {
 						console.log("success, emitting system message")
 						ret.success = true
+						chatChecksum = generateSessionId()
 						var retchat = {
 							input: input,
 							err: err,
-							fromDb: result
+							fromDb: result,
+							checksum: chatChecksum
 						}
 						ioChat.emit('chat sent', retchat)
 					}
@@ -737,6 +746,8 @@ ioChat.on('connection', (socket) => {
 						if (err) {
 							socket.emit('react sent', ret)
 						} else {
+							chatChecksum = generateSessionId()
+							ret.checksum = chatChecksum
 							ioChat.emit('react sent', ret)
 							var pass = { justdone: "reactSend", userData: socket.handshake.session.userData, params: { messageId: input.messageId } }
 							achiev.updateAchievements(pass, (uaerr, uaresult) => {
@@ -771,12 +782,14 @@ ioChat.on('connection', (socket) => {
 							customId: socket.handshake.session.userData.username,
 							displayName: socket.handshake.session.userData.displayas
 						}
-						var p = { room: "tournytime", content: "{player} is probably no longer looking at chat", extra: JSON.stringify(ej) }
+						var p = { room: "tournytime", content: "{player} is now offline", extra: JSON.stringify(ej) }
 						chatAddSystemMessage(p, (err, result) => {
 							if (!err) {
+								chatChecksum = generateSessionId()
 								var ret = {
 									err: err,
-									fromDb: result
+									fromDb: result,
+									checksum: chatChecksum
 								}
 								ioChat.emit('chat sent', ret)
 							}
@@ -785,6 +798,14 @@ ioChat.on('connection', (socket) => {
 				}
 			}, 20000)
 		}
+	})
+
+	socket.on('sync check', (inputChecksum) => {
+		var chatIsSynced = true
+		if (inputChecksum !== chatChecksum) {
+			chatIsSynced = false
+		}
+		socket.emit('sync result', chatIsSynced)
 	})
 })
 // Chat helper for adding system messages

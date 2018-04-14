@@ -100,19 +100,26 @@
 			$('span.here.color3').html("this").css("color", color3)
 
 			// Graph
-			var hourly = response.recordsets[1]
+			var dbHourly = response.recordsets[1]
+			var hourly = {}
 			var dl1 = '<div class="graph-bars">'
 			var dl2 = '<div class="graph-labels">'
+			// Sort out recordset so it's in hour order
+			for (i in dbHourly) {
+				var hr = new Date(dbHourly[i].HourOfDay).getHours()
+				hourly[hr] = dbHourly[i].ActivityPercent
+			}
 			// Get max
 			var hourlyMax = 0
 			for (i in hourly) {
-				hourlyMax = (hourly[i].ActivityPercent > hourlyMax ? hourly[i].ActivityPercent : hourlyMax)
+				hourlyMax = (hourly[i] > hourlyMax ? hourly[i] : hourlyMax)
 			}
 			// Draw graph
 			for (i in hourly) {
-				var hr = new Date(hourly[i].HourOfDay).getHours()
-				dl2 += '<div class="graph-label">' + hr + '</div>'
-				var pc = hourly[i].ActivityPercent / hourlyMax * 100 + "%"
+				var hrString = (12 + i - 1) % 12 + 1
+				hrString += "<br/>" + (i < 12 ? "AM" : "PM")
+				dl2 += '<div class="graph-label">' + hrString + '</div>'
+				var pc = hourly[i] / hourlyMax * 100 + "%"
 				dl1 += '<div class="graph-bar-container">'
 				dl1 += '<div class="graph-bar" style="height: ' + pc + '"></div>'
 				dl1 += '</div>'
@@ -139,7 +146,7 @@
 			for (i in done) {
 				var r = done[i]
 				var html = '<div class="ach-container">'
-				html += '<div class="ach-badge lvl' + r.LevelId + '" title="' + r.Information + '">' + r.AchievementName + '</div>'
+				html += '<a href="/achievement/' + r.URLName + '" class="ach-badge lvl' + r.LevelId + '" title="' + r.Information + '">' + r.AchievementName + '</a>'
 				if (r.Amount > 1) {
 					html += '<span class="ach-amount">× ' + r.Amount + '</span>'
 				}

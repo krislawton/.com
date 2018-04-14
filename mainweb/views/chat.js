@@ -5,12 +5,37 @@
 
 	// On socket noconnect
 	var storedText = ""
+	var hasBeenDisconnected = false
+	var checksum = null
 	socketChat.on('connect_error', (e) => {
-		storedText = $('#sendContainer textarea').val()
-		$('#sendContainer textarea').addClass("error").prop("disabled", true).val("Connection error. The server is probably down.")
+		var msg = "Connection error. The server is probably down."
+		var ite = $('#sendContainer textarea').val()
+		storedText = (ite !== msg ? ite : storedText)
+		$('#sendContainer textarea').addClass("error").prop("disabled", true).val(msg)
+		hasBeenDisconnected = true
 	})
 	socketChat.on('connect', () => {
-		$('#sendContainer textarea').removeClass("error").prop("disabled", false).val("" + storedText)
+		if (hasBeenDisconnected) {
+			console.log("checking sync")
+			socketChat.emit('sync check', checksum)
+		} else {
+			$('#sendContainer textarea').val("" + storedText).removeClass("error").prop("disabled", false)
+		}
+	})
+	socketChat.on('sync result', (response) => {
+		console.log("Sync result: " + response)
+		if (response === false) {
+			storedText = $('#sendContainer textarea').val()
+			$('#sendContainer textarea').addClass("click-to-refresh", true).val("Desync detected. Click to refresh chat.").prop("disabled", false)
+		} else {
+			console.log(storedText)
+			$('#sendContainer textarea').val("" + storedText).removeClass("error").prop("disabled", false)
+		}
+	})
+	$(document).on("click", "textarea.click-to-refresh", (e) => {
+		console.log(e)
+		$('#sendContainer textarea').removeClass("error").removeClass("click-to-refresh").prop("disabled", false).val("" + storedText)
+		$('button.room[data-roomid="' + viewingRoom + '"]').trigger("click")
 	})
 
 	// Get players
@@ -21,6 +46,11 @@
 	}
 	refreshRooms() // onload
 	// And load main chat when everything is done
+	function checkIfDone() {
+		if (!chatInitialized && initialSocketsWIP <= 0) {
+			initializeChat()
+		}
+	}
 	function initializeChat() {
 		$('button[data-roomid="' + viewingRoom + '"]').trigger('click')
 	}
@@ -99,7 +129,7 @@
 				// If this is page load, see if chat can be initialized
 				if (!chatInitialized) {
 					initialSocketsWIP--
-					initializeChat()
+					checkIfDone()
 				}
 			}
 		}
@@ -120,7 +150,7 @@
 				// Refresh chat on first load
 				if (!chatInitialized) {
 					initialSocketsWIP--
-					initializeChat()
+					checkIfDone()
 				}
 			}
 		}
@@ -369,8 +399,17 @@
 	})
 
 	// On message received
+	var heldInQueue = []
 	socketChat.on('chat sent', (response) => {
 		console.log(response)
+		checksum = response.checksum
+		if (initialSocketsWIP > 0) {
+			heldInQueue.push(response)
+		} else {
+			chatReceived(response)
+		}
+	})
+	function chatReceived(response) {
 		if (!response.err) {
 			var r = response.fromDb.recordset[0]
 
@@ -383,12 +422,14 @@
 			var msgsound
 			if (r.MessageType === "Action") {
 				if ((r.Content).match(/is now online/gi) !== null) {
-					msgsound = new Audio('/c/SoundMGS.mp3')
+					msgsound = new Audio('/c/SoundCiv4War.mp3')
+				} else if ((r.Content).match(/is now offline/gi) !== null) {
+					msgsound = new Audio('/c/SoundCiv4LossMiddle.mp3')
 				} else {
-					msgsound = new Audio('/c/SoundTOS.ogg')
+					msgsound = new Audio('/c/SoundCiv4Border.mp3')
 				}
 			} else {
-				msgsound = new Audio("/c/SoundPop.mp3")
+				msgsound = new Audio("/c/SoundCiv4Chat.mp3")
 			}
 			msgsound.play()
 
@@ -410,7 +451,7 @@
 				}
 			}
 		}
-	})
+	}
 
 	// Send message helper
 	function sendMessage(content) {
@@ -460,6 +501,7 @@
 			// Escape HTML
 			inArr[c] = inArr[c].replace(/</g, '&lt;')
 			inArr[c] = inArr[c].replace(/>/g, '&gt;')
+			inArr[c] = inArr[c].replace(/&/g, '&amp;')
 
 			// Split on newlines
 			if (inArr[c].charCodeAt(0) === 10) {
@@ -656,60 +698,6 @@
 		return nametag
 
 	}
-	// Name color randomiser
-	function randomColor(inputId, mode) {
-		var characters = inputId.split('')
-		var unicodeCombined = 0
-		for (var i in characters) {
-			var char = characters[i]
-			unicodeCombined += Math.pow(char.charCodeAt(0), 1.3 - (i * 0.01))
-		}
-		unicodeCombined += Math.pow(characters.length, 1.2)
-
-		var expHue = 1,
-			expLig = 1,
-			expSat = 1
-		if (mode == 1) {
-			expHue = 0.755
-			expLig = 0.432
-			expSat = 1.203
-		} else if (mode == 2) {
-			expHue = 0.943
-			expLig = 1.047
-			expSat = 0.943
-		} else if (mode == 3) {
-			expHue = 1.369
-			expLig = 0.999
-			expSat = 0.696
-		}
-
-		var randHue = Math.pow(unicodeCombined, expHue) // default 0.755
-		randHue = Math.round((randHue % 1) * 10000) % 360
-		var randLig = Math.pow(unicodeCombined, expLig) // default 0.432
-		randLig = Math.round((randLig % 1) * 10000)
-		var randSat = Math.pow(unicodeCombined, expSat) // default 1.203
-		randSat = Math.round((randSat % 0.1) * 10 * 60)
-		randSat += 40
-
-		// Compress to result in less greens to get more reds-yellows
-		//if (randHue <= 140) {
-		//	randHue = randHue * (100 / 140)
-		//} else if (randHue > 140 && randHue <= 180) {
-		//	randHue = 180 - (180 - randHue) * 2
-		//}
-
-		if (randHue >= 40 && randHue <= 200) {
-			// Between yellow and sky blue, lightness is 35-60
-			randLig = 35 + (randLig % 25)
-		} else {
-			// Else, 30-80.
-			randLig = 30 + (randLig % 50)
-		}
-
-		var colorString = "hsl(" + randHue + ", " + randSat + "%, " + randLig + "%)"
-
-		return colorString
-	}
 
 	// Helper: HTML escaper
 	function escapeHtml(input) {
@@ -796,6 +784,7 @@
 	})
 	// Handle respones
 	socketChat.on('room added', (response) => {
+		checksum = response.checksum
 		if (response.success) {
 			closeAddRoomForm()
 			refreshRooms()
@@ -911,6 +900,7 @@
 	// Handle starring message conf
 	socketChat.on("react sent", (response) => {
 		console.log(response)
+		checksum = response.checksum
 
 		// Calculate whether the user is scrolled to the bottom and store for later
 		var userScrolled = $('#logViewPort').scrollTop() + $('#logViewPort').height()
@@ -977,6 +967,7 @@
 
 	// Handle name being changed
 	socketChat.on('display name changed', (response) => {
+		checksum = repsonse.checksum
 		if (typeof users[response.permaid] === "object") {
 			users[response.permaid].displayName = response.changedTo
 			refreshUsers()

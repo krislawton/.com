@@ -116,9 +116,19 @@ body {
 	border: 0;
 	width: 100%;
 	padding: 5px;
+	height: 100%;
 }
 #sendContainer textarea:focus {
 	outline: 0;
+}
+textarea.click-to-refresh {
+	cursor: pointer;
+}
+textarea.click-to-refresh:hover {
+	background: rgba(0, 0, 0, 0.05);
+}
+textarea.click-to-refresh:active {
+	background: rgba(0, 0, 0, 0.1);
 }
 
 /* Chat log */

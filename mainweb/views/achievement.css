@@ -1,2 +1,38 @@
-﻿body {
+﻿#allAchievements {
+	margin-top: 5px;
+}
+h1 .ach-badge {
+	padding-left: 43px;
+	padding-right: 20px;
+}
+h1 .ach-badge::before {
+	width: 14px;
+	height: 14px;
+	border-radius: 7px;
+	top: 17px;
+	left: 17px
+}
+
+.user-line + .user-line, .ach-line + .ach-line {
+	border-top: 1px solid rgba(0, 0, 0, 0.1)
+}
+.user-line > *, .ach-line > * {
+	display: inline-block;
+	padding: 0 10px;
+}
+.user-line .rank {
+	font-weight: bold;
+	width: 80px;
+}
+.user-line .nametag, .ach-line .nametag {
+	width: 200px;
+	font-weight: bold;
+	text-decoration: none;
+	padding: 10px;
+}
+.user-line .nametag:hover, .ach-line .nametag:hover {
+	background: rgba(0, 0, 0, 0.05);
+}
+.user-line .nametag:active, .ach-line .nametag:active {
+	background: rgba(0, 0, 0, 0.1);
 }

@@ -6,11 +6,13 @@ html
     include /includes/rootHtmlHead.pug
     link(rel="stylesheet", href="/u/achievement.css")
     script(src="/u/achievement.js")
-    - var achievementId = urlParameter
-    meta#ids(data-achievementid=achievementId)
+    - var achievementUrl = urlParameter
+    meta#ids(data-achievementurl=achievementUrl)
   body
     include /includes/rootPageHead.pug
     +header(userData)
     main.default
+      a.button(href="/achievements")#allAchievements &lt; All achievements
       h1 Achievement
-      p This page is a work-in-progress.
+      p.lead Loading achievement...
+      p.info

@@ -61,6 +61,18 @@ var resources = {
 	"/c/LogoWhite.png": new cr({
 		send: "/common/LogoWhite.png"
 	}),
+	"/c/SoundCiv4Border.mp3": new cr({
+		send: "/common/SoundCiv4Border.mp3"
+	}),
+	"/c/SoundCiv4Chat.mp3": new cr({
+		send: "/common/SoundCiv4Chat.mp3"
+	}),
+	"/c/SoundCiv4LossMiddle.mp3": new cr({
+		send: "/common/SoundCiv4LossMiddle.mp3"
+	}),
+	"/c/SoundCiv4War.mp3": new cr({
+		send: "/common/SoundCiv4War.mp3"
+	}),
 	"/c/SoundMGS.mp3": new cr({
 		send: "/common/SoundMGS.mp3"
 	}),

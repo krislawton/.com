@@ -92,6 +92,7 @@
 
 		if (e.target.name === "displayName") {
 			var displayName = $(e.target).find('#displayName').val()
+			displayName = displayName.replace('<script', '&lt;script')
 			$(e.target).slideUp()
 			socket.emit('db procedure request', { procedure: "rootUserChangeDisplayName", params: { displayName: displayName } })
 		}

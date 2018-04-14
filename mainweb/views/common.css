@@ -152,12 +152,12 @@ main.default {
 .changelog, .recent-achievements {
 	margin-bottom: 5px;
 }
-.changelog .change, .recent-achievements .achievement {
+.changelog .change, .recent-achievements .ach-line {
 	display: flex;
 	border-top: 1px solid rgba(0, 0, 0, 0.1);
 	transition: background 0.5s;
 }
-.change:hover, .change.unreleased:hover, .acheivement:hover {
+.change:hover, .change.unreleased:hover, .recent-achievements .ach-line:hover {
 	opacity: 1;
 	background: rgba(0, 0, 0, 0.02);
 }
@@ -170,11 +170,11 @@ main.default {
 .change.unreleased {
 	opacity: 0.3;
 }
-.change .left, .achievement .left {
+.change .left, .recent-achievements .ach-line .left {
 	flex-grow: 1;
 	padding: 5px 0;
 }
-.change h4, .achievement h4 {
+.change h4, .ach-line h4 {
 	margin: 0 0 5px 0;
 }
 .change .description p:last-child {
@@ -188,10 +188,10 @@ main.default {
 	margin: 5px 0;
 	color: rgba(0, 0, 0, 0.6);
 }
-.change .mark-as-read, .achievement .mark-as-seen {
+.change .mark-as-read, .ach-line .mark-as-seen {
 	display: none;
 }
-.change.attention .mark-as-read, .achievement.unseen .mark-as-seen {
+.change.attention .mark-as-read, .ach-line.unseen .mark-as-seen {
 	display: block;
 	background: hsl(0, 71%, 55%);
 	color: white;
@@ -213,59 +213,15 @@ main.default {
 .achievement.unseen .mark-as-seen:active {
 	background: hsl(120, 71%, 65%);
 }
-.recent-achievements .achievement h4 {
-	position: relative;
-	display: inline-block;
-	background: #f0f0f0;
+.recent-achievements .ach-line h4 {
 	font-weight: normal;
-	border: 1px solid #c0c0c0;
-	padding: 4px 8px 4px 22px;
-	border-radius: 4px;
-	position: relative;
 }
-.recent-achievements .achievement h4::before {
-	display: inline-block;
-	width: 8px;
-	height: 8px;
-	border-radius: 4px;
-	content: " ";
-	position: absolute;
+.recent-achievements .ach-badge {
+	padding: 4px 8px 4px 22px;
+}
+.recent-achievements .ach-badge::before {
 	left: 9px;
 	top: 7px;
-	background: black;
-}
-.recent-achievements .achievement.lvl1 h4::before {
-	background: hsl(20, 40%, 50%);
-}
-.recent-achievements .achievement.lvl2 h4::before {
-	background: hsl(200, 10%, 75%);
-}
-.recent-achievements .achievement.lvl3 h4::before {
-	background: hsl(45, 90%, 60%);
-}
-.recent-achievements .achievement.lvl4 h4::before {
-	background: hsl(260, 100%, 70%);
-	background: linear-gradient(45deg, hsl(170, 80%, 60%), hsl(200, 90%, 50%));
-}
-.recent-achievements .achievement.lvl-1 h4 {
-	background: #c0c0c0;
-}
-.recent-achievements .achievement.lvl-1 h4::before {
-	background: black;
-}
-.recent-achievements .achievement.lvl-2 h4 {
-	background: black;
-	color: white;
-}
-.recent-achievements .achievement.lvl-2 h4::before::before {
-	background: white;
-}
-.recent-achievements .achievement.lvl-3 h4 {
-	background: hsl(0, 80%, 40%);
-	color: white;
-}
-.recent-achievements .achievement.lvl-3 h4::before {
-	background: white;
 }
 
 /*********************/
@@ -340,10 +296,78 @@ button.button.raised.colored:active, a.button.raised.colored:active, input.butto
 	background: hsl(216, 40%, 58%);
 }
 
+/********************/
+/*** ACHIEVEMENTS ***/
+/********************/
+.ach-badge {
+	position: relative;
+	display: inline-block;
+	background: #f0f0f0;
+	font-weight: normal;
+	border: 1px solid #c0c0c0;
+	padding: 5px 10px 5px 30px;
+	border-radius: 4px;
+	position: relative;
+}
+.ach-badge::before {
+	display: inline-block;
+	width: 8px;
+	height: 8px;
+	border-radius: 4px;
+	content: " ";
+	position: absolute;
+	left: 12px;
+	top: 10px;
+	background: black;
+}
+.ach-badge.lvl1::before {
+	background: hsl(20, 40%, 50%);
+}
+.ach-badge.lvl2::before {
+	background: hsl(200, 10%, 75%);
+}
+.ach-badge.lvl3::before {
+	background: hsl(45, 90%, 60%);
+}
+.ach-badge.lvl4::before {
+	background: hsl(260, 100%, 70%);
+	background: linear-gradient(45deg, hsl(170, 80%, 60%), hsl(200, 90%, 50%));
+}
+.ach-badge.lvl-1 {
+	background: #c0c0c0;
+}
+.ach-badge.lvl-1::before {
+	background: black;
+}
+.ach-badge.lvl-2 {
+	background: black;
+	color: white;
+}
+.ach-badge.lvl-2::before::before {
+	background: white;
+}
+.ach-badge.lvl-3 {
+	background: hsl(0, 80%, 40%);
+	color: white;
+}
+.ach-badge.lvl-3::before {
+	background: white;
+}
+a.ach-badge {
+	color: inherit;
+	text-decoration: inherit;
+}
+button.ach-badge:hover, a.ach-badge:hover {
+	background: #e0e0e0;
+}
+button.ach-badge:active, a.ach-badge:active {
+	background: #d0d0d0;
+}
+
 /**************/
 /*** ERRORS ***/
 /**************/
-.error {
+div.error {
 	background: hsl(0, 60%, 90%);
 	border: 1px solid hsl(0, 60%, 50%);
 	padding: 10px;
@@ -352,12 +376,12 @@ button.button.raised.colored:active, a.button.raised.colored:active, input.butto
 	box-shadow: 0 0 5px 0 hsl(0, 60%, 70%);
 	cursor: pointer;
 }
-.error:hover {
+div.error:hover {
 	background: hsl(0, 60%, 85%);
 }
-.error:active {
+div.error:active {
 	background: hsl(0, 70%, 80%);
 }
-.error ul {
+div.error ul {
 	margin: 0;
 }
