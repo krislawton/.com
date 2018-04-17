@@ -61,7 +61,8 @@
 		initialSocketsWIP = 2,
 		users = {},
 		stars = {},
-		viewingAsPermaId = $('#accountPermaId').attr('data-permaid')
+		viewingAsPermaId = $('#accountPermaId').attr('data-permaid'),
+		contentLog = {}
 
 	// Socket responses
 	socket.on('data response', (response) => {
@@ -240,6 +241,8 @@
 	// Helper for adding messages to screen
 	function addChatToView(dbRecord, bottomOrTop) {
 
+		contentLog[dbRecord.MessageId] = dbRecord.Content
+
 		var classType = (dbRecord.MessageType).toLowerCase().replace(' ', '')
 		var dateString = dataTransformer("time seconds", dbRecord.SentDate)
 		var dateTitle = dataTransformer("datetime long", dbRecord.SentDate)
@@ -250,15 +253,22 @@
 			contents = contents.replace('{player}', nameTag(ej.accountPermaId).outerHTML)
 			contents = contents.replace('{room}', '<span style="font-weight: normal">#' + ej.room + '</span>')
 		}
+		if (dbRecord.MessageType === "Action") {
+			for (i2 in users) {
+				contents = contents.replace('{accountPermaId' + i2 + '}', nameTag(i2).outerHTML)
+			}
+		}
 
 		var starred = (typeof stars[dbRecord.MessageId] === "object" ? " starred" : "")
+		var edited = (typeof dbRecord.Edited !== "undefined" && dbRecord.Edited ? " edited" : "")
 
 		// Begin element
 		var toAdd = '<div '
-		toAdd += 'class="achat ' + classType + starred + '" '
+		toAdd += 'class="achat ' + classType + starred + edited + '" '
 		toAdd += 'data-messageid="' + dbRecord.MessageId + '" '
 		toAdd += 'data-timestamp="' + dbRecord.SentDate + '" '
-		toAdd += 'data-room="' + dbRecord.Room + '"> '
+		toAdd += 'data-room="' + dbRecord.Room + '" '
+		toAdd += 'data-sender="' + dbRecord.SenderAccountId + '"> '
 		toAdd += '<div class="timestamp" title="' + dateTitle + '">' + dateString + '</div>'
 		toAdd += '<div class="else">'
 		if (dbRecord.SenderAccountId !== null) {
@@ -272,6 +282,7 @@
 		toAdd += '<div class="content chatformat">'
 		toAdd += contents
 		toAdd += '</div>'
+		toAdd += '<span class="edited"> (edited)</span>'
 		toAdd += '<button class="options">o</button>'
 		// End element
 		toAdd += '</div></div>'
@@ -429,7 +440,7 @@
 					msgsound = new Audio('/c/SoundCiv4Border.mp3')
 				}
 			} else {
-				msgsound = new Audio("/c/SoundCiv4Chat.mp3")
+				msgsound = new Audio("/c/SoundCiv4StarterSfx.mp3")
 			}
 			msgsound.play()
 
@@ -499,9 +510,9 @@
 			//console.log("testing index " + c + ": " + inArr[c] + " (UTF-16 code " + inArr[c].charCodeAt(0) + "). Last 4 " + last4 + ", in url " + possiblyInUrl)
 
 			// Escape HTML
+			inArr[c] = inArr[c].replace(/&/g, '&amp;')
 			inArr[c] = inArr[c].replace(/</g, '&lt;')
 			inArr[c] = inArr[c].replace(/>/g, '&gt;')
-			inArr[c] = inArr[c].replace(/&/g, '&amp;')
 
 			// Split on newlines
 			if (inArr[c].charCodeAt(0) === 10) {
@@ -656,7 +667,7 @@
 	}
 
 	// Send message on return press
-	$(document).on('keypress', 'textarea', (e) => {
+	$(document).on('keypress', '#sendContainer textarea', (e) => {
 		if (e.keyCode === 13 && !e.shiftKey) {
 			var content = $('textarea').val()
 			sendMessage(content)
@@ -671,6 +682,7 @@
 		var room = $(e.target).attr('data-roomid')
 		viewingRoom = room
 		// Clear chat
+		contentLog = {}
 		$('#logContainer > .achat, #logContainer > .diffSeparator, #logContainer > .dateHeader').remove()
 		// Loop through chat of room and add
 		socket.emit('data request', { request: "chatMessagesLoad", params: { earlier: true, room: viewingRoom, when: "now" } })
@@ -796,6 +808,31 @@
 		$('#center > *').removeAttr('style')
 	}
 
+	// Handle name being changed
+	socketChat.on('display name changed', (response) => {
+		checksum = repsonse.checksum
+		if (typeof users[response.permaid] === "object") {
+			users[response.permaid].displayName = response.changedTo
+			refreshUsers()
+		}
+	})
+
+	// Modal opening and closing
+	function renderModal(content) {
+		$('#centerModal').show().css("opacity", "0").animate({ opacity: "1" }, 250, "easeOutCirc")
+		$('#centerModal .modal-container').append(content)
+	}
+	$('#centerModal button.close-modal').click(() => {
+		$('#centerModal').animate({ opacity: "0" }, 150, "easeOutCirc", () => {
+			$('#centerModal').hide()
+			$('#centerModal *:not(.persistent)').remove()
+		})
+	})
+
+	/***********************/
+	/*** Message options ***/
+	/***********************/
+
 	// Handle chat option button click
 	$(document).on("click", ".achat button.options", (e) => {
 		var parent = $(e.target).parent()[0]
@@ -803,6 +840,18 @@
 		// Base element
 		var optionsEl = document.createElement("div")
 		optionsEl.className = "options"
+		// Edit
+		if ($('.achat[data-messageid="' + messageId + '"]').attr('data-sender') === viewingAsPermaId) {
+			var edit = document.createElement("button")
+			edit.className = "option edit"
+			edit.innerHTML = "Edit message"
+			optionsEl.appendChild(edit)
+		}
+		// History
+		var history = document.createElement("button")
+		history.className = "option history"
+		history.innerHTML = "View history"
+		optionsEl.appendChild(history)
 		// Reacts
 		var reapos = document.createElement("button")
 		reapos.className = "option react positive"
@@ -928,7 +977,6 @@
 			$('#logViewPort').scrollTop($('#logViewPort')[0].scrollHeight)
 		}
 	})
-
 	// Helper for rendering reactions
 	function addReactionsToView(messageId, reactions) {
 		var html = ""
@@ -965,13 +1013,164 @@
 		$('.achat[data-messageid="' + messageId + '"] .else').append(html)
 	}
 
-	// Handle name being changed
-	socketChat.on('display name changed', (response) => {
-		checksum = repsonse.checksum
-		if (typeof users[response.permaid] === "object") {
-			users[response.permaid].displayName = response.changedTo
-			refreshUsers()
+	// Handle vieiwng audit history
+	$(document).on("click", 'button.option.history', (e) => {
+		var messageId = $(e.target).parents('.achat').attr('data-messageid')
+		openAudit(messageId)
+	})
+	function openAudit(messageId) {
+		// Emit request for history
+		socket.emit('data request', { request: "chatMessageAuditLoad", params: { messageId: messageId } })
+		// Close options
+		$('.achat[data-messageid="' + messageId + '"]').parent().find('button.option.close').trigger("click")
+		// Open modal
+		var forModal = '<h2>Message history</h2>'
+		forModal += '<p class="loading">Loading your bespoke message history...</p>'
+		forModal += '<p><label><input type="checkbox" name="hide-reactions"/> Hide reaction</label></p>'
+		forModal += '<div class="timeline-container">'
+		forModal += '<div class="timeline-line"></div>'
+		forModal += '<div class="timeline-parts"></div>'
+		forModal += '</div>'
+		renderModal(forModal)
+	}
+	// Handle receiving audit history
+	socket.on('data response', (response) => {
+		if (!response.err && response.input.request === "chatMessageAuditLoad") {
+			$('#centerModal p.loading').slideUp(150, 'easeOutCirc')
+
+			var hist = response.recordset.recordset
+			for (i in hist) {
+				// Container
+				var pcont = document.createElement("div")
+				pcont.className = "part-container"
+				pcont.dataset.type = (hist[i].Header).replace(/\s/g, "").toLowerCase()
+
+				// Connector
+				var pcnct = document.createElement("div")
+				pcnct.className = "part-connector"
+				var pbubble = document.createElement("div")
+				pbubble.className = "bubble"
+				pcnct.appendChild(pbubble)
+
+				// Part proper
+				var part = document.createElement("div")
+				part.className = "part"
+
+				var h = document.createElement("h3")
+				h.innerHTML = hist[i].Header
+
+				var ago = document.createElement("p")
+				ago.className = "ago"
+				ago.innerHTML = dataTransformer("ago", hist[i].AuditDate) + " ago"
+				ago.title = dataTransformer("datetime long", hist[i].AuditDate)
+
+				var ej = JSON.parse(hist[i].ExtraJSON)
+				var dstring = hist[i].Details
+				var user = ej.accountPermaId
+				var userEntry = typeof user !== "undefined" ? users[user] : {}
+				var nt = nameTag(user, userEntry.displayName)
+				nt.style.fontWeight = "bold"
+				var nth = nt.outerHTML
+				dstring = dstring.replace(/{player}/g, nth)
+				dstring = dstring.replace(/{room}/g, '#' + ej.room)
+				dstring = dstring.replace(/{reaction}/g, ej.reaction)
+				dstring = dstring.replace(/{content}/g, '<div class="chatformat">' + ej.contentHtml + '</div>')
+
+				var d = document.createElement("p")
+				d.innerHTML = dstring
+
+				// Build relationship and render on form
+				part.appendChild(h)
+				part.appendChild(ago)
+				part.appendChild(d)
+
+				pcont.appendChild(pcnct)
+				pcont.appendChild(part)
+				$('#centerModal .timeline-parts').append(pcont)
+			}
+			if (hist.length === 0) {
+				$('#centerModal .modal-container').append('<p>We have no history for this message. It might be that message history was not implemented when actions were performed against this message.</p>')
+			}
 		}
 	})
+	// Handle hiding reactions from timeline
+	$(document).on("change", '#centerModal [name="hide-reactions"]', (e) => {
+		if (e.target.checked) {
+			$('#centerModal [data-type^="reaction"]').slideUp(500, 'easeOutCirc')
+		} else {
+			$('#centerModal [data-type^="reaction"]').slideDown(150, 'easeOutCirc')
+		}
+	})
+
+	// Handle edit message press
+	$(document).on("click", 'button.option.edit', (e) => {
+		// Calculate whether the user is scrolled to the bottom and store for later
+		var userScrolled = $('#logViewPort').scrollTop() + $('#logViewPort').height()
+		var userIsScrolledDown = userScrolled === $('#logViewPort')[0].scrollHeight ? true : false
+
+		// Open form
+		var messageId = $(e.target).parents('.achat').attr('data-messageid')
+
+		$(e.target).parents('.achat').addClass('editing')
+
+		var elEditArea = document.createElement("div")
+		elEditArea.className = "edit"
+
+		var elNew = document.createElement("textarea")
+		elNew.value = contentLog[messageId]
+		elEditArea.appendChild(elNew)
+
+		var elButtons = document.createElement("div")
+		elButtons.className = "buttons"
+
+		var elCancel = document.createElement("button")
+		elCancel.className = "button raised cancel"
+		elCancel.textContent = "Cancel"
+		elButtons.appendChild(elCancel)
+		var elSubmit = document.createElement("button")
+		elSubmit.className = "button raised colored submit"
+		elSubmit.textContent = "Edit"
+		elButtons.appendChild(elSubmit)
+
+		elEditArea.appendChild(elButtons)
+
+		$(e.target).parents('.achat').children('.else').children('.content').after(elEditArea)
+
+		// Close menu
+		$('[data-messageid="' + messageId + '"] div.options .close').trigger("click")
+
+		// If the user was scrolled down all the way before 
+		// the edit HTML was inserted, rescroll to bottom
+		if (userIsScrolledDown) {
+			$('#logViewPort').scrollTop($('#logViewPort')[0].scrollHeight)
+		}
+	})
+	// Handle edit message cancel
+	$(document).on("click", '.achat .edit button.cancel', (e) => {
+		var messageId = $(e.target).parents('.achat').attr('data-messageid')
+		closeEdit(messageId)
+	})
+	// Handle edit message submit
+	$(document).on("click", '.achat .edit button.submit', (e) => {
+		var content = $(e.target).parents('.achat .edit').find('textarea').val()
+		var contentHtml = markdownContent(content)
+		var messageId = $(e.target).parents('.achat').attr('data-messageid')
+		socketChat.emit('message edit', { messageId: messageId, content: content, contentHtml: contentHtml })
+	})
+	// Handle edit message submit conf
+	socketChat.on('message edited', (response) => {
+		console.log(response)
+		if (!response.err) {
+			var messageId = response.input.messageId
+			closeEdit(messageId)
+			contentLog[messageId] = response.result.recordset[0].Content
+			$('.achat[data-messageid="' + messageId + '"]').addClass('edited').find('.content').html(response.result.recordset[0].ContentHTML)
+		}
+	})
+	// Helper for closing edit form
+	function closeEdit(messageId) {
+		$('.achat[data-messageid="' + messageId + '"]').removeClass('editing')
+		$('.achat[data-messageid="' + messageId + '"]').find('div.edit').remove()
+	}
 
 })

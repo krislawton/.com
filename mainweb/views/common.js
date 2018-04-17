@@ -148,14 +148,14 @@
 		}
 	})
 	// Handle pressing achievement ok button
-	$(document).on("click", '.achievement .mark-as-seen', (e) => {
-		var accAchieveId = $(e.target).parents('.achievement').attr('data-dbid')
+	$(document).on("click", '.recent-achievements .mark-as-seen', (e) => {
+		var accAchieveId = $(e.target).parents('.ach-line').attr('data-dbid')
 		globalSocket.emit('db procedure request', { procedure: "rootUserAchievementAcknowledge", params: { accAchieveId: accAchieveId } })
 	})
 	globalSocket.on('db procedure response', (response) => {
 		if (!response.err && response.input.procedure === "rootUserAchievementAcknowledge") {
 			var accAchieveId = response.input.params.accAchieveId
-			$('.achievement[data-dbid="' + accAchieveId + '"]').removeClass('unseen')
+			$('.recent-achievements .ach-line[data-dbid="' + accAchieveId + '"]').removeClass('unseen')
 			var sel = '#topBanner .right > .achievements .badge'
 			var newUnseenCount = $(sel).html()
 			newUnseenCount--

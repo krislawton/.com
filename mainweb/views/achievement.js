@@ -38,11 +38,12 @@
 				"-2": "naughty level 2 (black)",
 				"-3": "naughty level 3 (red)"
 			}
-			var plead = '<span style="font-weight: bold">' + general.AchievementName + '</span> is a ' + lvls[general.LevelId] + ' acheivement. '
+			var plead = '<span style="font-weight: bold">' + general.AchievementName + '</span> is a ' + lvls[general.LevelId] + ' achievement. '
 			plead += 'So far, ' + achievements.length + ' have been awarded to ' + dbUsers.length + ' different users. '
 			plead += 'Here is its description/requirement:'
 			$('p.lead').html(plead)
-			var pdesc = general.Information + ((general.Information).match(/.+\.$/g) === null ? "." : "") + " " + general.Information2
+			var info2 = general.Information2 === null ? "" : general.Information2
+			var pdesc = general.Information + ((general.Information).match(/.+\.$/g) === null ? "." : "") + " " + info2
 			$('p.info').html(pdesc)
 
 			// Grouped by user (most-awarded at top)
@@ -82,7 +83,7 @@
 				$('main').append(headerIndividuals)
 			}
 
-			// Individual acheivemetns given
+			// Individual achievemetns given
 
 			for (i in achievements) {
 				var achline = document.createElement("div")
@@ -98,7 +99,7 @@
 
 				var when = document.createElement("div")
 				when.className = "when"
-				when.innerHTML = "Acheived " + dataTransformer("ago", achievements[i].AwardedDate) + " ago"
+				when.innerHTML = "Achieved " + dataTransformer("ago", achievements[i].AwardedDate) + " ago"
 				when.title = dataTransformer("datetime long", achievements[i].AwardedDate)
 
 				achline.appendChild(nametag)

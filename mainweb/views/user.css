@@ -114,12 +114,19 @@ p span.here {
 }
 
 /* Working */
+#ach-working {
+	display: flex;
+	flex-wrap: wrap;
+	margin: 0 -7px;
+}
 .ach-badge.working {
-	width: 300px;
+	min-width: 250px;
 	text-align: center;
-	margin: 0 15px 15px 0;
+	margin: 0 7px 15px;
 	position: relative;
 	overflow: hidden;
+	flex-grow: 1;
+	flex-basis: 0;
 }
 .ach-badge.working.lvl4::before {
 	border: 1px solid #f0f0f0;

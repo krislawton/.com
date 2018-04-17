@@ -206,6 +206,13 @@ module.exports = {
 					callback(err, { recordset: result })
 				})
 		},
+		chatMessageAuditLoad: (params, callback) => {
+			pool.request()
+				.input("MessageId", sql.Int, params.messageId)
+				.query("select * from ChatMessageAudit where MessageId = @MessageId order by AuditDate", (err, result) => {
+					callback(err, { recordset: result })
+				})
+		},
 		chatAccountsLoad: (params, callback) => {
 			pool.request()
 				.query("select AccountPermaId, CustomId, DisplayName, ColorChoiceId from Accounts", (err, result) => {

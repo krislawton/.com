@@ -43,7 +43,8 @@ var checklookup = {
 	serverPageLoadAudit: [1000, 1020, 1021, 1022, 1023, 1030, 1031, 1032],
 	chatSend: [2000, 2001, 2002, 2003, 2010, 2011, 2012, 2060, 2061, 2062, 2070, 2080, 2180, 2190, 2191],
 	chatStarMessage: [2170, 2171, 2172],
-	reactSend: [2020, 2021, 2022, 2030, 2031, 2032, 2120, 2121, 2122, 2150]
+	reactSend: [2020, 2021, 2022, 2030, 2031, 2032, 2120, 2121, 2122, 2150],
+	rootUserChangeUserId: [1040, 1041, 1042],
 }
 
 // Achievement checker: Checks if achievements need updating
@@ -593,8 +594,233 @@ var acheck = {
 		}
 	},
 	//1040	stop - changing - 1
+	1040: (input, callback) => {
+		var achid = 1040
+		var max = 3
+
+		var gq = "select * from AccountAchievements"
+		gq += " where AccountPermaId = @AccountPermaId"
+		gq += "		and AchievementId = @AchievementId"
+		gq += "		and getutcdate() between json_value(ExtraJSON, '$.periodStart') and json_value(ExtraJSON, '$.periodEnd')"
+		pool.request()
+			.input("AccountPermaId", sql.Int, input.permaid)
+			.input("AchievementId", sql.Int, achid)
+			.query(gq, (err, result) => {
+				if (err) {
+					callback(err, result, achid)
+				} else {
+					processResult(result.recordset)
+				}
+			})
+
+		function processResult(rs) {
+			if (rs.length === 0) {
+				createNew()
+			} else {
+				var found = false
+				for (i in rs) {
+					if (rs[i].AwardedDate === null && !found) {
+						found = true
+						updateExisting(rs[i])
+					}
+				}
+				if (!found) {
+					callback(null, null, achid)
+				}
+			}
+		}
+
+		function createNew() {
+			var cr = `declare @ExtraJSON nvarchar(max) = concat(
+				'{"progressCurrent": 1, "progressMax": ', @Max, ','
+				, ' "periodStart": "', convert(varchar(24), dateadd(month, datediff(month, 0, getutcdate()), 0), 127), '.000Z",'
+				, ' "periodEnd": "', convert(varchar(24), dateadd(month, 1 + datediff(month, 0, getutcdate()), 0), 127), '.000Z"}'
+			);`
+			cr += " insert into AccountAchievements(AccountPermaId, AchievementId, ExtraJSON)"
+			cr += " values (@AccountPermaId, @AchievementId, @ExtraJSON)"
+
+			pool.request()
+				.input("AccountPermaId", sql.Int, input.permaid)
+				.input("AchievementId", sql.Int, achid)
+				.input("Max", sql.Int, max)
+				.query(cr, (err, result) => {
+					callback(err, result, achid)
+				})
+		}
+
+		function updateExisting(record) {
+			var ej = JSON.parse(record.ExtraJSON)
+			ej.progressCurrent++
+
+			var uq = "update aa set"
+			uq += " ExtraJSON = @ExtraJSON"
+			uq += ej.progressCurrent >= ej.progressMax ? ", AwardedDate = getutcdate()" : ""
+			uq += " from AccountAchievements aa"
+			uq += " where AccAchieveId = @AccAchieveId"
+
+			ej = JSON.stringify(ej)
+
+			pool.request()
+				.input("AccAchieveId", sql.Int, record.AccAchieveId)
+				.input("ExtraJSON", sql.VarChar, ej)
+				.query(uq, (err, result) => {
+					callback(err, result, achid)
+				})
+		}
+
+	},
 	//1041	stop - changing - 2
+	1041: (input, callback) => {
+		var achid = 1041
+		var max = 5
+
+		var gq = "select * from AccountAchievements"
+		gq += " where AccountPermaId = @AccountPermaId"
+		gq += "		and AchievementId = @AchievementId"
+		gq += "		and getutcdate() between json_value(ExtraJSON, '$.periodStart') and json_value(ExtraJSON, '$.periodEnd')"
+		pool.request()
+			.input("AccountPermaId", sql.Int, input.permaid)
+			.input("AchievementId", sql.Int, achid)
+			.query(gq, (err, result) => {
+				if (err) {
+					callback(err, result, achid)
+				} else {
+					processResult(result.recordset)
+				}
+			})
+
+		function processResult(rs) {
+			if (rs.length === 0) {
+				createNew()
+			} else {
+				var found = false
+				for (i in rs) {
+					if (rs[i].AwardedDate === null && !found) {
+						found = true
+						updateExisting(rs[i])
+					}
+				}
+				if (!found) {
+					callback(null, null, achid)
+				}
+			}
+		}
+
+		function createNew() {
+			var cr = `declare @ExtraJSON nvarchar(max) = concat(
+				'{"progressCurrent": 1, "progressMax": ', @Max, ','
+				, ' "periodStart": "', convert(varchar(24), dateadd(month, datediff(month, 0, getutcdate()), 0), 127), '.000Z",'
+				, ' "periodEnd": "', convert(varchar(24), dateadd(month, 1 + datediff(month, 0, getutcdate()), 0), 127), '.000Z"}'
+			);`
+			cr += " insert into AccountAchievements(AccountPermaId, AchievementId, ExtraJSON)"
+			cr += " values (@AccountPermaId, @AchievementId, @ExtraJSON)"
+
+			pool.request()
+				.input("AccountPermaId", sql.Int, input.permaid)
+				.input("AchievementId", sql.Int, achid)
+				.input("Max", sql.Int, max)
+				.query(cr, (err, result) => {
+					callback(err, result, achid)
+				})
+		}
+
+		function updateExisting(record) {
+			var ej = JSON.parse(record.ExtraJSON)
+			ej.progressCurrent++
+
+			var uq = "update aa set"
+			uq += " ExtraJSON = @ExtraJSON"
+			uq += ej.progressCurrent >= ej.progressMax ? ", AwardedDate = getutcdate()" : ""
+			uq += " from AccountAchievements aa"
+			uq += " where AccAchieveId = @AccAchieveId"
+
+			ej = JSON.stringify(ej)
+
+			pool.request()
+				.input("AccAchieveId", sql.Int, record.AccAchieveId)
+				.input("ExtraJSON", sql.VarChar, ej)
+				.query(uq, (err, result) => {
+					callback(err, result, achid)
+				})
+		}
+
+	},
 	//1042	stop - changing - 3
+	1042: (input, callback) => {
+		var achid = 1042
+		var max = 10
+
+		var gq = "select * from AccountAchievements"
+		gq += " where AccountPermaId = @AccountPermaId"
+		gq += "		and AchievementId = @AchievementId"
+		gq += "		and getutcdate() between json_value(ExtraJSON, '$.periodStart') and json_value(ExtraJSON, '$.periodEnd')"
+		pool.request()
+			.input("AccountPermaId", sql.Int, input.permaid)
+			.input("AchievementId", sql.Int, achid)
+			.query(gq, (err, result) => {
+				if (err) {
+					callback(err, result, achid)
+				} else {
+					processResult(result.recordset)
+				}
+			})
+
+		function processResult(rs) {
+			if (rs.length === 0) {
+				createNew()
+			} else {
+				var found = false
+				for (i in rs) {
+					if (rs[i].AwardedDate === null && !found) {
+						found = true
+						updateExisting(rs[i])
+					}
+				}
+				if (!found) {
+					callback(null, null, achid)
+				}
+			}
+		}
+
+		function createNew() {
+			var cr = `declare @ExtraJSON nvarchar(max) = concat(
+				'{"progressCurrent": 1, "progressMax": ', @Max, ','
+				, ' "periodStart": "', convert(varchar(24), dateadd(month, datediff(month, 0, getutcdate()), 0), 127), '.000Z",'
+				, ' "periodEnd": "', convert(varchar(24), dateadd(month, 1 + datediff(month, 0, getutcdate()), 0), 127), '.000Z"}'
+			);`
+			cr += " insert into AccountAchievements(AccountPermaId, AchievementId, ExtraJSON)"
+			cr += " values (@AccountPermaId, @AchievementId, @ExtraJSON)"
+
+			pool.request()
+				.input("AccountPermaId", sql.Int, input.permaid)
+				.input("AchievementId", sql.Int, achid)
+				.input("Max", sql.Int, max)
+				.query(cr, (err, result) => {
+					callback(err, result, achid)
+				})
+		}
+
+		function updateExisting(record) {
+			var ej = JSON.parse(record.ExtraJSON)
+			ej.progressCurrent++
+
+			var uq = "update aa set"
+			uq += " ExtraJSON = @ExtraJSON"
+			uq += ej.progressCurrent >= ej.progressMax ? ", AwardedDate = getutcdate()" : ""
+			uq += " from AccountAchievements aa"
+			uq += " where AccAchieveId = @AccAchieveId"
+
+			ej = JSON.stringify(ej)
+
+			pool.request()
+				.input("AccAchieveId", sql.Int, record.AccAchieveId)
+				.input("ExtraJSON", sql.VarChar, ej)
+				.query(uq, (err, result) => {
+					callback(err, result, achid)
+				})
+		}
+
+	},
 	//2000	chatter - 1
 	2000: (input, callback) => {
 		var achid = 2000
@@ -2233,6 +2459,23 @@ var acheck = {
 	//3002	mvp - yearly
 }
 
+// MVP achievements insert helper
+function insertMvpAchievement(accountPermaId, type) {
+	var q = "insert into AccountAchievements (AccountPermaId, AchievementId, AwardedDate)"
+	q += "values (@AccountPermaId, @AchievementId, getutcdate())"
+
+	var types = {
+		weekly: 3000,
+		monthly: 3001,
+		yearly: 3002
+	}
+
+	pool.request()
+		.input("AccountPermaId", sql.Int, accountPermaId)
+		.input("AchievementId", sql.Int, types[type])
+		.query(q)
+}
+
 // Function for running on other pages. Input should be the operation the user just performed
 module.exports = {
 	updateAchievements: (input, callback) => {
@@ -2296,5 +2539,108 @@ module.exports = {
 		} else {
 			callback("did not pass requirements for achievement check", null)
 		}
-	}
+	},
+	// weekly
+	mvpWeekly: (callback) => {
+		pool.request()
+			.execute("spAchievementsAwardMVPWeekly", (err, result) => {
+				if (!err) {
+					processResult(result)
+				} else {
+					callback(err, null)
+				}
+			})
+
+		function processResult(result) {
+			var all = result.recordset
+
+			var msgContent = "~ It's time for the weekly MVP awards! ~\n"
+
+			if (all.length === 0) {
+				msgContent += "\nUnfortunately, there were no achievements awarded this week. What hell?"
+			} else if (all.length !== 0 && all[0].Points <= 0) {
+				msgContent += "\nUnfortunately, no one acheived more than 0 MVP points this week."
+			} else {
+				for (i in all) {
+					msgContent += "\n" + all[i].Ranking + ". {accountPermaId" + all[i].AccountPermaId + "} with "
+					msgContent += all[i].Points + " points."
+					if (all[i].Ranking === 1) {
+						msgContent += all[i].Ranking === 1 ? " Winner winner." : ""
+						insertMvpAchievement(all[i].AccountPermaId, "weekly")
+					}					
+				}
+			}
+
+			callback(null, msgContent)
+		}
+	},
+	// monthly
+	mvpMonthly: (callback) => {
+		pool.request()
+			.execute("spAchievementsAwardMVPMonthly", (err, result) => {
+				if (!err) {
+					processResult(result)
+				} else {
+					callback(err, null)
+				}
+			})
+
+		function processResult(result) {
+			var all = result.recordset
+
+			var msgContent = "~ It's time for the monthly MVP awards! ~\n"
+
+			if (all.length === 0) {
+				msgContent += "\nUnfortunately, there were no achievements awarded this month. What hell?"
+			} else if (all.length !== 0 && all[0].Points <= 0) {
+				msgContent += "\nUnfortunately, no one acheived more than 0 MVP points this month."
+			} else {
+				for (i in all) {
+					msgContent += "\n" + all[i].Ranking + ". {accountPermaId" + all[i].AccountPermaId + "} with "
+					msgContent += all[i].Points + " points."
+					if (all[i].Ranking === 1) {
+						msgContent += all[i].Ranking === 1 ? " Winner winner." : ""
+						insertMvpAchievement(all[i].AccountPermaId, "monthly")
+					}
+				}
+			}
+
+			callback(null, msgContent)
+		}
+	},
+	// yearly
+	mvpYearly: (callback) => {
+		pool.request()
+			.execute("spAchievementsAwardMVPYearly", (err, result) => {
+				if (!err) {
+					processResult(result)
+				} else {
+					callback(err, null)
+				}
+			})
+
+		function processResult(result) {
+			var all = result.recordset
+
+			var msgContent = "~ It's time for the annual MVP awards! ~\n"
+
+			if (all.length === 0) {
+				msgContent += "\nUnfortunately, there were no achievements awarded this year. What hell?"
+			} else if (all.length !== 0 && all[0].Points <= 0) {
+				msgContent += "\nUnfortunately, no one acheived more than 0 MVP points this year."
+			} else {
+				for (i in all) {
+					msgContent += "\n" + all[i].Ranking + ". {accountPermaId" + all[i].AccountPermaId + "} with "
+					msgContent += all[i].Points + " points."
+					if (all[i].Ranking === 1) {
+						msgContent += all[i].Ranking === 1 ? " Winner winner." : ""
+						insertMvpAchievement(all[i].AccountPermaId, "yearly")
+					}
+				}
+			}
+
+			callback(null, msgContent)
+		}
+	},
+
 }

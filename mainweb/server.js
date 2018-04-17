@@ -69,6 +69,8 @@ const session = require("express-session")
 const storesessions = require("connect-mssql")(session)
 const iosession = require("express-socket.io-session")
 
+const schedule = require('node-schedule')
+
 // Data store (accesses database)
 const datastore = require("./datastore.js")
 // Resource manager (controls access)
@@ -620,7 +622,7 @@ ioChat.on('connection', (socket) => {
 			customId: socket.handshake.session.userData.username,
 			displayName: socket.handshake.session.userData.displayas
 		}
-		var p = { room: "tournytime", content: "{player} is now online", extra: JSON.stringify(ej) }
+		var p = { room: "tournytime", content: "~ {player} is now online. Welcome! ~", extra: JSON.stringify(ej) }
 		chatAddSystemMessage(p, (err, result) => {
 			if (!err) {
 				console.log(ret)
@@ -764,6 +766,45 @@ ioChat.on('connection', (socket) => {
 			socket.emit('react sent', ret)
 		}
 	})
+	socket.on('message edit', (input) => {
+		try {
+			var ret = { success: false, result: null, err: null, input: input }
+
+			if (typeof (input.messageId * 1) !== "number" || typeof input.content !== "string" || typeof input.contentHtml !== "string") {
+				ret.err = "Invalid parameters"
+				socket.emit('message edited', ret)
+			} else {
+				pool.request()
+					.input("AccountPermaId", sql.Int, permaid)
+					.input("MessageId", sql.Int, input.messageId)
+					.input("Content", sql.VarChar, input.content)
+					.input("ContentHTML", sql.VarChar, input.contentHtml)
+					.execute("spChatEdit", (err, result) => {
+						ret.success = true
+						ret.err = err
+						ret.result = result
+						if (err) {
+							socket.emit('message edited', ret)
+						} else {
+							chatChecksum = generateSessionId()
+							ret.checksum = chatChecksum
+							ioChat.emit('message edited', ret)
+							//var pass = { justdone: "messageEdit", userData: socket.handshake.session.userData, params: { messageId: input.messageId } }
+							//achiev.updateAchievements(pass, (uaerr, uaresult) => {
+							//	if (typeof pass.userData.permaid !== "undefined") {
+							//		distributeAchievementUpdate(pass.userData.permaid, { err: uaerr, result: uaresult })
+							//	}
+							//})
+						}
+					})
+			}
+		}
+		catch (e) {
+			var ret = { success: false, err: e }
+			socket.emit('message edited', ret)
+		}
+
+	})
 	socket.on('disconnect', () => {
 		if (accountsInChat[permaid] !== "undefined") {
 			console.log("--------------")
@@ -778,11 +819,11 @@ ioChat.on('connection', (socket) => {
 					if (accountsInChat[i].connectionCount === 0 && accountsInChat[i].lastLeft !== null && Math.abs(n - ll) > 0) {
 						delete accountsInChat[i]
 						var ej = {
-							accountPermaId: permaid,
+							accountPermaId: i,
 							customId: socket.handshake.session.userData.username,
 							displayName: socket.handshake.session.userData.displayas
 						}
-						var p = { room: "tournytime", content: "{player} is now offline", extra: JSON.stringify(ej) }
+						var p = { room: "tournytime", content: "~ {player} left. Huh. ~", extra: JSON.stringify(ej) }
 						chatAddSystemMessage(p, (err, result) => {
 							if (!err) {
 								chatChecksum = generateSessionId()
@@ -846,6 +887,85 @@ ioNomicChat.on('connection', (socket) => {
 				fromDb: null
 			}
 			ioNomicChat.emit('chat sent', ret)
+		}
+	})
+})
+
+/* =================== */
+/* MVP award scheduler */
+/* =================== */
+var mvpweekly = schedule.scheduleJob('5 1 * * 1', () => {
+	achiev.mvpWeekly((err, result) => {
+		if (!err) {
+			var p = {
+				room: "tournytime",
+				content: result,
+				extra: null
+			}
+			chatAddSystemMessage(p, (err2, result2) => {
+				if (!err2) {
+					chatChecksum = generateSessionId()
+					var ret = {
+						err: err2,
+						fromDb: result2,
+						checksum: chatChecksum
+					}
+					ioChat.emit('chat sent', ret)
+				}
+			})
+		} else {
+			console.log("Error with MVP:")
+			console.log(err)
+		}
+	})
+})
+var mvpmonthly = schedule.scheduleJob('5 1 1 * *', () => {
+	achiev.mvpMonthly((err, result) => {
+		if (!err) {
+			var p = {
+				room: "tournytime",
+				content: result,
+				extra: null
+			}
+			chatAddSystemMessage(p, (err2, result2) => {
+				if (!err2) {
+					chatChecksum = generateSessionId()
+					var ret = {
+						err: err2,
+						fromDb: result2,
+						checksum: chatChecksum
+					}
+					ioChat.emit('chat sent', ret)
+				}
+			})
+		} else {
+			console.log("Error with MVP:")
+			console.log(err)
+		}
+	})
+})
+var mvpyearly = schedule.scheduleJob('5 1 1 1 *', () => {
+	achiev.mvpYearly((err, result) => {
+		if (!err) {
+			var p = {
+				room: "tournytime",
+				content: result,
+				extra: null
+			}
+			chatAddSystemMessage(p, (err2, result2) => {
+				if (!err2) {
+					chatChecksum = generateSessionId()
+					var ret = {
+						err: err2,
+						fromDb: result2,
+						checksum: chatChecksum
+					}
+					ioChat.emit('chat sent', ret)
+				}
+			})
+		} else {
+			console.log("Error with MVP:")
+			console.log(err)
 		}
 	})
 })
