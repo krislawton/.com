@@ -129,12 +129,12 @@ var acheck = {
 			if (rn.slice(0, 10) !== (rj.lastVisit).slice(0, 10)) {
 				rj.lastVisit = rn
 				rj.progressCurrent++
-				rj = JSON.stringify(rj)
 				var query = "update aa"
 				query += " set ExtraJSON = @ExtraJSON"
 				query += (rj.progressCurrent >= max ? ", AwardedDate = getutcdate()" : "")
 				query += " from AccountAchievements aa"
 				query += " where AccAchieveId = @AccAchieveId"
+				rj = JSON.stringify(rj)
 				pool.request()
 					.input("ExtraJSON", sql.VarChar, rj)
 					.input("AccAchieveId", sql.Int, r.AccAchieveId)
@@ -197,12 +197,12 @@ var acheck = {
 			if (rn.slice(0, 10) !== (rj.lastVisit).slice(0, 10)) {
 				rj.lastVisit = rn
 				rj.progressCurrent++
-				rj = JSON.stringify(rj)
 				var query = "update aa"
 				query += " set ExtraJSON = @ExtraJSON"
 				query += (rj.progressCurrent >= max ? ", AwardedDate = getutcdate()" : "")
 				query += " from AccountAchievements aa"
 				query += " where AccAchieveId = @AccAchieveId"
+				rj = JSON.stringify(rj)
 				pool.request()
 					.input("ExtraJSON", sql.VarChar, rj)
 					.input("AccAchieveId", sql.Int, r.AccAchieveId)
@@ -265,12 +265,12 @@ var acheck = {
 			if (rn.slice(0, 10) !== (rj.lastVisit).slice(0, 10)) {
 				rj.lastVisit = rn
 				rj.progressCurrent++
-				rj = JSON.stringify(rj)
 				var query = "update aa"
 				query += " set ExtraJSON = @ExtraJSON"
 				query += (rj.progressCurrent >= max ? ", AwardedDate = getutcdate()" : "")
 				query += " from AccountAchievements aa"
 				query += " where AccAchieveId = @AccAchieveId"
+				rj = JSON.stringify(rj)
 				pool.request()
 					.input("ExtraJSON", sql.VarChar, rj)
 					.input("AccAchieveId", sql.Int, r.AccAchieveId)
@@ -333,12 +333,12 @@ var acheck = {
 			if (rn.slice(0, 10) !== (rj.lastVisit).slice(0, 10)) {
 				rj.lastVisit = rn
 				rj.progressCurrent++
-				rj = JSON.stringify(rj)
 				var query = "update aa"
 				query += " set ExtraJSON = @ExtraJSON"
 				query += (rj.progressCurrent >= max ? ", AwardedDate = getutcdate()" : "")
 				query += " from AccountAchievements aa"
 				query += " where AccAchieveId = @AccAchieveId"
+				rj = JSON.stringify(rj)
 				pool.request()
 					.input("ExtraJSON", sql.VarChar, rj)
 					.input("AccAchieveId", sql.Int, r.AccAchieveId)
@@ -2171,7 +2171,7 @@ var acheck = {
 	//2150	vox - populi
 	2150: (input, callback) => {
 		var achid = 2150
-		var max = 40
+		var max = 15
 
 		var tquery = "insert into AccountAchievements (AccountPermaId, AchievementId, AwardedDate)"
 		tquery += " select @AccountPermaId, @AchievementId, getutcdate()"
@@ -2183,7 +2183,33 @@ var acheck = {
 		tquery += "		left join AccountAchievements a"
 		tquery += "		on a.AccountPermaId = @AccountPermaId and a.AchievementId = @AchievementId"
 		tquery += "			and a.AwardedDate is not null"
-		tquery += "			and datediff(day, 0, getutcdate()) = datediff(day, 0, a.AwardedDate)"
+		tquery += "			and datediff(week, 0, getutcdate()) = datediff(week, 0, a.AwardedDate)"
+		tquery += " where r.Amount >= @Max and a.AccAchieveId is null"
+		pool.request()
+			.input("AccountPermaId", sql.Int, input.permaid)
+			.input("AchievementId", sql.Int, achid)
+			.input("Max", sql.Int, max)
+			.query(tquery, (err, result) => {
+				callback(err, result, achid)
+			})
+
+	},
+	//2151	voce - magna
+	2151: (input, callback) => {
+		var achid = 2151
+		var max = 200
+
+		var tquery = "insert into AccountAchievements (AccountPermaId, AchievementId, AwardedDate)"
+		tquery += " select @AccountPermaId, @AchievementId, getutcdate()"
+		tquery += " from ("
+		tquery += "		select count(1) as Amount from ChatReactions"
+		tquery += "		where AccountPermaId = @AccountPermaId and UnreactionDate is null"
+		tquery += "			and datediff(month, 0, ReactionDate) = datediff(month, 0, getutcdate())"
+		tquery += " ) r "
+		tquery += "		left join AccountAchievements a"
+		tquery += "		on a.AccountPermaId = @AccountPermaId and a.AchievementId = @AchievementId"
+		tquery += "			and a.AwardedDate is not null"
+		tquery += "			and datediff(month, 0, getutcdate()) = datediff(month, 0, a.AwardedDate)"
 		tquery += " where r.Amount >= @Max and a.AccAchieveId is null"
 		pool.request()
 			.input("AccountPermaId", sql.Int, input.permaid)
@@ -2453,7 +2479,7 @@ var acheck = {
 				})
 		}
 	},
-	//2200	desecrator
+	//2999	desecrator
 	//3000	mvp - weekly
 	//3001	mvp - monthly
 	//3002	mvp - yearly

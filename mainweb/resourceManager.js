@@ -70,6 +70,9 @@ var resources = {
 	"/c/SoundCiv4LossMiddle.mp3": new cr({
 		send: "/common/SoundCiv4LossMiddle.mp3"
 	}),
+	"/c/SoundCiv4StarterSfx.mp3": new cr({
+		send: "/common/SoundCiv4StarterSfx.mp3"
+	}),
 	"/c/SoundCiv4War.mp3": new cr({
 		send: "/common/SoundCiv4War.mp3"
 	}),

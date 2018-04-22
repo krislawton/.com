@@ -132,16 +132,16 @@ textarea.click-to-refresh:active {
 }
 
 /* Chat log */
-button.showEarlier {
+#logContainer button.loadChat {
 	display: block;
 	text-align: center;
 	padding: 50px;
 	width: 100%;
 }
-button.showEarlier:hover {
+#logContainer button.loadChat:hover {
 	background: rgba(0, 0, 0, 0.08);
 }
-button.showEarlier:active {
+#logContainer button.loadChat:active {
 	background: rgba(0, 0, 0, 0.16);
 }
 .achat, .dateSeparator {
@@ -384,7 +384,7 @@ div.options button.option:active {
 	width: 100%;
 	padding: 4px 8px;
 	text-align: left;
-	white-space: pre;
+	word-break: break-all;
 }
 #chats button:hover {
 	background: hsl(216, 45%, 87%);
@@ -413,10 +413,41 @@ div.options button.option:active {
 	margin-bottom: 20px;
 	background: white;
 	box-shadow: 0 0 10px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.08);
+	transition: padding 0.15s;
+}
+#info .card.collapsed {
+	padding: 10px 10px 0;
 }
 #info h2 {
-	margin: 0 0 10px;
+	margin: 0;
 	font-size: 120%;
+}
+#info .collapser {
+	display: block;
+	width: 100%;
+	text-align: initial;
+	padding: 10px;
+	margin: -10px -10px 0;
+	box-sizing: content-box;
+}
+#info .collapser:hover {
+	background: rgba(0, 0, 0, 0.05);
+}
+#info .collapser:active {
+	background: rgba(0, 0, 0, 0.1);
+}
+#info .collapser h2 {
+	display: inline-block;
+}
+#info .collapser .chev {
+	float: right;
+	transition: transform 0.15s;
+	transform: rotate(90deg);
+	font-size: 120%;
+	font-weight: bold;
+}
+#info .collapsed .collapser .chev {
+	transform: rotate(0deg);
 }
 #users {
 	display: flex;
@@ -432,19 +463,41 @@ div.options button.option:active {
 	text-decoration: inherit;
 	color: inherit;
 }
+.card #chatSearch input[type="date"] {
+	display: block;
+	margin: 10px 0;
+	padding: 5px;
+	outline: 0 !important;
+	border: 0;
+	box-shadow: 0 0 2px 0 hsl(0, 0%, 70%);
+	font: inherit;
+}
 .star-snippet {
     border-top: 1px solid rgba(0, 0, 0, 0.1);
     padding: 10px 0;
 }
-.star-snippet > * {
+.star-snippet > *:not(button) {
     margin: 2px 0;
+}
+.star-snippet .unstar {
+	float: right;
+	margin-left: 5px;
+	opacity: 0.2;
+}
+.star-snippet:hover .unstar {
+	opacity: 1;
 }
 #starred .nametag {
     margin-right: 10px;
     font-weight: bold;
+	display: block;
+	padding: 8px 0;
+}
+.star-snippet .content {
+	display: inline;
 }
 .nametag, .content {
-    display: inline-block;
+	display: inline-block;
 }
 .posted, .date-starred {
     font-size: 80%;

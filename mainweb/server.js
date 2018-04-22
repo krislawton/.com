@@ -894,78 +894,80 @@ ioNomicChat.on('connection', (socket) => {
 /* =================== */
 /* MVP award scheduler */
 /* =================== */
-var mvpweekly = schedule.scheduleJob('5 1 * * 1', () => {
-	achiev.mvpWeekly((err, result) => {
-		if (!err) {
-			var p = {
-				room: "tournytime",
-				content: result,
-				extra: null
-			}
-			chatAddSystemMessage(p, (err2, result2) => {
-				if (!err2) {
-					chatChecksum = generateSessionId()
-					var ret = {
-						err: err2,
-						fromDb: result2,
-						checksum: chatChecksum
-					}
-					ioChat.emit('chat sent', ret)
+if (!devOrLive.dev) {
+	var mvpweekly = schedule.scheduleJob('5 1 * * 1', () => {
+		achiev.mvpWeekly((err, result) => {
+			if (!err) {
+				var p = {
+					room: "tournytime",
+					content: result,
+					extra: null
 				}
-			})
-		} else {
-			console.log("Error with MVP:")
-			console.log(err)
-		}
-	})
-})
-var mvpmonthly = schedule.scheduleJob('5 1 1 * *', () => {
-	achiev.mvpMonthly((err, result) => {
-		if (!err) {
-			var p = {
-				room: "tournytime",
-				content: result,
-				extra: null
-			}
-			chatAddSystemMessage(p, (err2, result2) => {
-				if (!err2) {
-					chatChecksum = generateSessionId()
-					var ret = {
-						err: err2,
-						fromDb: result2,
-						checksum: chatChecksum
+				chatAddSystemMessage(p, (err2, result2) => {
+					if (!err2) {
+						chatChecksum = generateSessionId()
+						var ret = {
+							err: err2,
+							fromDb: result2,
+							checksum: chatChecksum
+						}
+						ioChat.emit('chat sent', ret)
 					}
-					ioChat.emit('chat sent', ret)
-				}
-			})
-		} else {
-			console.log("Error with MVP:")
-			console.log(err)
-		}
-	})
-})
-var mvpyearly = schedule.scheduleJob('5 1 1 1 *', () => {
-	achiev.mvpYearly((err, result) => {
-		if (!err) {
-			var p = {
-				room: "tournytime",
-				content: result,
-				extra: null
+				})
+			} else {
+				console.log("Error with MVP:")
+				console.log(err)
 			}
-			chatAddSystemMessage(p, (err2, result2) => {
-				if (!err2) {
-					chatChecksum = generateSessionId()
-					var ret = {
-						err: err2,
-						fromDb: result2,
-						checksum: chatChecksum
-					}
-					ioChat.emit('chat sent', ret)
-				}
-			})
-		} else {
-			console.log("Error with MVP:")
-			console.log(err)
-		}
+		})
 	})
-})
+	var mvpmonthly = schedule.scheduleJob('5 1 1 * *', () => {
+		achiev.mvpMonthly((err, result) => {
+			if (!err) {
+				var p = {
+					room: "tournytime",
+					content: result,
+					extra: null
+				}
+				chatAddSystemMessage(p, (err2, result2) => {
+					if (!err2) {
+						chatChecksum = generateSessionId()
+						var ret = {
+							err: err2,
+							fromDb: result2,
+							checksum: chatChecksum
+						}
+						ioChat.emit('chat sent', ret)
+					}
+				})
+			} else {
+				console.log("Error with MVP:")
+				console.log(err)
+			}
+		})
+	})
+	var mvpyearly = schedule.scheduleJob('5 1 1 1 *', () => {
+		achiev.mvpYearly((err, result) => {
+			if (!err) {
+				var p = {
+					room: "tournytime",
+					content: result,
+					extra: null
+				}
+				chatAddSystemMessage(p, (err2, result2) => {
+					if (!err2) {
+						chatChecksum = generateSessionId()
+						var ret = {
+							err: err2,
+							fromDb: result2,
+							checksum: chatChecksum
+						}
+						ioChat.emit('chat sent', ret)
+					}
+				})
+			} else {
+				console.log("Error with MVP:")
+				console.log(err)
+			}
+		})
+	})
+}

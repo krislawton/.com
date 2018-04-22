@@ -23,10 +23,22 @@ html
       div.rooms
     div#info
       div.card
-        h2 Users
+        button.collapser
+          h2 Users
+          span.chev >
         div#users
       div.card
-        h2 Starred
+        button.collapser
+          h2 Search
+          span.chev >
+        div#chatSearch
+          input(type="date")
+          button.search.button.raised Go to date
+          div.error(style="display: none")
+      div.card
+        button.collapser
+          h2 Users
+          span.chev >
         div#nostars No messages starred yet! Star messages that are important 
           | to you or that you want to save for later. 
           | No one else can see what messages you've starred.
@@ -37,6 +49,7 @@ html
           button.close-modal.button.persistent ×
       div#logViewPort
         div#logContainer
-          button.showEarlier Try to get me some earlier chat
+          button.loadChat.showEarlier Try to get me some earlier chat
+          button.loadChat.showLater(style="display: none") Try to get me some more recent chat
       div#sendContainer
         textarea(autofocus)

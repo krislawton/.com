@@ -23,17 +23,14 @@
 		}
 	})
 	socketChat.on('sync result', (response) => {
-		console.log("Sync result: " + response)
 		if (response === false) {
 			storedText = $('#sendContainer textarea').val()
 			$('#sendContainer textarea').addClass("click-to-refresh", true).val("Desync detected. Click to refresh chat.").prop("disabled", false)
 		} else {
-			console.log(storedText)
 			$('#sendContainer textarea').val("" + storedText).removeClass("error").prop("disabled", false)
 		}
 	})
 	$(document).on("click", "textarea.click-to-refresh", (e) => {
-		console.log(e)
 		$('#sendContainer textarea').removeClass("error").removeClass("click-to-refresh").prop("disabled", false).val("" + storedText)
 		$('button.room[data-roomid="' + viewingRoom + '"]').trigger("click")
 	})
@@ -60,9 +57,11 @@
 		chatInitialized = false,
 		initialSocketsWIP = 2,
 		users = {},
+		rooms = {},
 		stars = {},
 		viewingAsPermaId = $('#accountPermaId').attr('data-permaid'),
-		contentLog = {}
+		contentLog = {},
+		canSeeCurrent = true
 
 	// Socket responses
 	socket.on('data response', (response) => {
@@ -71,8 +70,14 @@
 		if (response.input.request === "chatMessagesLoad") {
 			var p = response.input.params
 			if (!response.err && p.room === viewingRoom) {
-				// Get scroll height
-				var prevScroll = $('#logViewPort')[0].scrollHeight
+				// Get first message for scroll
+				var hasMessages = $('#logContainer > .achat').length != 0,
+					heightAbove = 0,
+					oldTopMessage
+				if (hasMessages) {
+					oldTopMessage = $('#logContainer > .achat').eq(0)
+					heightAbove = $(oldTopMessage).offset().top
+				}
 				// NOTE: Results are left joined to reactions
 				var jrc = response.recordset.recordset
 				if (p.earlier) {
@@ -104,12 +109,20 @@
 				for (i in rea) {
 					addReactionsToView(i, rea[i])
 				}
-				// Scroll to bottom if first load
+				// Scrolling
 				if (p.when === "now") {
+					// Scroll to bottom if first load
 					$('#logViewPort').scrollTop($('#logViewPort')[0].scrollHeight)
+				} else if (p.earlier && hasMessages) {
+					// Maintain scroll if adding to top
+					var oldTopScroll = $(oldTopMessage).offset().top
+					$('#logViewPort').scrollTop(oldTopScroll - heightAbove)
+				}
+				// For navigating to previous chat, need to double check if last message loaded is latest
+				if (rooms[viewingRoom].lastMessageId == $('#logContainer .achat').eq(-1).attr('data-messageid')) {
+					$('#logContainer .showLater').hide()
 				} else {
-					var newHeight = $('#logViewPort')[0].scrollHeight
-					$('#logViewPort').scrollTop(newHeight - prevScroll)
+					$('#logContainer .showLater').show().appendTo('#logContainer')
 				}
 			}
 		}
@@ -137,11 +150,18 @@
 		// On receive rooms list
 		if (response.input.request === "chatRoomsLoad") {
 			if (!response.err) {
-				var rooms = response.recordset.recordset
+				var dbRooms = response.recordset.recordset
+
 				var toAppend = ""
-				for (r in rooms) {
+				for (r in dbRooms) {
+					// Global rooms obj
+					rooms[dbRooms[r].RoomPermanentId] = {
+						name: dbRooms[r].RoomName,
+						lastMessageId: dbRooms[r].LastMessageId,
+						lastTimestamp: dbRooms[r].LastSentDate
+					}
 					// Button in #chats
-					toAppend += '<button class="room" data-roomid="' + rooms[r].RoomPermanentId + '">#' + rooms[r].RoomName + '</button>'
+					toAppend += '<button class="room" data-roomid="' + dbRooms[r].RoomPermanentId + '">#' + dbRooms[r].RoomName + '</button>'
 				}
 				$('#chats .rooms').html(toAppend)
 				$('#chats .addRoom').remove()
@@ -198,6 +218,12 @@
 			for (i in stars) {
 				var element = document.createElement("div")
 				element.className = "star-snippet"
+				element.dataset.messageid = i
+
+				var unstar = document.createElement("button")
+				unstar.className = "unstar button"
+				unstar.innerHTML = "Unstar"
+				element.appendChild(unstar)
 
 				if (stars[i].permaid !== null) {
 					element.appendChild(nameTag(stars[i].permaid))
@@ -210,13 +236,20 @@
 
 				var posted = document.createElement("div")
 				posted.className = "posted"
-				posted.innerHTML = "Posted in #" + stars[i].room
+				posted.innerHTML = "Posted in #" + stars[i].room + " "
+				var postedago = document.createElement("span")
+				postedago.title = dataTransformer("datetime long", stars[i].messageDate)
+				postedago.innerHTML = dataTransformer("ago", stars[i].messageDate) + " ago"
+				posted.appendChild(postedago)
 				element.appendChild(posted)
 
 				var whenstar = document.createElement("div")
 				whenstar.className = "date-starred"
-				var whenstardate = dataTransformer("datetime short", stars[i].dateStarred)
-				whenstar.innerHTML = "Starred on " + whenstardate
+				whenstar.innerHTML = "Starred "
+				var whenstardate = document.createElement("span")
+				whenstardate.title = dataTransformer("datetime short", stars[i].dateStarred)
+				whenstardate.innerHTML = dataTransformer("ago", stars[i].dateStarred) + " ago"
+				whenstar.appendChild(whenstardate)
 				element.appendChild(whenstar)
 
 				$('#starred').prepend(element)
@@ -225,6 +258,12 @@
 			$('#nostars').show()
 		}	
 	}
+	// Unstar message
+	$(document).on("click", '.star-snippet button.unstar', (e) => {
+		var messageId = $(e.target).parents('.star-snippet').attr('data-messageid')
+		socket.emit('db procedure request', { procedure: "chatStarMessage", params: { messageid: messageId } })
+		// On response is already handled by refreshing list
+	})
 
 	// Helper for re-rendering users
 	function refreshUsers() {
@@ -240,6 +279,10 @@
 
 	// Helper for adding messages to screen
 	function addChatToView(dbRecord, bottomOrTop) {
+		// Check chat is not already rendered
+		if ($('.achat[data-messageid="' + dbRecord.MessageId + '"]').length > 0) {
+			return
+		}
 
 		contentLog[dbRecord.MessageId] = dbRecord.Content
 
@@ -287,23 +330,54 @@
 		// End element
 		toAdd += '</div></div>'
 
+		// Add chat and dividers/diffs
 		if (bottomOrTop === "top") {
+			// Add new message and dividers
 			$('#logContainer button.showEarlier').after(toAdd)
 			addChatDividersTop()
 		} else {
 			$('#logContainer').append(toAdd)
-			// Animate
-			var tar = $('.achat[data-messageid="' + dbRecord.MessageId + '"]')[0]
-			var chatHeight = $(tar).height()
-			var logHeight = $('#logViewPort')[0].scrollHeight + chatHeight
-			$(tar).css('height', '0px').animate({ height: "+=" + chatHeight}, 200, "easeOutCirc", () => {
-				$(tar).attr('style', '')
-			})
-			$('#logViewPort').animate({ scrollTop: logHeight }, 200)
+			// Animate if new
+			if (dbRecord.MessageId === rooms[viewingRoom].lastMessageId) {
+				var tar = $('.achat[data-messageid="' + dbRecord.MessageId + '"]')[0]
+				var chatHeight = $(tar).height()
+				var logHeight = $('#logViewPort')[0].scrollHeight + chatHeight
+				$(tar).css('height', '0px').animate({ height: "+=" + chatHeight }, 200, "easeOutCirc", () => {
+					$(tar).attr('style', '')
+				})
+				$('#logViewPort').animate({ scrollTop: logHeight }, 200)
+			}
 			// Dividers
 			addChatDividersBottom()
-			// Scroll to bottom, where a new message has been added
-			$('#logViewPort').scrollTop($('#logViewPort')[0].scrollHeight)
+		}
+
+		// Consdier whether there are too many chats rendered, and chop accordingly
+		var maxChatsToRender = 100
+		if (bottomOrTop === "top") {
+			if ($('.achat').length > maxChatsToRender) {
+				// Get last chat that will be rendered
+				var removeBelow = $('.achat')[maxChatsToRender]
+				// If we're removing the latest chat, add button to load later chat
+				if ($(removeBelow).nextAll().length > 0) {
+					canSeeCurrent = false
+					$('#logContainer .showLater').show()
+				}
+				// Remove all below
+				$(removeBelow).nextAll(':not(button.showLater)').remove()
+			}
+		} else {
+			if ($('.achat').length > maxChatsToRender) {
+				// Get last chat that will be rendered
+				var removeBelow = $('.achat').eq($('.achat').length - maxChatsToRender)
+				// Remove all above
+				$(removeBelow).prevAll().not('button.showEarlier').not($('.diffHeader').eq(-1)).remove()
+				// (Re)move "show later" button
+				if (dbRecord.MessageId === rooms[viewingRoom].lastMessageId) {
+					$('button.showLater').hide()
+				} else {
+					$('button.showLater').show().appendTo('#logContainer')
+				}
+			}
 		}
 	}
 	// Helper for adding dividers (top)
@@ -408,6 +482,10 @@
 		var stamp = $('.achat').eq(0).attr('data-timestamp')
 		socket.emit('data request', { request: "chatMessagesLoad", params: { earlier: true, room: viewingRoom, when: stamp } })
 	})
+	$(document).on("click", 'button.showLater', () => {
+		var stamp = $('.achat').eq(-1).attr('data-timestamp')
+		socket.emit('data request', { request: "chatMessagesLoad", params: { earlier: false, room: viewingRoom, when: stamp } })
+	})
 
 	// On message received
 	var heldInQueue = []
@@ -424,9 +502,24 @@
 		if (!response.err) {
 			var r = response.fromDb.recordset[0]
 
-			// Add to view
-			if (r.Room === viewingRoom) {
-				addChatToView(r, "bottom")
+			// Update rooms object to store latest message
+			if (rooms[r.Room].lastTimestamp < r.SentDate) {
+				rooms[r.Room].lastMessageId = r.MessageId
+				rooms[r.Room].lastTimestamp = r.SentDate
+			}
+
+			if (canSeeCurrent) {
+				// Add to view
+				if (r.Room === viewingRoom) {
+					addChatToView(r, "bottom")
+				}
+
+				// Scroll to new message if already at bottom
+				var userScroll = $('#logViewPort').scrollTop() + $('#logViewPort').height()
+				var maxScroll = $('#logViewPort')[0].scrollHeight
+				if (userScroll === maxScroll) {
+					$('#logViewPort').scrollTop($('#logViewPort')[0].scrollHeight)
+				}
 			}
 
 			// Play sound
@@ -727,6 +820,34 @@
 	$(document).on("click", '#chatToolbar .right', () => {
 		$('body').toggleClass('info-open').toggleClass('info-closed')
 		reconsiderSend()
+	})
+	// Listen for info collapses
+	$(document).on("click", '#info .card button.collapser', (e) => {
+		console.log(e)
+		var isCollapsed = $(e.target).parents('.card').hasClass('collapsed')
+
+		if (isCollapsed) {
+			$(e.target).parents('.card').children().not('button.collapser').slideDown(150, "easeOutCirc")
+			$(e.target).parents('.card').removeClass("collapsed")
+		} else {
+			$(e.target).parents('.card').children().not('button.collapser').slideUp(150, "easeOutCirc")
+			$(e.target).parents('.card').addClass("collapsed")
+		}
+	})
+	// Listen for date searching
+	$(document).on("click", '#chatSearch button.search', (e) => {
+		var searchDate = $(e.target).parent('#chatSearch').find('input[type="date"]').val()
+
+		if (searchDate.match(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/) !== null) {
+			var tzo = new Date().getTimezoneOffset()
+			var dSearch = new Date(searchDate)
+			var dAbs = Math.abs(dSearch) + tzo * 6e4
+			var inputTimestamp = new Date(dAbs).toISOString()
+			// Clear chat
+			$('#logContainer > *').not('button').remove()
+			// Request chat
+			socket.emit('data request', { request: "chatMessagesLoad", params: { earlier: false, room: viewingRoom, when: inputTimestamp } })
+		}
 	})
 
 	// Listen for window size changes
@@ -1066,11 +1187,15 @@
 
 				var ej = JSON.parse(hist[i].ExtraJSON)
 				var dstring = hist[i].Details
-				var user = ej.accountPermaId
-				var userEntry = typeof user !== "undefined" ? users[user] : {}
-				var nt = nameTag(user, userEntry.displayName)
-				nt.style.fontWeight = "bold"
-				var nth = nt.outerHTML
+				var nth
+				if (ej.accountPermaId === null) {
+					nth = '<span style="font-weight: bold">System</span>'
+				} else {
+					var user = ej.accountPermaId
+					var userEntry = typeof user !== "undefined" ? users[user] : {}
+					var nt = nameTag(user, userEntry.displayName)
+					nth = nt.outerHTML
+				}
 				dstring = dstring.replace(/{player}/g, nth)
 				dstring = dstring.replace(/{room}/g, '#' + ej.room)
 				dstring = dstring.replace(/{reaction}/g, ej.reaction)
