@@ -146,6 +146,113 @@
 		}
 	})
 
+	// Listen for session manager request
+	$(document).on("click", '#load-sessions', () => {
+		$('#load-sessions').prop("disabled", true)
+		socket.emit('data request', { request: "rootUserSessions" })
+	})
+	// Listen for response and generate grid
+	socket.on('data response', (response) => {
+		if (response.input.request === "rootUserSessions") {
+			if (response.err) {
+				$('#load-sessions').html("Failed. Try again?")
+				return
+			} 
+			$('#load-sessions').slideUp(150, "easeOutCirc")
+			for (i in response.recordset) {
+				var r = response.recordset[i]
+
+				var row = document.createElement("div")
+				row.className = "row"
+				row.dataset.sessionid = r.sid
+
+				var sid = document.createElement("div")
+				sid.className = "sid"
+				var sidL = document.createElement("span")
+				sidL.className = "label"
+				sidL.innerHTML = "Session ID: "
+				sid.appendChild(sidL)
+				sid.innerHTML += r.sid
+
+				var used = document.createElement("div")
+				used.className = "used"
+				var usedL = document.createElement("span")
+				usedL.className = "label"
+				usedL.innerHTML = "Used: "
+				used.appendChild(usedL)
+				if (r.FirstRequest && r.LastRequest) {
+
+					var firstAgo = dataTransformer("ago", r.FirstRequest)
+					var firstStamp = dataTransformer("datetime long", r.FirstRequest)
+					var firstEl = document.createElement("span")
+					firstEl.innerHTML = firstAgo
+					firstEl.title = firstStamp
+					used.appendChild(firstEl)
+					used.innerHTML += " to "
+					var lastAgo = dataTransformer("ago", r.LastRequest)
+					var lastStamp = dataTransformer("datetime long", r.LastRequest)
+					var lastEl = document.createElement("span")
+					lastEl.innerHTML = lastAgo
+					lastEl.title = lastStamp
+					used.appendChild(lastEl)
+				} else {
+					used.innerHTML += "Unknown"
+				}
+
+				var pls = document.createElement("div")
+				pls.className = "pl"
+				var plL = document.createElement("span")
+				plL.className = "label"
+				plL.innerHTML = "Page loads: "
+				pls.appendChild(plL)
+				pls.innerHTML += r.PageLoads ? r.PageLoads : ""
+
+				var ips = document.createElement("div")
+				ips.className = "ip"
+				var ipsL = document.createElement("span")
+				ipsL.className = "label"
+				ipsL.innerHTML = "IP addresses: "
+				ips.appendChild(ipsL)
+				ips.innerHTML += r.DifferentIPs ? r.DifferentIPs : ""
+
+				var actions = document.createElement("div")
+				actions.className = "actions"
+				var destroy = document.createElement("button")
+				destroy.className = "button raised colored destroy"
+				destroy.innerHTML = "Destroy"
+				actions.appendChild(destroy)
+
+				row.appendChild(sid)
+				row.appendChild(used)
+				row.appendChild(pls)
+				row.appendChild(ips)
+				row.appendChild(actions)
+
+				$('#session-manager').append(row)
+			}
+			$('#session-manager, .load-with-sm').slideDown(500, "easeOutCirc")
+		}
+	})
+
+	// Listen for session destroy
+	$(document).on("click", '#session-manager button.destroy', (e) => {
+		var sid = $(e.target).parents('.row').attr('data-sessionid')
+		socket.emit('db procedure request', { procedure: "rootUserDestroySession", params: { sid: sid } })
+		$(e.target).prop('disabled', true)
+	})
+	// Listen for destroy response
+	socket.on('db procedure response', (response) => {
+		if (response.input.procedure === "rootUserDestroySession") {
+			if (!response.err) {
+				$('#session-manager .row[data-sessionid="' + response.params.sid + '"]').slideUp(150, "easeOutCirc", () => {
+					$('#session-manager .row[data-sessionid="' + response.params.sid + '"]').remove()
+				})
+			} else {
+				$('#session-manager .row[data-sessionid="' + response.params.sid + '"] button.destroy').prop("disabled", false).html("Try again?")
+			}
+		}
+	})
+
 	// Error handling
 	function printErrors(section, errors) {
 

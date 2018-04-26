@@ -246,6 +246,7 @@ button, a.button, input.button {
 	font-size: initial;
 	text-decoration: none;
 	cursor: pointer;
+	padding: initial;
 }
 button:focus, input.button:hover focus {
 	outline: 0;
@@ -265,6 +266,9 @@ button.button:hover, a.button:hover, input.button:hover {
 }
 button.button:active, a.button:active, input.button:active {
 	background: hsl(0, 0%, 88%);
+}
+button.button.smol, a.button.smol, input.button.smol {
+	padding: 4px 8px;
 }
 button.button:focus {
 	outline: 0;

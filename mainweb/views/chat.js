@@ -120,8 +120,10 @@
 				}
 				// For navigating to previous chat, need to double check if last message loaded is latest
 				if (rooms[viewingRoom].lastMessageId == $('#logContainer .achat').eq(-1).attr('data-messageid')) {
+					canSeeCurrent = true
 					$('#logContainer .showLater').hide()
 				} else {
+					canSeeCurrent = false
 					$('#logContainer .showLater').show().appendTo('#logContainer')
 				}
 			}
@@ -179,6 +181,98 @@
 		if (!response.err && response.input.request === "chatStarsLoad") {
 			refreshStars(response.recordset.recordset)
 		}
+		// On hot messages
+		if (!response.err && response.input.request === "chatHotMessagesLoad") {
+			renderHot(response.recordset.recordset)
+		}
+	})
+
+	// Helper for re-rendering users
+	function refreshUsers() {
+		$('#users').html("")
+		for (i in users) {
+			var link = "/user/" + i + "-" + users[i].username
+			var html = '<div class="user-row">'
+			html += nameTag(i).outerHTML
+			html += '</div>'
+			$('#users').append(html)
+		}
+	}
+
+	// Handle navigating to chat by date
+	function navigateToChatDate(inputTimestamp) {
+		// Clear chat
+		$('#logContainer > *').not('button').remove()
+		// Request chat
+		socket.emit('data request', { request: "chatMessagesLoad", params: { earlier: false, room: viewingRoom, when: inputTimestamp } })
+	}
+
+	// Helper for re-rendering hot
+	function renderHot(dbHot) {
+		$('#hot > *').remove()
+		for (var i = 0; i <= 6; i++) {
+			dbHot[i].rank = i * 1 + 1
+			var ho = hotMsg(dbHot[i])
+			$('#hot').append(ho)
+		}
+
+	}
+	// Helper for a hot message HTML object
+	function hotMsg(passed) {
+		var element = document.createElement("div")
+		element.className = "snippet"
+		element.dataset.messageid = passed.MessageId
+
+		var hotness = document.createElement("div")
+		hotness.className = "hotness"
+		hotness.innerHTML = "#" + (passed.rank) + " with " + Math.round(passed.FullVal) + " arbitrary heat"
+		element.appendChild(hotness)
+
+		var msgcont = document.createElement("div")
+		msgcont.className = "msg-container"
+
+		if (passed.SenderAccountId !== null) {
+			var whomst = document.createElement("span")
+			whomst.className = "whomst"
+			whomst.appendChild(nameTag(passed.SenderAccountId))
+			msgcont.appendChild(whomst)
+		}
+
+		var content = document.createElement("div")
+		content.className = "content chatformat"
+		var ft = {
+			contents: passed.ContentHTML,
+			ej: passed.ExtraJSON,
+			type: passed.MessageType
+		}
+		content.innerHTML = messageTransposeExtra(ft)
+		msgcont.appendChild(content)
+
+		element.appendChild(msgcont)
+
+		var posted = document.createElement("button")
+		posted.className = "posted"
+		posted.innerHTML = "Posted "
+		var postedago = document.createElement("span")
+		postedago.title = dataTransformer("datetime long", passed.SentDate)
+		postedago.innerHTML = dataTransformer("ago", passed.SentDate) + " ago"
+		posted.appendChild(postedago)
+		element.appendChild(posted)
+
+		return element
+	}
+	// Reload heat every 5 minutes
+	var hotIntervalObj = null
+	function hotInterval() {
+		if (hotIntervalObj) {
+			clearInterval(hotIntervalObj)
+		}
+		hotIntervalObj = setInterval(() => {
+			socket.emit('data request', { request: "chatHotMessagesLoad", params: { asOf: "now", room: viewingRoom } })
+		}, 3e5)
+	}
+	$(document).on("click", 'button.explanation', () => {
+		socket.emit('data request', { request: "chatHotMessagesLoad", params: { asOf: "now", room: viewingRoom } })
 	})
 
 	// Load starred messages
@@ -214,11 +308,12 @@
 		// Render in info
 		$('.star-snippet').remove()
 		if (amountOfStars > 0) {
-			$('#nostars').hide()
+			$('#nostars').addClass("hidden")
 			for (i in stars) {
 				var element = document.createElement("div")
-				element.className = "star-snippet"
+				element.className = "snippet"
 				element.dataset.messageid = i
+				element.dataset.timestamp = stars[i].messageDate
 
 				var unstar = document.createElement("button")
 				unstar.className = "unstar button"
@@ -234,13 +329,14 @@
 				content.innerHTML = stars[i].contentHtml
 				element.appendChild(content)
 
-				var posted = document.createElement("div")
+				var posted = document.createElement("button")
 				posted.className = "posted"
-				posted.innerHTML = "Posted in #" + stars[i].room + " "
+				posted.innerHTML = "Posted "
 				var postedago = document.createElement("span")
 				postedago.title = dataTransformer("datetime long", stars[i].messageDate)
 				postedago.innerHTML = dataTransformer("ago", stars[i].messageDate) + " ago"
 				posted.appendChild(postedago)
+				posted.innerHTML += " in #" + stars[i].room
 				element.appendChild(posted)
 
 				var whenstar = document.createElement("div")
@@ -258,24 +354,17 @@
 			$('#nostars').show()
 		}	
 	}
-	// Unstar message
+	// Handle unstar message
 	$(document).on("click", '.star-snippet button.unstar', (e) => {
 		var messageId = $(e.target).parents('.star-snippet').attr('data-messageid')
 		socket.emit('db procedure request', { procedure: "chatStarMessage", params: { messageid: messageId } })
 		// On response is already handled by refreshing list
 	})
-
-	// Helper for re-rendering users
-	function refreshUsers() {
-		$('#users').html("")
-		for (i in users) {
-			var link = "/user/" + i + "-" + users[i].username
-			var html = '<div class="user-row">'
-			html += nameTag(i).outerHTML
-			html += '</div>'
-			$('#users').append(html)
-		}
-	}
+	// Handle navigate to starred message
+	$(document).on("click", '.star-snippet button.posted', (e) => {
+		var timestamp = $(e.target).parents('.star-snippet').attr('data-timestamp')
+		navigateToChatDate(timestamp)
+	})
 
 	// Helper for adding messages to screen
 	function addChatToView(dbRecord, bottomOrTop) {
@@ -290,17 +379,12 @@
 		var dateString = dataTransformer("time seconds", dbRecord.SentDate)
 		var dateTitle = dataTransformer("datetime long", dbRecord.SentDate)
 
-		var contents = dbRecord.ContentHTML
-		if (dbRecord.MessageType === "Action" && dbRecord.ExtraJSON !== null) {
-			var ej = JSON.parse(dbRecord.ExtraJSON)
-			contents = contents.replace('{player}', nameTag(ej.accountPermaId).outerHTML)
-			contents = contents.replace('{room}', '<span style="font-weight: normal">#' + ej.room + '</span>')
+		var transObj = {
+			contents: dbRecord.ContentHTML,
+			ej: dbRecord.ExtraJSON,
+			type: dbRecord.MessageType
 		}
-		if (dbRecord.MessageType === "Action") {
-			for (i2 in users) {
-				contents = contents.replace('{accountPermaId' + i2 + '}', nameTag(i2).outerHTML)
-			}
-		}
+		var contents = messageTransposeExtra(transObj)
 
 		var starred = (typeof stars[dbRecord.MessageId] === "object" ? " starred" : "")
 		var edited = (typeof dbRecord.Edited !== "undefined" && dbRecord.Edited ? " edited" : "")
@@ -406,9 +490,9 @@
 	function addChatDividersBottom() {
 		// Date headers
 		var cEarlier = new Date($('#logContainer .achat').eq(-2).attr('data-timestamp'))
-		var cEstring = cEarlier.getFullYear() + "" + cEarlier.getMonth + "" + cEarlier.getDate
+		var cEstring = cEarlier.getFullYear() + "" + cEarlier.getMonth() + "" + cEarlier.getDate()
 		var cLater = new Date($('#logContainer .achat').eq(-1).attr('data-timestamp'))
-		var cLstring = cLater.getFullYear() + "" + cLater.getMonth + "" + cLater.getDate
+		var cLstring = cLater.getFullYear() + "" + cLater.getMonth() + "" + cLater.getDate()
 		var hasDateHeader = false
 
 		if (cEarlier === null || cEstring !== cLstring) {
@@ -541,7 +625,7 @@
 			if (viewingAsPermaId != r.SenderAccountId) {
 				if (Notification.permission === "granted") {
 					var nopt = {
-						body: r.DisplayName + ": " + r.Content,
+						body: r.SenderDisplayName + ": " + r.Content,
 						icon: "/c/Logo.png",
 					}
 					var n = new Notification('krislawton.com #' + r.Room, nopt)
@@ -774,11 +858,20 @@
 		// Get room just clicked
 		var room = $(e.target).attr('data-roomid')
 		viewingRoom = room
+
 		// Clear chat
 		contentLog = {}
 		$('#logContainer > .achat, #logContainer > .diffSeparator, #logContainer > .dateHeader').remove()
 		// Loop through chat of room and add
 		socket.emit('data request', { request: "chatMessagesLoad", params: { earlier: true, room: viewingRoom, when: "now" } })
+
+		// Clear hot
+		$('#hot > *').remove()
+		// Get new hot
+		socket.emit('data request', { request: "chatHotMessagesLoad", params: { asOf: "now", room: viewingRoom } })
+		hotInterval()
+
+		// Refresh room highlight
 		refreshRoomHighlight()
 	})
 	// Highlight chosen room
@@ -802,6 +895,22 @@
 
 		return nametag
 
+	}
+
+	// Helper for doing chat content JSON replacement
+	function messageTransposeExtra(input) {
+		var out = input.contents
+		if (input.type === "Action" && input.ej !== null) {
+			var ej = JSON.parse(input.ej)
+			out = out.replace('{player}', nameTag(ej.accountPermaId).outerHTML)
+			out = out.replace('{room}', '<span style="font-weight: normal">#' + ej.room + '</span>')
+		}
+		if (input.type === "Action") {
+			for (i2 in users) {
+				out = out.replace('{accountPermaId' + i2 + '}', nameTag(i2).outerHTML)
+			}
+		}
+		return out
 	}
 
 	// Helper: HTML escaper
@@ -843,10 +952,7 @@
 			var dSearch = new Date(searchDate)
 			var dAbs = Math.abs(dSearch) + tzo * 6e4
 			var inputTimestamp = new Date(dAbs).toISOString()
-			// Clear chat
-			$('#logContainer > *').not('button').remove()
-			// Request chat
-			socket.emit('data request', { request: "chatMessagesLoad", params: { earlier: false, room: viewingRoom, when: inputTimestamp } })
+			navigateToChatDate(inputTimestamp)
 		}
 	})
 
@@ -890,9 +996,9 @@
 	$(document).on("click", '.addRoomSubmit', () => {
 		var room = $('[name="roomName"]').val()
 		if (!room.match(/^#[a-zA-Z1-9-]+$/)) {
-			$('.error').slideUp(() => {
+			$('.addRoomForm .error').slideUp(() => {
 				var erHtml = 'Error: Room name must begin with a # and must only contain alphanumeric character or hyphens.'
-				$('.error').html(erHtml).slideDown()
+				$('.addRoomForm .error').html(erHtml).slideDown()
 			})
 		} else {
 			room = room.slice(1)

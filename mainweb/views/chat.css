@@ -359,6 +359,12 @@ div.options button.option:active {
 	animation-duration: 0.5s;
 	animation-iteration-count: infinite;
 }
+#logContainer .nametag {
+	display: inline-block;
+}
+#logContainer .content {
+	display: inline;
+}
 
 /* Chatlog's actions */
 .achat.action .timestamp {
@@ -449,6 +455,7 @@ div.options button.option:active {
 #info .collapsed .collapser .chev {
 	transform: rotate(0deg);
 }
+/* Users */
 #users {
 	display: flex;
 	flex-wrap: wrap;
@@ -463,6 +470,7 @@ div.options button.option:active {
 	text-decoration: inherit;
 	color: inherit;
 }
+/* Search */
 .card #chatSearch input[type="date"] {
 	display: block;
 	margin: 10px 0;
@@ -472,36 +480,76 @@ div.options button.option:active {
 	box-shadow: 0 0 2px 0 hsl(0, 0%, 70%);
 	font: inherit;
 }
-.star-snippet {
+/* Used in both hot and starred */
+.snippet {
     border-top: 1px solid rgba(0, 0, 0, 0.1);
     padding: 10px 0;
 }
-.star-snippet > *:not(button) {
+.posted, .date-starred {
+	font-size: 80%;
+	color: rgba(0, 0, 0, 0.5);
+	display: block;
+	margin: 3px 0;
+}
+/* Hot */
+#hot {
+	margin-top: 8px;
+}
+#info button.explanation {
+	margin: 5px 5px 0 0;
+}
+#info span.explanation {
+	display: none;
+}
+#info button.explanation:hover + span.explanation {
+	display: inline;
+}
+#hot .hotness {
+	font-weight: bold;
+	margin-bottom: 8px;
+}
+#hot .whomst {
+	margin-right: 5px;
+	font-weight: bold;
+	display: inline-block;
+}
+#hot .msg-container {
+	padding: 5px 0 5px 10px;
+	border-left: 3px solid rgba(0, 0, 0, 0.1);
+}
+#hot .nametag {
+	display: inline-block;
+}
+#hot .content {
+	display: inline;
+}
+#hot .posted {
+	margin-top: 8px;
+}
+#nostars.hidden {
+	display: none;
+}
+/* Starred */
+#starred .snippet > *:not(button) {
     margin: 2px 0;
 }
-.star-snippet .unstar {
+.snippet .unstar {
+	font-weight: bold;
 	float: right;
 	margin-left: 5px;
 	opacity: 0.2;
 }
-.star-snippet:hover .unstar {
+.snippet:hover .unstar {
 	opacity: 1;
 }
 #starred .nametag {
-    margin-right: 10px;
-    font-weight: bold;
+	font-weight: bold;
+	margin-right: 10px;
 	display: block;
 	padding: 8px 0;
 }
-.star-snippet .content {
-	display: inline;
-}
-.nametag, .content {
-	display: inline-block;
-}
-.posted, .date-starred {
-    font-size: 80%;
-    color: rgba(0, 0, 0, 0.5)
+#starred .content {
+	display: block;
 }
 
 /* Add room form */

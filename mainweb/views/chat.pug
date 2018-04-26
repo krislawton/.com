@@ -26,23 +26,35 @@ html
         button.collapser
           h2 Users
           span.chev >
-        div#users
+        div.collapsable  
+          div#users
       div.card
         button.collapser
           h2 Search
           span.chev >
-        div#chatSearch
-          input(type="date")
-          button.search.button.raised Go to date
-          div.error(style="display: none")
+        div.collapsable
+          div#chatSearch
+            input(type="date")
+            button.search.button.raised Go to date
+            div.error(style="display: none")
       div.card
         button.collapser
-          h2 Users
+          h2 Hot
           span.chev >
-        div#nostars No messages starred yet! Star messages that are important 
-          | to you or that you want to save for later. 
-          | No one else can see what messages you've starred.
-        div#starred
+        div.collapsable
+          button.explanation (?)
+          span.explanation
+            | Hot messages are those an algorithm has determined are hot at the moment. Roughly, it's based on reactions, stars, and age.
+          div#hot
+      div.card
+        button.collapser
+          h2 Starred
+          span.chev >
+        div.collapsable
+          div#nostars.static No messages starred yet! Star messages that are important 
+            | to you or that you want to save for later. 
+            | No one else can see what messages you've starred.
+          div#starred
     div#center
       div#centerModal(style="display: none")
         div.modal-container.persistent

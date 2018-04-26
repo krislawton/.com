@@ -8,6 +8,9 @@ p.smol {
 	color: rgba(0, 0, 0, 0.6);
 }
 
+div.indented {
+	margin-left: 30px;
+}
 form.setting > * {
 	display: inline-block;
 }
@@ -66,4 +69,79 @@ form.settings .error {
 }
 .radio-container input:checked ~ .radio-checked:after {
 	background: white;
+}
+
+/* Session manager */
+p.load-with-sm {
+	display: none;
+}
+#session-manager {
+	margin: 30px;
+	box-shadow: 0 0 1px rgba(0, 0, 0, 0.1), 0 1px 4px rgba(0, 0, 0, 0.15);
+	border-radius: 2px;
+}
+#session-manager .row > * {
+	display: inline-block;
+}
+#session-manager .row {
+	padding: 5px 0;
+}
+#session-manager .row + .row {
+	border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+#session-manager .row.header {
+	font-weight: bold;
+}
+#session-manager .row:hover {
+	background: rgba(0, 0, 0, 0.02);
+}
+#session-manager .row > * {
+	padding: 10px;
+}
+#session-manager .label {
+	display: none;
+}
+
+#session-manager .sid {
+	width: 180px;
+}
+#session-manager .used {
+	width: 300px;
+}
+#session-manager .pl {
+	width: 120px;
+}
+#session-manager .ip {
+	width: 50px;
+}
+
+@media only screen and (max-width: 900px) {
+	#session-manager {
+		box-shadow: 0 0 0;
+		margin: 0;
+	}
+	#session-manager .header.row {
+		display: none;
+	}
+	#session-manager .row > * {
+		display: block;
+		width: auto;
+		padding: 10px 0;
+		margin-left: 20px;
+	}
+	#session-manager .row .sid {
+		font-weight: bold;
+		margin-left: 0;
+		letter-spacing: 1px;
+	}
+	#session-manager .row .ip, #session-manager .row .pl {
+		display: inline-block; 
+		padding: 10px 10px 10px 0;
+		width: 200px;
+	}
+	#session-manager .label {
+		display: inline-block;
+		opacity: 0.6;
+		margin-right: 5px;
+	}
 }

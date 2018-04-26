@@ -42,7 +42,7 @@ html
       p.smol
         | For technical reasons, you are assigned a fairly-random permanent ID number
         | on creating your account. You cannot change this number.
-      form.setting
+      div.indented
         p(style="width: auto") 
           | Your permanent ID is 
           span.yourPermaId
@@ -55,6 +55,37 @@ html
           input(type="text")#password
         input(type="submit", value="Change password").button.raised.colored
         div.error(style="display: none")
+      h2 Session management
+      p.smol
+        | With the session manager, you can see and manage all the devices/browsers you are logged in to. 
+      p.smol.load-with-sm
+        | Session ID is randomly generated. It's shown here because Kris likes to show off his arbitrary
+        | creations.
+      p.smol.load-with-sm
+        | Used shows you the first time you used the session and the most recent use. This data was only 
+        | tracked as of around April 26, 2018, whereas sessions and page loads have been tracked since
+        | February. Henceforth, any sessions used only before April 26 will show as "Unknown", and 
+        | sessions used since will show a start date of April 26, despite the fact that may not be their
+        | first use.
+      p.smol.load-with-sm
+        | Page loads shows you how many page loads the session has done. 
+      p.smol.load-with-sm
+        | IPs shows you how many IP addresses have been used with that session. A number higher than 1 
+        | here probably you've used this session on a mobile, or maybe it's just that your IP address has 
+        | changed. IP addresses are stored in plaintext, so if you would like to know which IPs we have 
+        | on record, please ask Kris.
+      p.smol.load-with-sm
+        | Please note, this site does not collect data on what browser or device you're using, so we
+        | cannot show you that information.
+      div.indented
+        button.button.raised.colored#load-sessions Load session manager
+      div#session-manager(style="display: none")
+        div.row.header
+          div.sid Session ID
+          div.used Used
+          div.pl Page loads
+          div.ip IPs
+          div.actions
       h2 Nametag color
       p.smol
         | Your name has a color in chat. You can choose between a pool of three that 

@@ -99,7 +99,7 @@ app.locals.basedir = __dirname + '/'
 // Socket IO
 io = require('socket.io').listen(server, {
 	pingTimeout: 7000,
-	pingInterval: 1000
+	pingInterval: 3000
 })
 
 // DB Configuration and connection string
@@ -162,12 +162,11 @@ var storeconfig = {
 }
 var storeoptions = {
 	table: "NodeSessions",
-	ttl: 864e5, // 666 * 864e5, // 864e5 = 1 day
+	ttl: 864e5, // 864e5 = 1 day
 }
 
 // Set up sessions
 var defaultSession = {
-	maxAge: storeoptions.ttl,
 	userData: {
 		loggedIn: false,
 		sites: [0],
@@ -182,6 +181,7 @@ var sessionMiddleware = session({
 	secret: seecret.sessionSecret,
 	resave: true,
 	saveUninitialized: true,
+	rolling: true,
 	cookie: defaultSession
 })
 // Tell server to use sessions
@@ -206,28 +206,32 @@ app.use((err, request, response, next) => {
     console.log(err)
     response.status(500).send('Something wrong')
 })
-// Check login
+// Spare
 app.use((request, response, next) => {
-	//var reg = RegExp(/\/(c\/|u\/|login)/)
-	//if (
-	//	!reg.test(request.url) &&
-	//	(typeof request.session.userData === "undefined" || request.session.userData.loggedIn === "false")
-	//) {
-	//	response.redirect('/login')
-	//} else {
-	//	next()
-	//}
 	next()
 })
 
 // Page getters
 app.get('/*', (request, response) => {
 
+	// Update cookie to 666 days in future if logged in
+	var ud = request.session.userData
+	var c = request.session.cookie
+	if (typeof ud !== "undefined" && ud.loggedIn && c.maxAge === null) {
+		request.session.cookie.maxAge = 666 * 864e5
+	}
+
+	// Page load
 	var passUserData = (typeof request.session.userData === "undefined" ? defaultSession.userData : request.session.userData)
 	resmgr.canAccess(request.path, passUserData, (err, result) => {
 
 		if ((request.headers.accept || "").match(/text\/html/)) {
-			var params = { permaid: passUserData.permaid || null, page: request.path, ip: request.connection.remoteAddress }
+			var params = {
+				permaid: passUserData.permaid || null,
+				page: request.path,
+				ip: request.connection.remoteAddress,
+				sid: request.session.id
+			}
 			datastore.procedure.serverPageLoadAudit(params)
 			achiev.updateAchievements({ justdone: "serverPageLoadAudit", userData: passUserData }, (uaerr, uaresult) => {
 				if (typeof params.permaid !== "undefined") {
@@ -311,6 +315,7 @@ io.on('connection', function (socket) {
 			function checkPassword(userInfo) {
 				if (input.password === userInfo.Pw) {
 					ret.result = "Login successful but we haven't implemented it yet."
+					socket.handshake.session.maxAge = 666 * 864e5
 					socket.handshake.session.userData = {
 						loggedIn: true,
 						username: input.username,

@@ -189,6 +189,14 @@ module.exports = {
 					callback(err, result)
 				})
 		},
+		rootUserSessions: (params, callback) => {
+			permaid = typeof params.session.userData.permaid === "undefined" ? null : params.session.userData.permaid
+			pool.request()
+				.input("AccountPermaId", sql.Int, permaid)
+				.execute("spAccountSessionsGet", (err, result) => {
+					callback(err, result)
+				})
+		},
 		rootUsersAll: (params, callback) => {
 			pool.request()
 				.execute("spAccountsGetAll", (err, result) => {
@@ -216,6 +224,17 @@ module.exports = {
 		chatAccountsLoad: (params, callback) => {
 			pool.request()
 				.query("select AccountPermaId, CustomId, DisplayName, ColorChoiceId from Accounts", (err, result) => {
+					callback(err, { recordset: result })
+				})
+		},
+		chatHotMessagesLoad: (params, callback) => {
+			var asOf = params.asOf === "now" ? null : params.asOf
+			var asOfNow = params.asOf === "now" ? 1 : 0
+			pool.request()
+				.input("AsOf", sql.DateTime, asOf)
+				.input("AsOfNow", sql.Int, asOfNow)
+				.input("Room", sql.VarChar, params.room)
+				.execute("dbo.spChatHotMessagesGet", (err, result) => {
 					callback(err, { recordset: result })
 				})
 		},
@@ -303,6 +322,7 @@ module.exports = {
 				.input("AccountPermaId", sql.Int, params.permaid)
 				.input("IPAddress", sql.VarChar, params.ip)
 				.input("PageRequested", sql.VarChar, params.page)
+				.input("SessionId", sql.VarChar, params.sid)
 				.execute("dbo.spPageLoadInsert")
 				// don't care whether it succeeds or not
 		},
@@ -310,6 +330,13 @@ module.exports = {
 			pool.request()
 				.input("AccAchieveId", sql.Int, params.accAchieveId)
 				.execute("spAccountAchievementMarkSeen", (err, result) => {
+					callback(err, result)
+				})
+		},
+		rootUserDestroySession: (params, callback) => {
+			pool.request()
+				.input("SessionId", sql.VarChar, params.sid)
+				.execute("spAccountSessionDestroy", (err, result) => {
 					callback(err, result)
 				})
 		},
