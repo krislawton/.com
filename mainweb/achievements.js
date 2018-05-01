@@ -2371,6 +2371,103 @@ var acheck = {
 
 	},
 	//2180	early - squad
+	2180: (input, callback) => {
+		var achid = 2180
+		var max = 5
+
+		var n = new Date()
+		var nh = n.getUTCHours()
+
+		if (nh >= 21 && nh < 23 && input.params.content.match(/(ear|squ)/gi) !== null) {
+			// Delete any old ones
+			var dq = "delete from AccountAchievements"
+			dq += " where AccountPermaId = @AccountPermaId"
+			dq += " and AchievementId = @AchievementId"
+			dq += " and cast(json_value(ExtraJSON, '$.lastRepresent') as date) < dateadd(day, -2, getutcdate())"
+			pool.request()
+				.input("AccountPermaId", sql.Int, input.permaid)
+				.input("AchievementId", sql.Int, achid)
+				.query(dq, (err, result) => {
+					lookForRecent()
+				})
+		}
+
+		// Look for any from today or yesterday
+		function lookForRecent() {
+			var updq = "select AccAchieveId, ExtraJSON, AwardedDate from AccountAchievements"
+			updq += " where AccountPermaId = @AccountPermaId"
+			updq += " and AchievementId = @AchievementId"
+			updq += " and cast(json_value(ExtraJSON, '$.lastRepresent') as date) > dateadd(day, -2, getutcdate())"
+			updq += " order by iif(AwardedDate is null, 0, 1)"
+
+			pool.request()
+				.input("AccountPermaId", sql.Int, input.permaid)
+				.input("AchievementId", sql.Int, achid)
+				.query(updq, (err, result) => {
+					processRecent(result.recordset)
+				})
+		}
+
+		function processRecent(rs) {
+			if (rs.length === 0) {
+				// If none exist, add a new one
+				createNew()
+			} else {
+				var lr = JSON.parse(rs[0].ExtraJSON).lastRepresent.slice(0, 10)
+				var nowString = (n.toISOString()).slice(0, 10)
+				if (lr != nowString) {
+					if (rs[0].AwardedDate === null) {
+						updateExisting(rs[0])
+					} else {
+						// the one we see was from yesterday - a new one is required
+						createNew()
+					}
+				} else {
+					callback(null, null, achid)
+				}
+			}
+		}
+
+		function createNew() {
+			var ej = {
+				progressCurrent: 1,
+				progressMax: max,
+				lastRepresent: n.toISOString()
+			}
+			ej = JSON.stringify(ej)
+			var cnq = "insert into AccountAchievements (AccountPermaId, AchievementId, ExtraJSON)"
+			cnq += " values (@AccountPermaId, @AchievementId, @ExtraJSON)"
+			pool.request()
+				.input("AccountPermaId", sql.Int, input.permaid)
+				.input("AchievementId", sql.Int, achid)
+				.input("ExtraJSON", sql.VarChar, ej)
+				.query(cnq, (err, result) => {
+					callback(err, result, achid)
+				})
+		}
+
+		function updateExisting(row) {
+			var ej = JSON.parse(row.ExtraJSON)
+			ej.progressCurrent++
+			ej.lastRepresent = n.toISOString()
+
+			var updq = "update aa set"
+			updq += ej.progressCurrent >= max ? " AwardedDate = getutcdate()," : ""
+			updq += " ExtraJSON = @ExtraJSON"
+			updq += " from AccountAchievements aa"
+			updq += " where AccAchieveId = @AccAchieveId"
+
+			ej = JSON.stringify(ej)
+
+			pool.request()
+				.input("AccAchieveId", sql.Int, row.AccAchieveId)
+				.input("ExtraJSON", sql.VarChar, ej)
+				.query(updq, (err, result) => {
+					callback(err, result, achid)
+				})
+		}
+
+	},
 	//2190	welcome - back
 	2190: (input, callback) => {
 		var achid = 2190

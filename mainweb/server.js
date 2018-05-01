@@ -458,9 +458,9 @@ io.on('connection', function (socket) {
 		}
 	})
 
-	/* ========================================== */
-	/* DATA-RELATED STUFF (TILL NEAR END OF FILE) */
-	/* ========================================== */
+	/* ================== */
+	/* DATA-RELATED STUFF */
+	/* ================== */
 
 	socket.on('recent achievements request', () => {
 		params = { session: socket.handshake.session }
@@ -663,7 +663,7 @@ ioChat.on('connection', (socket) => {
 					checksum: chatChecksum
 				}
 				ioChat.emit('chat sent', ret)
-				achiev.updateAchievements({ justdone: "chatSend", userData: socket.handshake.session.userData }, (uaerr, uaresult) => {
+				achiev.updateAchievements({ justdone: "chatSend", userData: socket.handshake.session.userData, params: input }, (uaerr, uaresult) => {
 					if (typeof socket.handshake.session.userData.permaid !== "undefined") {
 						distributeAchievementUpdate(socket.handshake.session.userData.permaid, { err: uaerr, result: uaresult })
 					}
