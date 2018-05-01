@@ -2378,7 +2378,7 @@ var acheck = {
 		var n = new Date()
 		var nh = n.getUTCHours()
 
-		if (nh >= 21 && nh < 23 && input.params.content.match(/(ear|squ)/gi) !== null) {
+		if (nh >= 10 && nh < 15 && input.params.content.match(/(ear|squ)/gi) !== null) {
 			// Delete any old ones
 			var dq = "delete from AccountAchievements"
 			dq += " where AccountPermaId = @AccountPermaId"
