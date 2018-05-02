@@ -620,32 +620,22 @@ ioChat.on('connection', (socket) => {
 	var permaid = socket.handshake.session.userData.permaid
 
 	// Track new connections
-	var c = 0
 	if (typeof accountsInChat[permaid] === "undefined") {
 		var ej = {
 			accountPermaId: permaid,
 			customId: socket.handshake.session.userData.username,
 			displayName: socket.handshake.session.userData.displayas
 		}
-		var p = { room: "tournytime", content: "~ {player} is now online. Welcome! ~", extra: JSON.stringify(ej) }
-		chatAddSystemMessage(p, (err, result) => {
-			if (!err) {
-				console.log(ret)
-				chatChecksum = generateSessionId()
-				var ret = {
-					err: err,
-					fromDb: result,
-					checksum: chatChecksum
-				}
-				ioChat.emit('chat sent', ret)
-			} else {
-				console.log(err)
-			}
-		})
+		// Add enter message after 5 minutes of lurking, if no message already sent
+		setTimeout(considerAddingEntryMessage, 3e6, ej)
+		accountsInChat[permaid] = {
+			connectionCount: 1,
+			isConsideredActive: false
+		}
 	} else {
-		c = accountsInChat[permaid].connectionCount
+		accountsInChat[permaid].connectionCount++
 	}
-	accountsInChat[permaid] = { lastEntered: new Date(), lastLeft: null, connectionCount: c + 1 }
+	
 	console.log("--------------")
 	console.log("SOMEONE ENTERED CHAT") 
 	console.log(accountsInChat)
@@ -668,6 +658,7 @@ ioChat.on('connection', (socket) => {
 						distributeAchievementUpdate(socket.handshake.session.userData.permaid, { err: uaerr, result: uaresult })
 					}
 				})
+				accountsInChat[permaid].isConsideredActive = true
 			})
 		}
 		catch (e) {
@@ -814,35 +805,14 @@ ioChat.on('connection', (socket) => {
 		if (accountsInChat[permaid] !== "undefined") {
 			console.log("--------------")
 			console.log("SOMEONE LEFT CHAT") 
-			accountsInChat[permaid].lastLeft = new Date()
 			accountsInChat[permaid].connectionCount--
 			console.log(accountsInChat)
-			setTimeout(() => {
-				for (i in accountsInChat) {
-					var ll = new Date(accountsInChat[i].lastLeft + 30 * 6e4)
-					var n = new Date()
-					if (accountsInChat[i].connectionCount === 0 && accountsInChat[i].lastLeft !== null && Math.abs(n - ll) > 0) {
-						delete accountsInChat[i]
-						var ej = {
-							accountPermaId: i,
-							customId: socket.handshake.session.userData.username,
-							displayName: socket.handshake.session.userData.displayas
-						}
-						var p = { room: "tournytime", content: "~ {player} left. Huh. ~", extra: JSON.stringify(ej) }
-						chatAddSystemMessage(p, (err, result) => {
-							if (!err) {
-								chatChecksum = generateSessionId()
-								var ret = {
-									err: err,
-									fromDb: result,
-									checksum: chatChecksum
-								}
-								ioChat.emit('chat sent', ret)
-							}
-						})
-					}
-				}
-			}, 20000)
+			var ej = {
+				accountPermaId: permaid,
+				customId: socket.handshake.session.userData.username,
+				displayName: socket.handshake.session.userData.displayas
+			}
+			setTimeout(considerAddingLeaveMessage, 20000, ej)
 		}
 	})
 
@@ -854,6 +824,56 @@ ioChat.on('connection', (socket) => {
 		socket.emit('sync result', chatIsSynced)
 	})
 })
+// Chat hepler for considering whether a "x entered/left" message is needed
+function considerAddingEntryMessage(objIn) {
+	// If user is no longer in chat or has already sent a message, don't send enter
+	if (typeof accountsInChat[objIn.accountPermaId] === "undefined") {
+		return 
+	}
+	var acobj = accountsInChat[objIn.accountPermaId]
+	if (acobj.isConsideredActive || acobj.connectionCount === 0) {
+		return
+	}
+	acobj.isConsideredActive = true
+	var p = { room: "tournytime", content: "~ {player} is now looking at chat. Welcome! ~", extra: JSON.stringify(objIn) }
+	chatAddSystemMessage(p, (err, result) => {
+		if (!err) {
+			console.log(ret)
+			chatChecksum = generateSessionId()
+			var ret = {
+				err: err,
+				fromDb: result,
+				checksum: chatChecksum
+			}
+			ioChat.emit('chat sent', ret)
+		} else {
+			console.log(err)
+		}
+	})
+}
+function considerAddingLeaveMessage(objIn) {
+	var acobj = accountsInChat[objIn.accountPermaId]
+	if (acobj.connectionCount === 0 && acobj.isConsideredActive) {
+		delete accountsInChat[objIn.accountPermaId]
+		var ej = {
+			accountPermaId: objIn.accountPermaId,
+			customId: objIn.customId,
+			displayName: objIn.DisplayName
+		}
+		var p = { room: "tournytime", content: "~ {player} left. Huh. ~", extra: JSON.stringify(objIn) }
+		chatAddSystemMessage(p, (err, result) => {
+			if (!err) {
+				chatChecksum = generateSessionId()
+				var ret = {
+					err: err,
+					fromDb: result,
+					checksum: chatChecksum
+				}
+				ioChat.emit('chat sent', ret)
+			}
+		})
+	}
+}
 // Chat helper for adding system messages
 function chatAddSystemMessage(params, callback) {
 	console.log("add system message doing")
