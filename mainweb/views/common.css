@@ -148,6 +148,29 @@ main.default {
 .top-dialogue p {
 	margin: 5px 0;
 }
+.top-dialogue .big-links {
+	display: flex;
+	margin: 2.5px -2.5px;
+}
+.top-dialogue .big-links > * {
+	margin: 2.5px;
+	flex-grow: 1;
+	flex-basis: 0;
+	height: 100px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+}
+.top-dialogue .big-links .button {
+	background: hsl(0, 0%, 96%);
+}
+.top-dialogue .big-links .button:hover {
+	background: hsl(0, 0%, 90%);
+}
+.top-dialogue .big-links .button:active {
+	background: hsl(0, 0%, 86%);
+}
 /* Changelog & achievements */
 .changelog, .recent-achievements {
 	margin-bottom: 5px;

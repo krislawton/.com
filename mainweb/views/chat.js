@@ -192,11 +192,14 @@
 		$('#users').html("")
 		for (i in users) {
 			var link = "/user/" + i + "-" + users[i].username
-			var html = '<div class="user-row">'
+			var html = '<div class="user-row" data-permaid="' + i + '">'
+			html += '<div class="activity offline"></div>'
 			html += nameTag(i).outerHTML
 			html += '</div>'
 			$('#users').append(html)
 		}
+		// Get user status too
+		socketChat.emit('activity all request')
 	}
 
 	// Handle navigating to chat by date
@@ -306,7 +309,7 @@
 		}
 
 		// Render in info
-		$('.star-snippet').remove()
+		$('#starred .snippet').remove()
 		if (amountOfStars > 0) {
 			$('#nostars').addClass("hidden")
 			for (i in stars) {
@@ -355,14 +358,14 @@
 		}	
 	}
 	// Handle unstar message
-	$(document).on("click", '.star-snippet button.unstar', (e) => {
-		var messageId = $(e.target).parents('.star-snippet').attr('data-messageid')
+	$(document).on("click", '#starred button.unstar', (e) => {
+		var messageId = $(e.target).parents('#starred .snippet').attr('data-messageid')
 		socket.emit('db procedure request', { procedure: "chatStarMessage", params: { messageid: messageId } })
 		// On response is already handled by refreshing list
 	})
 	// Handle navigate to starred message
-	$(document).on("click", '.star-snippet button.posted', (e) => {
-		var timestamp = $(e.target).parents('.star-snippet').attr('data-timestamp')
+	$(document).on("click", '#starred button.posted', (e) => {
+		var timestamp = $(e.target).parents('#starred .snippet').attr('data-timestamp')
 		navigateToChatDate(timestamp)
 	})
 
@@ -665,6 +668,7 @@
 		// ** is bold
 		// ` is code
 		// > is greentext
+		// # is header
 
 		var layers = []
 		var possiblyInUrl = false
@@ -693,9 +697,9 @@
 
 			// Split on newlines
 			if (inArr[c].charCodeAt(0) === 10) {
-				// Do greentexts first
+				// Do greentexts/headers first
 				for (var li = 0; li < layers.length; li++) {
-					if (layers[li].type === "greentext") {
+					if (layers[li].type === "greentext" || layers[li].type === "header") {
 						inArr[c - 1] += '</span>'
 					}
 				}
@@ -803,6 +807,17 @@
 				} else if (inArr[c - 1].charCodeAt(0) === 10) {
 					layers.push({ type: "greentext", start: c, end: null })
 					inArr[c] = '<span class="greentext">&gt;'
+				}
+			}
+
+			// Headers
+			if (inArr[c] === "#") {
+				if (c === 0) {
+					layers.push({ type: "header", start: c, end: null })
+					inArr[c] = '<span class="header at-start">'
+				} else if (inArr[c - 1].charCodeAt(0) === 10) {
+					layers.push({ type: "header", start: c, end: null })
+					inArr[c] = '<span class="header">'
 				}
 			}
 
@@ -977,6 +992,57 @@
 		$('#sendContainer').css('width', width + 'px').css('left', left + 'px')
 	}
 	reconsiderSend()
+
+	// Timer stuff for determining whether you're active
+	var activeTimer = null
+	var lastActive = new Date()
+	// Helper for instantiating interval that comms to server
+	function instantiateTimer() {
+		if (activeTimer === null) {
+			//console.log("New timer")
+			emitActivity()
+			activeTimer = setInterval(() => {
+				emitActivity()
+			}, 10000)
+		}
+	}
+	// Helper for emitting last activity to server
+	function emitActivity() {
+		//console.log("Sending")
+		socketChat.emit('activity send', { lastActive: lastActive })
+	}
+	// On tab active, instantiate timer and we're active
+	$(window).focus(() => {
+		lastActive = new Date()
+		instantiateTimer()
+		//console.log("Activity, " + activeTimer)
+	})
+	// On tab inactive, turn off timer
+	$(window).blur(() => {
+		clearInterval(activeTimer)
+		activeTimer = null
+		//console.log("Cleared")
+	})
+	// On any activity, update last active ready for next broadcast
+	$(document).on("click keydown mousemove", () => {
+		//console.log("Activity, " + activeTimer)
+		instantiateTimer()
+		lastActive = new Date()
+	})
+	// When we receive an update on someone's activity on the server
+	socketChat.on('activity update', (changes) => {
+		for (i in changes) {
+			var classToAdd = changes[i]
+			$('#users .user-row[data-permaid="' + i + '"] .activity').removeClass('online inactive offline').addClass(classToAdd)
+		}
+	})
+	socketChat.on('activity all repsonse', (activity) => {
+		console.log("Received all activity")
+		for (i in activity) {
+			var classToAdd = activity[i]
+			$('#users .user-row[data-permaid="' + i + '"] .activity').removeClass('online inactive offline').addClass(classToAdd)
+		}
+	})
 
 	// Adding a new room
 	$(document).on("click", 'button.addRoom', () => {

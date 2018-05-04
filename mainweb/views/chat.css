@@ -298,6 +298,14 @@ div.options button.option:active {
 .chatformat .greentext {
 	color: hsl(77, 64%, 37%);
 }
+.chatformat .header {
+	font-size: 130%;
+	line-height: 150%;
+	vertical-align: top;
+}
+.chatformat .header.at-start {
+	line-height: 100%;
+}
 .chatformat .code {
 	padding: 0 3px;
 	border-radius: 3px;
@@ -466,9 +474,27 @@ div.options button.option:active {
 	font-weight: bold;
 	margin: 6px;
 }
+#users .user-row > * {
+	display: inline-block;
+}
 #users .user-row a {
 	text-decoration: inherit;
 	color: inherit;
+}
+#users .activity {
+	width: 8px;
+	height: 8px;
+	margin: 0 6px 1px 0;
+	border-radius: 4px;
+	border: 1px solid hsl(0, 0%, 80%);
+}
+#users .activity.online {
+	background: hsl(140, 50%, 65%);
+	border: 0;
+}
+#users .activity.inactive {
+	background: hsl(60, 70%, 60%);
+	border: 0;
 }
 /* Search */
 .card #chatSearch input[type="date"] {

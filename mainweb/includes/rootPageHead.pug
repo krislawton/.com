@@ -32,20 +32,22 @@
         var username = loggedIn ? userData.username : "not logged in"
       h2 Profile (#{username})
       div.inner
-        p
+        div.big-links
           - 
             var linkTo = "/" + (loggedIn ? "user/" + userData.permaid + "-" + userData.username : "login")
-          a(href=linkTo) My profile
-        p
-          a(href="/settings") Settings
-        p
-          a(href="/users") All users
+          a.button(href=linkTo)
+            span My profile
+          a.button(href="/settings")
+            span Settings
+          a.button(href="/users")
+            span All users
     div.top-dialogue.achievements-dialogue
       h2 Achievements
       div.inner
-        p
-          a(href=linkTo) Achievements on my profile
-        p
-          a(href="/achievements") All achievements
+        div.big-links
+          a.button(href=linkTo)
+            span Achievements on my profile
+          a.button(href="/achievements")
+            span All achievements
         h3 Recent achievements
         div.recent-achievements

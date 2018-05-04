@@ -1929,7 +1929,7 @@ var acheck = {
 		pool.request()
 			.input("MessageId", sql.Int, messageId)
 			.query(qsr, (err, result) => {
-				if (err) {
+				if (err || typeof messageId === "undefined") {
 					callback(err, result, achid)
 					return
 				}
@@ -2015,7 +2015,7 @@ var acheck = {
 		pool.request()
 			.input("MessageId", sql.Int, messageId)
 			.query(qsr, (err, result) => {
-				if (err) {
+				if (err || typeof messageId === "undefined") {
 					callback(err, result, achid)
 					return
 				}
@@ -2101,7 +2101,7 @@ var acheck = {
 		pool.request()
 			.input("MessageId", sql.Int, messageId)
 			.query(qsr, (err, result) => {
-				if (err) {
+				if (err || typeof messageId === "undefined") {
 					callback(err, result, achid)
 					return
 				}

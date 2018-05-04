@@ -627,18 +627,20 @@ ioChat.on('connection', (socket) => {
 			displayName: socket.handshake.session.userData.displayas
 		}
 		// Add enter message after 5 minutes of lurking, if no message already sent
-		setTimeout(considerAddingEntryMessage, 3e6, ej)
+		setTimeout(considerAddingEntryMessage, 3e5, ej)
 		accountsInChat[permaid] = {
 			connectionCount: 1,
-			isConsideredActive: false
+			forSystemMessage: {
+				lastEvent: "first connection"
+			},
+			forActivityIndicator: {
+				lastActive: new Date(),
+				status: "active"
+			}
 		}
 	} else {
 		accountsInChat[permaid].connectionCount++
 	}
-	
-	console.log("--------------")
-	console.log("SOMEONE ENTERED CHAT") 
-	console.log(accountsInChat)
 
 	socket.on('chat send', (input) => {
 		try {
@@ -801,17 +803,30 @@ ioChat.on('connection', (socket) => {
 		}
 
 	})
+	socket.on('activity send', (input) => {
+		var lastCur = accountsInChat[permaid].forActivityIndicator.lastActive
+		var lastIn = new Date(input.lastActive)
+		accountsInChat[permaid].forActivityIndicator.lastActive = lastIn.getTime() > lastCur.getTime() ? lastIn : lastCur
+		console.log("ACTIVITY UPDDDD received for " + permaid)
+		console.log(accountsInChat[permaid])
+	})
+	socket.on('activity all request', () => {
+		console.log("All activity sending")
+		var accs = []
+		for (i in accountsInChat) {
+			accs[i] = accountsInChat[i].forActivityIndicator.status
+		}
+		socket.emit('activity all repsonse', accs)
+	})
 	socket.on('disconnect', () => {
 		if (accountsInChat[permaid] !== "undefined") {
-			console.log("--------------")
-			console.log("SOMEONE LEFT CHAT") 
 			accountsInChat[permaid].connectionCount--
-			console.log(accountsInChat)
 			var ej = {
 				accountPermaId: permaid,
 				customId: socket.handshake.session.userData.username,
 				displayName: socket.handshake.session.userData.displayas
 			}
+			// System message broadcast
 			setTimeout(considerAddingLeaveMessage, 20000, ej)
 		}
 	})
@@ -827,18 +842,14 @@ ioChat.on('connection', (socket) => {
 // Chat hepler for considering whether a "x entered/left" message is needed
 function considerAddingEntryMessage(objIn) {
 	// If user is no longer in chat or has already sent a message, don't send enter
-	if (typeof accountsInChat[objIn.accountPermaId] === "undefined") {
+	var acobj = accountsInChat[objIn.accountPermaId]
+	if (acobj.connectionCount === 0 || acobj.forSystemMessage.lastEvent === "chat") {
 		return 
 	}
-	var acobj = accountsInChat[objIn.accountPermaId]
-	if (acobj.isConsideredActive || acobj.connectionCount === 0) {
-		return
-	}
-	acobj.isConsideredActive = true
 	var p = { room: "tournytime", content: "~ {player} is now looking at chat. Welcome! ~", extra: JSON.stringify(objIn) }
 	chatAddSystemMessage(p, (err, result) => {
 		if (!err) {
-			console.log(ret)
+			acobj.forSystemMessage.lastEvent = "chat"
 			chatChecksum = generateSessionId()
 			var ret = {
 				err: err,
@@ -853,8 +864,7 @@ function considerAddingEntryMessage(objIn) {
 }
 function considerAddingLeaveMessage(objIn) {
 	var acobj = accountsInChat[objIn.accountPermaId]
-	if (acobj.connectionCount === 0 && acobj.isConsideredActive) {
-		delete accountsInChat[objIn.accountPermaId]
+	if (acobj.connectionCount === 0 && acobj.forSystemMessage.lastEvent === "chat") {
 		var ej = {
 			accountPermaId: objIn.accountPermaId,
 			customId: objIn.customId,
@@ -863,6 +873,7 @@ function considerAddingLeaveMessage(objIn) {
 		var p = { room: "tournytime", content: "~ {player} left. Huh. ~", extra: JSON.stringify(objIn) }
 		chatAddSystemMessage(p, (err, result) => {
 			if (!err) {
+				acobj.forSystemMessage.lastEvent = "offline message"
 				chatChecksum = generateSessionId()
 				var ret = {
 					err: err,
@@ -889,6 +900,38 @@ function chatAddSystemMessage(params, callback) {
 			callback(err, result)
 		})
 }
+// Chat helper for tracking activity and sending out updates
+var chatActivityChecker = setInterval(() => {
+	var n = new Date()
+	var changes = {}
+	var changeCount = 0
+
+	for (i in accountsInChat) {
+		var acc = accountsInChat[i]
+		var activeDate = new Date(acc.forActivityIndicator.lastActive)
+		var oldStatus = acc.forActivityIndicator.status
+		var newStatus
+		if (Math.abs(n.getTime() - activeDate.getTime()) > 20000) {
+			if (acc.connectionCount === 0) {
+				newStatus = "offline"
+			} else {
+				newStatus = "inactive"
+			}
+		} else {
+			newStatus = "online"
+		}
+		accountsInChat[i].forActivityIndicator.status = newStatus
+		if (oldStatus !== newStatus) {
+			changeCount++
+			changes[i] = newStatus
+		}
+	}
+
+	if (changeCount > 0) {
+		console.log(changes)
+		ioChat.emit('activity update', changes)
+	}
+}, 4253)
 
 // Nomic chat
 var ioNomicChat = io.of('/nomic')
