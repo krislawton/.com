@@ -1103,7 +1103,7 @@
 
 	// Handle name being changed
 	socketChat.on('display name changed', (response) => {
-		checksum = repsonse.checksum
+		checksum = response.checksum
 		if (typeof users[response.permaid] === "object") {
 			users[response.permaid].displayName = response.changedTo
 			refreshUsers()

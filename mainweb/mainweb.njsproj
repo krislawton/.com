@@ -67,6 +67,9 @@
     <Compile Include="views\common.js">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="views\help.js">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="views\homepage.js">
       <SubType>Code</SubType>
     </Compile>
@@ -172,6 +175,12 @@
       <SubType>Code</SubType>
     </Content>
     <Content Include="views\error.pug">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="views\help.css">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="views\help.pug">
       <SubType>Code</SubType>
     </Content>
     <Content Include="views\homepage.css">

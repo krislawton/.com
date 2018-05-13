@@ -315,6 +315,13 @@ module.exports = {
 					callback(err, { recordset: result })
 				})
 		},
+		helpPageGet: (params, callback) => {
+			pool.request()
+				.input("URLName", sql.VarChar, params.helpUrl)
+				.execute("spHelpGetPage", (err, result) => {
+					callback(err, { recordset: result })
+				})
+		},
 	},
 	procedure: {
 		serverPageLoadAudit: (params, callback) => {

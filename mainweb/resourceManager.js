@@ -176,6 +176,10 @@ var resources = {
 		send: "/views/user.css",
 		loggedInOnly: true
 	}),
+	"/u/user.js": new cr({
+		send: "/views/user.js",
+		loggedInOnly: true
+	}),
 	"/users": new cr({
 		type: "render",
 		send: "users",
@@ -190,8 +194,18 @@ var resources = {
 		send: "/views/users.js",
 		loggedInOnly: true
 	}),
-	"/u/user.js": new cr({
-		send: "/views/user.js",
+	"/help": new cr({
+		type: "render",
+		send: "help",
+		siteId: [0],
+		parameterized: true
+	}),
+	"/u/help.css": new cr({
+		send: "/views/help.css",
+		loggedInOnly: true
+	}),
+	"/u/help.js": new cr({
+		send: "/views/help.js",
 		loggedInOnly: true
 	}),
 	// Nomic

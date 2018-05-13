@@ -660,7 +660,7 @@ ioChat.on('connection', (socket) => {
 						distributeAchievementUpdate(socket.handshake.session.userData.permaid, { err: uaerr, result: uaresult })
 					}
 				})
-				accountsInChat[permaid].isConsideredActive = true
+				accountsInChat[permaid].forSystemMessage.lastEvent = "chat"
 			})
 		}
 		catch (e) {

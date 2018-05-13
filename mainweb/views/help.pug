@@ -1,0 +1,18 @@
+﻿doctype html
+html
+  head
+    title Help - krislawton.com
+    include /includes/htmlHead.pug
+    include /includes/rootHtmlHead.pug
+    link(rel="stylesheet", href="/u/help.css")
+    script(src="/u/help.js")
+    - var helpUrl = urlParameter
+    meta#ids(data-helpurl=helpUrl)
+  body
+    include /includes/rootPageHead.pug
+    +header(userData)
+    main.default
+      a.button.back(style="display: none", href="#") Parent
+      h1 Help
+      div#content-container
+      div#kids-container
