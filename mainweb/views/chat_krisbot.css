@@ -1,0 +1,69 @@
+﻿#backToChat {
+	margin-top: 5px;
+}
+
+#full-width-headers > * {
+	display: inline-block;
+	width: 50%;
+	padding-left: 10px;
+}
+form.response {
+	border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+	padding: 20px 0;
+}
+form.response .left, form.response .right {
+	display: inline-block;
+	width: 50%;
+	padding: 10px;
+	vertical-align: top;
+}
+form.response h2 {
+	display: none;
+}
+form.response textarea {
+	border: initial;
+	font: inherit;
+	box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.1);
+	resize: vertical;
+	min-height: 100px;
+	width: 100%;
+	padding: 10px;
+}
+form.response textarea:focus {
+	outline: 0;
+}
+form.response .buttons {
+	display: flex;
+	justify-content: flex-end;
+}
+form.response .buttons button {
+	margin-left: 10px;
+}
+form.response .buttons.hidden button.cancel, form.response .buttons.hidden button.submit {
+	display: none;
+}
+form.response[data-responseid="new"] button.delete {
+	display: none;
+}
+@media screen and (max-width: 750px) {
+	#full-width-headers {
+		display: none;
+	}
+
+	form.response {
+		padding: 10px 0;
+	}
+	form.response h2 {
+		display: block;
+		margin: 0 0 10px;
+		font-size: 120%;
+	}
+	form.response .left, form.response .right {
+		width: 100%;
+		padding: 5px 0;
+	}
+}
+div#new {
+	margin: 10px 0;
+	text-align: right;
+}

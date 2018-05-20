@@ -64,6 +64,7 @@
     <Compile Include="views\chat.js">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="views\chat_krisbot.js" />
     <Compile Include="views\common.js">
       <SubType>Code</SubType>
     </Compile>
@@ -83,6 +84,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="views\mcm\player.js">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="views\mcm\simulate3s.js">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="views\mcm\summary.js">
@@ -171,6 +175,8 @@
     <Content Include="views\chat.pug">
       <SubType>Code</SubType>
     </Content>
+    <Content Include="views\chat_krisbot.css" />
+    <Content Include="views\chat_krisbot.pug" />
     <Content Include="views\common.css">
       <SubType>Code</SubType>
     </Content>
@@ -212,6 +218,12 @@
       <SubType>Code</SubType>
     </Content>
     <Content Include="views\mcm\player.pug">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="views\mcm\simulate3s.css">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="views\mcm\simulate3s.pug">
       <SubType>Code</SubType>
     </Content>
     <Content Include="views\mcm\summary.css">

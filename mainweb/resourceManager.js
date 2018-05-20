@@ -151,6 +151,19 @@ var resources = {
 		send: "/views/chat.js",
 		loggedInOnly: true
 	}),
+	"/chat/krisbot": new cr({
+		type: "render",
+		send: "chat_krisbot",
+		loggedInOnly: true
+	}),
+	"/u/chat/krisbot.css": new cr({
+		send: "/views/chat_krisbot.css",
+		loggedInOnly: true
+	}),
+	"/u/chat/krisbot.js": new cr({
+		send: "/views/chat_krisbot.js",
+		loggedInOnly: true
+	}),
 	"/settings": new cr({
 		type: "render",
 		send: "settings",
@@ -339,7 +352,24 @@ var resources = {
 		send: "/views/mcm/summary.css",
 		loggedInOnly: true,
 		siteId: [2]
-	})
+	}),
+	"/mcm/simulate3s": new cr({
+		type: "render",
+		send: "simulate3s",
+		loggedInOnly: true,
+		siteId: [4],
+		directory: "/mcm"
+	}),
+	"/u/mcm/simulate3s.js": new cr({
+		send: "/views/mcm/simulate3s.js",
+		loggedInOnly: true,
+		siteId: [4]
+	}),
+	"/u/mcm/simulate3s.css": new cr({
+		send: "/views/mcm/simulate3s.css",
+		loggedInOnly: true,
+		siteId: [4]
+	}),
 }
 
 var usmev = 1 // user session metadata version

@@ -1,0 +1,25 @@
+﻿doctype html
+html
+  head
+    title MCM Simulate 3s
+    include /includes/htmlHead.pug
+    include /includes/mcmHtmlHead.pug
+    script(src="/u/mcm/simulate3s.js")
+    link(rel="stylesheet", href="/u/mcm/simulate3s.css")
+  body.mcm
+    include /includes/mcmPageHead.pug
+      h1 Simulate 3s game
+      div#error
+      h2 Select participants
+      div.sides
+        div.side1
+          input(type="text")#name1
+          input(type="text")#name2
+          input(type="text")#name3
+        div.side2
+          input(type="text")#name4
+          input(type="text")#name5
+          input(type="text")#name6
+      div.buttons
+        button.button.raised#random-players Randomize
+        button.button.raised.colored#get-players Get players and simulate

@@ -322,6 +322,16 @@ button.button.raised.colored:hover, a.button.raised.colored:hover, input.button.
 button.button.raised.colored:active, a.button.raised.colored:active, input.button.raised.colored:active {
 	background: hsl(216, 40%, 58%);
 }
+button.button.raised.negative, a.button.raised.negative, input.button.raised.negative {
+	background: hsl(0, 85%, 70%);
+	color: white;
+}
+button.button.raised.negative:hover, a.button.raised.negative:hover, input.button.raised.negative:hover {
+	background: hsl(0,60%, 64%);
+}
+button.button.raised.negative:active, a.button.raised.negative:active, input.button.raised.negative:active {
+	background: hsl(0, 40%, 58%);
+}
 
 /********************/
 /*** ACHIEVEMENTS ***/

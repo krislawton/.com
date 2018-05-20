@@ -22,6 +22,18 @@ html
     div#chats
       div.rooms
     div#info
+      div.card.room
+        button.collapser
+          h2 Room
+          span.chev >
+        div.collapsible
+          div#room
+            button.description(title="Click to change")
+            div.description-edit(style="display: none")
+              textarea
+              div.buttons
+                button.button.raised.cancel Cancel
+                button.button.raised.colored.submit Submit
       div.card
         button.collapser
           h2 Users

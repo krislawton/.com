@@ -644,24 +644,7 @@ ioChat.on('connection', (socket) => {
 
 	socket.on('chat send', (input) => {
 		try {
-			var input = (typeof input === "object" ? input : null)
-			input.from = socket.handshake.session.userData.permaid
-			datastore.procedure.chatSend(input, (err, response) => {
-				chatChecksum = generateSessionId()
-				var ret = {
-					input: input,
-					err: err,
-					fromDb: response,
-					checksum: chatChecksum
-				}
-				ioChat.emit('chat sent', ret)
-				achiev.updateAchievements({ justdone: "chatSend", userData: socket.handshake.session.userData, params: input }, (uaerr, uaresult) => {
-					if (typeof socket.handshake.session.userData.permaid !== "undefined") {
-						distributeAchievementUpdate(socket.handshake.session.userData.permaid, { err: uaerr, result: uaresult })
-					}
-				})
-				accountsInChat[permaid].forSystemMessage.lastEvent = "chat"
-			})
+			chatAddNormalMessage(input, socket, null)
 		}
 		catch (e) {
 			console.log(e)
@@ -675,7 +658,6 @@ ioChat.on('connection', (socket) => {
 	})
 	socket.on('room add', (input) => {
 		try {
-			console.log("trying")
 			userData = (typeof socket.handshake.session.userData.permaid === "undefined" ? null : socket.handshake.session.userData)
 			var ret = { success: false, err: null }
 			pool.request()
@@ -685,10 +667,8 @@ ioChat.on('connection', (socket) => {
 					console.log(result)
 					ret.success = (!err && result.rowsAffected[0] === 1 ? true : false)
 					if (ret.success) {
-						console.log("room insert success")
 						stage2()
 					} else {
-						console.log("room insert error")
 						ret.err = err
 						socket.emit('room added', ret)
 					}
@@ -696,17 +676,13 @@ ioChat.on('connection', (socket) => {
 
 			// Send message to chat of room creation
 			function stage2() {
-				console.log("stage 2")
 				var extra = '{ "accountPermaId": "' + userData.permaid + '", '
 				extra += '"customId": "' + userData.username + '", '
 				extra += '"displayName": "' + userData.displayas + '", '
 				extra += '"room": "' + input.roomName + '" }'
 				var smp = { room: "tournytime", content: "{player} created room: {room}", extra: extra }
-				console.log(smp)
 				chatAddSystemMessage(smp, (err, result) => {
-					console.log("message add callback done")
 					if (!err) {
-						console.log("success, emitting system message")
 						ret.success = true
 						chatChecksum = generateSessionId()
 						var retchat = {
@@ -717,7 +693,6 @@ ioChat.on('connection', (socket) => {
 						}
 						ioChat.emit('chat sent', retchat)
 					}
-					console.log("emitting room add success")
 					ioChat.emit('room added', ret)
 				})
 			}
@@ -726,6 +701,44 @@ ioChat.on('connection', (socket) => {
 			var ret = { success: false, err: e }
 			ioChat.emit('chat sent', ret)
 		}
+	})
+	socket.on('room description change', (input) => {
+		pool.request()
+			.input("Room", sql.VarChar, input.room)
+			.input("NewDescription", sql.VarChar, input.description)
+			.execute("spChatRoomChangeDescription", (changeErr, changeResult) => {
+				socket.emit('room description change response', { err: changeErr, result: changeResult })
+				bcToServer(changeErr, changeResult)
+			})
+
+		function bcToServer(changeErr, changeResult) {
+			if (!changeErr) {
+				// Broadcast update to server
+				ioChat.emit('room description changed', input)
+
+				// Broadcast message to room
+				userData = (typeof socket.handshake.session.userData.permaid === "undefined" ? null : socket.handshake.session.userData)
+				var extra = '{ "accountPermaId": "' + userData.permaid + '", '
+				extra += '"customId": "' + userData.username + '", '
+				extra += '"displayName": "' + userData.displayas + '", '
+				extra += '"newDescription": "' + input.description + '" }'
+				var msgContent = '~ {player} changed room description ~\nNew description: <span style="font-weight: normal">{newDescription}</span>'
+				var smp = { room: input.room, content: msgContent, extra: extra }
+				chatAddSystemMessage(smp, (msgErr, msgResult) => {
+					if (!msgErr) {
+						chatChecksum = generateSessionId()
+						var retchat = {
+							input: input,
+							err: msgErr,
+							fromDb: msgResult,
+							checksum: chatChecksum
+						}
+						ioChat.emit('chat sent', retchat)
+					}
+				})
+			}
+		}
+
 	})
 	socket.on('react send', (input) => {
 		try {
@@ -807,11 +820,8 @@ ioChat.on('connection', (socket) => {
 		var lastCur = accountsInChat[permaid].forActivityIndicator.lastActive
 		var lastIn = new Date(input.lastActive)
 		accountsInChat[permaid].forActivityIndicator.lastActive = lastIn.getTime() > lastCur.getTime() ? lastIn : lastCur
-		console.log("ACTIVITY UPDDDD received for " + permaid)
-		console.log(accountsInChat[permaid])
 	})
 	socket.on('activity all request', () => {
-		console.log("All activity sending")
 		var accs = []
 		for (i in accountsInChat) {
 			accs[i] = accountsInChat[i].forActivityIndicator.status
@@ -839,6 +849,51 @@ ioChat.on('connection', (socket) => {
 		socket.emit('sync result', chatIsSynced)
 	})
 })
+// Chat helper for sending normal messages
+function chatAddNormalMessage(input, socket, overrideFrom) {
+	var input = (typeof input === "object" ? input : null)
+	input.from = socket ? socket.handshake.session.userData.permaid : null
+	input.from = overrideFrom || input.from
+	datastore.procedure.chatSend(input, (err, response) => {
+		chatChecksum = generateSessionId()
+		var ret = {
+			input: input,
+			err: err,
+			fromDb: response,
+			checksum: chatChecksum
+		}
+		ioChat.emit('chat sent', ret)
+		// Do achievement-related stuff
+		if (socket) {
+			achiev.updateAchievements({ justdone: "chatSend", userData: socket.handshake.session.userData, params: input }, (uaerr, uaresult) => {
+				if (typeof socket.handshake.session.userData.permaid !== "undefined") {
+					distributeAchievementUpdate(socket.handshake.session.userData.permaid, { err: uaerr, result: uaresult })
+				}
+			})
+		}
+		// Update users object
+		accountsInChat[permaid].forSystemMessage.lastEvent = "chat"
+		// Check krisbot responses
+		if (permaid !== 69) {
+			checkKrisbot(input.content, input.room)
+		}
+	})
+}
+// Chat helper for adding system messages
+function chatAddSystemMessage(params, callback) {
+	console.log("add system message doing")
+	pool.request()
+		.input("Room", sql.VarChar, params.room)
+		.input("Sender", sql.Int, null)
+		.input("Message", sql.VarChar, params.content)
+		.input("ContentHTML", sql.VarChar, params.content)
+		.input("MessageType", sql.VarChar, "Action")
+		.input("ExtraJSON", sql.VarChar, params.extra)
+		.execute("spChatSend", (err, result) => {
+			console.log("add system message done")
+			callback(err, result)
+		})
+}
 // Chat hepler for considering whether a "x entered/left" message is needed
 function considerAddingEntryMessage(objIn) {
 	// If user is no longer in chat or has already sent a message, don't send enter
@@ -885,21 +940,6 @@ function considerAddingLeaveMessage(objIn) {
 		})
 	}
 }
-// Chat helper for adding system messages
-function chatAddSystemMessage(params, callback) {
-	console.log("add system message doing")
-	pool.request()
-		.input("Room", sql.VarChar, params.room)
-		.input("Sender", sql.Int, null)
-		.input("Message", sql.VarChar, params.content)
-		.input("ContentHTML", sql.VarChar, params.content)
-		.input("MessageType", sql.VarChar, "Action")
-		.input("ExtraJSON", sql.VarChar, params.extra)
-		.execute("spChatSend", (err, result) => {
-			console.log("add system message done")
-			callback(err, result)
-		})
-}
 // Chat helper for tracking activity and sending out updates
 var chatActivityChecker = setInterval(() => {
 	var n = new Date()
@@ -932,6 +972,60 @@ var chatActivityChecker = setInterval(() => {
 		ioChat.emit('activity update', changes)
 	}
 }, 4253)
+// Chat helper for krisbot responses
+function checkKrisbot(msgContent, room) {
+	// First, get krisbot responses
+	getResponses()
+	function getResponses() {
+		datastore.data["chatKrisbotResponsesGet"]({}, (err, response) => {
+			if (err) {
+				console.log("Error getting krisbot responses")
+			} else {
+				parseResponses(response.recordset.recordset)
+			}
+		})
+	}
+
+	function parseResponses(dbResponses) {
+		// Since multiple inputs can be provided, 
+		// split them
+		var lookFors = []
+		for (i in dbResponses) {
+			var splitted = (dbResponses[i].LookFor).split("\n")
+			for (i2 in splitted) {
+				var p = {
+					lookFor: splitted[i2],
+					responses: dbResponses[i].RespondWith
+				}
+				lookFors.push(p)
+			}
+		}
+
+		// For each possible lookfor, perform a search
+		for (i in lookFors) {
+			var reg = new RegExp(lookFors[i].lookFor)
+			var matches = msgContent.match(reg)
+			if (matches) {
+				// Gather the different responses and pick one
+				var splitted = (lookFors[i].responses).split("\n")
+				var picked = splitted[Math.floor(Math.random() * splitted.length)]
+				console.log("Respond with " + picked)
+
+				var msgToAdd = {
+					content: picked,
+					contentHtml: picked,
+					uid: Math.random(),
+					room: room
+				}
+				setTimeout(am, 10 + Math.pow(Math.random(), 2.2) * 2000, msgToAdd)
+				function am(input) {
+						chatAddNormalMessage(input, null, 69)
+				}
+			}
+		}
+	}
+
+}
 
 // Nomic chat
 var ioNomicChat = io.of('/nomic')

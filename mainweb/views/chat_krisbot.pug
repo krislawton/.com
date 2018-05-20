@@ -1,0 +1,29 @@
+﻿doctype html
+html
+  head
+    title Krisbot configuration - krislawton.com
+    include /includes/htmlHead.pug
+    include /includes/rootHtmlHead.pug
+    link(rel="stylesheet", href="/u/chat/krisbot.css")
+    script(src="/u/chat/krisbot.js")
+    meta(name="viewport",content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0")
+  body
+    include /includes/rootPageHead.pug
+    +header(userData)
+    main.default
+      a.button#backToChat(href="/chat") < Back to chat
+      h1 Krisbot chat configuration
+      p Krisbot can be configured to respond when messages containing 
+        | certain things are sent. Separate your searches and 
+        | responses by line returns.
+      p Tip: You can use Regular Expression to search for strings. Our 
+        | recommended tool for learning and testing RegEx is 
+        a(href="https://regexr.com") https://regexr.com
+        | .
+      p.loading Loading possible responses...
+      div#full-width-headers
+        h2 When someone says
+        h2 Krisbot responds
+      div#responses
+      div#new
+        button.button.raised.colored New repsonse

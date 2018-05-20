@@ -254,6 +254,12 @@ module.exports = {
 					callback(err, { recordset: result })
 				})
 		},
+		chatKrisbotResponsesGet: (params, callback) => {
+			pool.request()
+				.execute("dbo.spChatKrisbotResponsesGet", (err, result) => {
+					callback(err, { recordset: result })
+				})
+		},
 		mcmPlayerInventory: (params, callback) => {
 			dbmcm.request()
 				.input("PlayerId", sql.VarChar, params.PlayerId)
@@ -268,6 +274,14 @@ module.exports = {
 				.query("select * from vwPlayerSummary where PlayerId = @PlayerId", (err, result) => {
 					var helped = helperResult(err, result)
 					callback(helped.err, { recordset: helped.recordset })
+				})
+		},
+		mcmPlayerInfoForSim: (params, callback) => {
+			dbmcm.request()
+				.input("PlayerId", sql.Int, params.playerId)
+				.input("PlayerName", sql.VarChar, params.playerName)
+				.execute("PlayerInfoForSim", (err, result) => {
+					callback(err, { recordset: result })
 				})
 		},
 		mcmMatchInfo: (params, callback) => {
@@ -396,6 +410,15 @@ module.exports = {
 					callback(err, result)
 				})
 		},
+		rootUserChangeAboutme: (params, callback) => {
+			permaid = typeof params.session.userData.permaid === "undefined" ? null : params.session.userData.permaid
+			pool.request()
+				.input("AccountPermaId", sql.Int, permaid)
+				.input("NewAboutMe", sql.VarChar, params.aboutMe)
+				.execute("spAccountUpdateAboutme", (err, result) => {
+					callback(err, result)
+				})
+		},
 		chatSend: (params, callback) => {
 			var contentHtml = (typeof params.contentHtml === "string" ? params.contentHtml : content)
 			pool.request()
@@ -430,6 +453,18 @@ module.exports = {
 				.input("MessageId", sql.Int, params.messageid)
 				.input("Reaction", sql.VarChar, params.reaction)
 				.execute("spChatReact", (err, result) => {
+					callback(err, result)
+				})
+		},
+		chatKrisbotResponseCrud: (params, callback) => {
+			permaid = typeof params.session.userData.permaid === "undefined" ? null : params.session.userData.permaid
+			pool.request()
+				.input("ResponseId", sql.Int, params.responseId)
+				.input("LookFor", sql.VarChar, params.lookFor)
+				.input("RespondWith", sql.VarChar, params.respondWith)
+				.input("AccountPermaId", sql.Int, permaid)
+				.input("Deleted", sql.Int, params.deleted)
+				.execute("spChatKrisbotResponseCrud", (err, result) => {
 					callback(err, result)
 				})
 		},

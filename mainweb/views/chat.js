@@ -40,7 +40,7 @@
 	// And rooms please
 	function refreshRooms() {
 		socket.emit('data request', { request: "chatRoomsLoad" })
-	}
+	} 
 	refreshRooms() // onload
 	// And load main chat when everything is done
 	function checkIfDone() {
@@ -159,11 +159,17 @@
 					// Global rooms obj
 					rooms[dbRooms[r].RoomPermanentId] = {
 						name: dbRooms[r].RoomName,
+						archived: dbRooms[r].Archived,
+						createdBy: dbRooms[r].CreatedBy,
+						createdDate: dbRooms[r].CreatedDate,
+						description: dbRooms[r].Description,
 						lastMessageId: dbRooms[r].LastMessageId,
 						lastTimestamp: dbRooms[r].LastSentDate
 					}
 					// Button in #chats
-					toAppend += '<button class="room" data-roomid="' + dbRooms[r].RoomPermanentId + '">#' + dbRooms[r].RoomName + '</button>'
+					if (!dbRooms[r].Archived) {
+						toAppend += '<button class="room" data-roomid="' + dbRooms[r].RoomPermanentId + '">#' + dbRooms[r].RoomName + '</button>'
+					}
 				}
 				$('#chats .rooms').html(toAppend)
 				$('#chats .addRoom').remove()
@@ -861,7 +867,7 @@
 	// Send message on return press
 	$(document).on('keypress', '#sendContainer textarea', (e) => {
 		if (e.keyCode === 13 && !e.shiftKey) {
-			var content = $('textarea').val()
+			var content = $('#sendContainer textarea').val()
 			sendMessage(content)
 			$('textarea').val('')
 			e.preventDefault()
@@ -885,6 +891,11 @@
 		// Get new hot
 		socket.emit('data request', { request: "chatHotMessagesLoad", params: { asOf: "now", room: viewingRoom } })
 		hotInterval()
+
+		// Render room card
+		$('.card.room h2').text('#' + rooms[room].name)
+		var desc = rooms[room].description || '<span style="font-style: italic">No description</span>'
+		$('#room .description').html(desc)
 
 		// Refresh room highlight
 		refreshRoomHighlight()
@@ -919,6 +930,7 @@
 			var ej = JSON.parse(input.ej)
 			out = out.replace('{player}', nameTag(ej.accountPermaId).outerHTML)
 			out = out.replace('{room}', '<span style="font-weight: normal">#' + ej.room + '</span>')
+			out = out.replace('{newDescription}', ej.newDescription)
 		}
 		if (input.type === "Action") {
 			for (i2 in users) {
@@ -1107,6 +1119,38 @@
 		if (typeof users[response.permaid] === "object") {
 			users[response.permaid].displayName = response.changedTo
 			refreshUsers()
+		}
+	})
+
+	// Room description edit: Activate form
+	$('#room button.description').on("click", (e) => {
+		$('#room button.description').hide()
+		$('#room .description-edit').show()
+		$('#room .description-edit textarea').html(rooms[viewingRoom].description || "").focus()
+	})
+	// Room description edit: Reactivate form on cancel
+	$('#room .description-edit button.cancel').on("click", (e) => {
+		$('#room button.description').show()
+		$('#room .description-edit').hide()
+	})
+	// Room description edit: Submit changes on submit
+	$('#room .description-edit button.submit').on("click", (e) => {
+		var desc = $('#room .description-edit textarea').val()
+		socketChat.emit('room description change', { room: viewingRoom, description: desc })
+		$('#room .description-edit > *').prop("disabled", true)
+		$('#room .description-edit button.submit').html("Submitting...")
+	})
+	// Room description edit: When user's update succeeds
+	socketChat.on("room description change response", (response) => {
+		$('#room .description-edit > *').prop("disabled", false)
+		$('#room button.description').show()
+		$('#room .description-edit').hide()
+	})
+	// Room description edit: When a room's description is changed (by anyone)
+	socketChat.on("room description changed", (change) => {
+		rooms[change.room].description = change.description
+		if (viewingRoom === change.room) {
+			$('#room button.description').html(change.description)
 		}
 	})
 

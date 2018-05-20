@@ -86,3 +86,65 @@ table.grid .loadMoreRows:hover {
 table.grid .loadMoreRows:active {
 	background: hsl(0, 0%, 80%);
 }
+
+/* Buttons */
+button, a.button, input.button {
+	background: initial;
+	border: initial;
+	font-family: inherit;
+	font-size: initial;
+	text-decoration: none;
+	cursor: pointer;
+	padding: initial;
+}
+button:focus, input.button:hover focus {
+	outline: 0;
+}
+button.button, a.button, input.button {
+	text-transform: uppercase;
+	color: hsl(0, 0%, 50%);
+	font-weight: bold;
+	border-radius: 2px;
+	display: inline-block;
+	cursor: pointer;
+	padding: 8px 12px;
+	transition: box-shadow 0.1s;
+}
+button.button:hover, a.button:hover, input.button:hover {
+	background: hsl(0, 0%, 96%);
+}
+button.button:active, a.button:active, input.button:active {
+	background: hsl(0, 0%, 88%);
+}
+button.button.smol, a.button.smol, input.button.smol {
+	padding: 4px 8px;
+}
+button.button:focus {
+	outline: 0;
+}
+button.button:disabled, a.button:disabled, input.button:disabled {
+	opacity: 0.5;
+}
+
+button.button.raised, a.button.raised, input.button.raised {
+	background: hsl(185, 50%, 96%);
+	box-shadow: 0 0 2px 0 hsl(0, 0%, 70%);
+}
+button.button.raised:hover, a.button.raised:hover, input.button.raised:hover {
+	background: hsl(185, 30%, 88%);
+	box-shadow: 0 0 2px 0 hsl(0, 0%, 70%), 0 2px 6px 0 hsl(0, 0%, 60%);
+}
+button.button.raised:active, a.button.raised:active, input.button.raised:active {
+	background: hsl(185, 10%, 80%);
+	box-shadow: 0 0 2px 0 hsl(0, 0%, 70%), 0 4px 8px 0 hsl(0, 0%, 60%);
+}
+button.button.raised.colored, a.button.raised.colored, input.button.raised.colored {
+	background: hsl(185, 85%, 65%);
+	color: white;
+}
+button.button.raised.colored:hover, a.button.raised.colored:hover, input.button.raised.colored:hover {
+	background: hsl(185, 85%, 55%);
+}
+button.button.raised.colored:active, a.button.raised.colored:active, input.button.raised.colored:active {
+	background: hsl(185, 85%, 45%);
+}

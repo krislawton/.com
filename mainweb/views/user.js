@@ -59,6 +59,9 @@
 	const permaid = $('#ids').attr('data-permaid')
 	var username = $('#ids').attr('data-username')
 
+	// Get who we're viewing the page as
+	const myid = $('#ids').attr('data-mypermaid')
+
 	// Connect to socket
 	const socket = io()
 
@@ -69,6 +72,16 @@
 		if (!response.err && response.input.request === "rootUserLoadInfo") {
 			// General info
 			var general = response.recordsets[0][0]
+
+			if (myid === permaid) {
+				var aboutMeText = general.AboutMe || '<span style="font-style: italic">You have no "about me". Click to rectify.</span>'
+				$('button.about-me').html(aboutMeText).show()
+				$('.about-me textarea').html(general.AboutMe)
+			} else {
+				var aboutMeText = general.AboutMe || '<span style="font-style: italic">This user has no "about me". Mysterious.</span>'
+				$('p.about-me').html(aboutMeText).show()
+			}
+
 			var username = general.CustomId + "#" + general.AccountPermaId
 			$('span.here.username').html(username)
 
@@ -168,6 +181,38 @@
 				if (r.MinimumPercentage === null || r.ExtraJSON.progressCurrent / r.ExtraJSON.progressMax > r.MinimumPercentage) {
 					$('#ach-working').append(html)
 				}
+			}
+		}
+	})
+
+	// For updating about me
+	$('form.about-me').submit((e) => {
+		e.preventDefault()
+	})
+	$('button.about-me').on("click", (e) => {
+		$('button.about-me').hide()
+		$('form.about-me').show()
+	})
+	$('form.about-me button.cancel').on("click", (e) => {
+		$('form.about-me').hide()
+		$('button.about-me').show()
+	})
+	$('form.about-me button.submit').on("click", (e) => {
+		$('form.about-me > *').prop("disabled", true)
+		$('form.about-me button.submit').text("Submitting...")
+		var newAboutMe = $('form.about-me textarea').val()
+		socket.emit('db procedure request', { procedure: "rootUserChangeAboutme", params: { aboutMe: newAboutMe  } })
+	})
+	socket.on('db procedure response', (response) => {
+		console.log(response)
+		if (response.input.procedure === "rootUserChangeAboutme") {
+			$('form.about-me > *').prop("disabled", false)
+			if (response.err) {
+				$('form.about-me button.submit').text("Error, try again")
+			} else {
+				$('form.about-me').hide()
+				var newAboutMe = response.params.aboutMe
+				$('button.about-me, form.about-me textarea').show().html(newAboutMe)
 			}
 		}
 	})
