@@ -674,6 +674,7 @@
 		// ** is bold
 		// ` is code
 		// > is greentext
+		// < is redtext
 		// # is header
 
 		var layers = []
@@ -705,7 +706,7 @@
 			if (inArr[c].charCodeAt(0) === 10) {
 				// Do greentexts/headers first
 				for (var li = 0; li < layers.length; li++) {
-					if (layers[li].type === "greentext" || layers[li].type === "header") {
+					if (layers[li].type === "greentext" || layers[li].type === "redtext" || layers[li].type === "header") {
 						inArr[c - 1] += '</span>'
 					}
 				}
@@ -816,6 +817,17 @@
 				}
 			}
 
+			// Redtext
+			if (inArr[c] === "&lt;") {
+				if (c === 0) {
+					layers.push({ type: "redtext", start: c, end: null })
+					inArr[c] = '<span class="redtext">&lt;'
+				} else if (inArr[c - 1].charCodeAt(0) === 10) {
+					layers.push({ type: "redtext", start: c, end: null })
+					inArr[c] = '<span class="redtext">&lt;'
+				}
+			}
+
 			// Headers
 			if (inArr[c] === "#") {
 				if (c === 0) {
@@ -829,7 +841,7 @@
 
 			// Perform replacement as required by layers
 			for (var li = 0; li < layers.length; li++) {
-				if (layers[li].type === "greentext") {
+				if (layers[li].type === "greentext" || layers[li].type === "redtext" || layers[li].type === "header") {
 					if (c === inputContent.length - 1) {
 						inArr[c] += "</span>"
 					}

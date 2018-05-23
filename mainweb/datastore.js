@@ -1,4 +1,8 @@
-﻿// DB Configuration and connection string
+﻿// Module for parsing DOM
+const jsdom = require("jsdom")
+const { JSDOM } = jsdom;
+
+// DB Configuration and connection string
 const sql = require('mssql/msnodesqlv8')
 const dbconfig = {
     user: 'sa',
@@ -61,7 +65,7 @@ function helperResult(iErr, iResult, iModel) {
 					modelPassback = helpedGrid.model
 				} else {
 					resultPassback = iResult
-				}				
+				}
 			}
 		}
 	}
@@ -107,6 +111,39 @@ function helperGrid(iResult, iModel) {
 
 	var fret = { result: resultPassback, model: modelPassback }
 	return fret
+}
+
+// Function for sanitizing sensitive elements from DOM inputs
+function sanitizeSensitiveDom(toSanitize) {
+
+	var tags = [ "script", "iframe" ]
+
+	for (i in tags) {
+		var itMax = 2000
+		while (itMax > 0 && hasTags(tags[i], toSanitize)) {
+
+			var tagLocs = hasTags(tags[i], toSanitize)
+			var splicing = toSanitize.split("")
+			splicing.splice(tagLocs.startOffset, tagLocs.endOffset - tagLocs.startOffset)
+			toSanitize = splicing.join("")
+
+			itMax--
+		}
+	}
+
+	function hasTags(tag, dom) {
+		var inputDom = new JSDOM(toSanitize, { includeNodeLocations: true })
+		var document = inputDom.window.document
+		if (document.querySelector(tag)) {
+			return inputDom.nodeLocation(document.querySelector(tag))
+		} else {
+			return null
+		}
+	}
+
+	var out = toSanitize
+
+	return out
 }
 
 // Now the actual data store
@@ -411,10 +448,11 @@ module.exports = {
 				})
 		},
 		rootUserChangeAboutme: (params, callback) => {
+			var sanitized = sanitizeSensitiveDom(params.aboutMe)
 			permaid = typeof params.session.userData.permaid === "undefined" ? null : params.session.userData.permaid
 			pool.request()
 				.input("AccountPermaId", sql.Int, permaid)
-				.input("NewAboutMe", sql.VarChar, params.aboutMe)
+				.input("NewAboutMe", sql.VarChar, sanitized)
 				.execute("spAccountUpdateAboutme", (err, result) => {
 					callback(err, result)
 				})
@@ -465,6 +503,15 @@ module.exports = {
 				.input("AccountPermaId", sql.Int, permaid)
 				.input("Deleted", sql.Int, params.deleted)
 				.execute("spChatKrisbotResponseCrud", (err, result) => {
+					callback(err, result)
+				})
+		},
+		chatRoomChangeDescription: (params, callback) => {
+			var sanitized = sanitizeSensitiveDom(params.description)
+			pool.request()
+				.input("Room", sql.VarChar, params.room)
+				.input("NewDescription", sql.VarChar, sanitized)
+				.execute("spChatRoomChangeDescription", (err, result) => {
 					callback(err, result)
 				})
 		},

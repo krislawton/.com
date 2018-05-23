@@ -298,6 +298,9 @@ div.options button.option:active {
 .chatformat .greentext {
 	color: hsl(77, 64%, 37%);
 }
+.chatformat .redtext {
+	color: hsl(0, 64%, 37%);
+}
 .chatformat .header {
 	font-size: 130%;
 	line-height: 150%;

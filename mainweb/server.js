@@ -703,25 +703,30 @@ ioChat.on('connection', (socket) => {
 		}
 	})
 	socket.on('room description change', (input) => {
-		pool.request()
-			.input("Room", sql.VarChar, input.room)
-			.input("NewDescription", sql.VarChar, input.description)
-			.execute("spChatRoomChangeDescription", (changeErr, changeResult) => {
-				socket.emit('room description change response', { err: changeErr, result: changeResult })
-				bcToServer(changeErr, changeResult)
-			})
+		var chParams = { room: input.room, description: input.description }
+		datastore.procedure.chatRoomChangeDescription(chParams, (changeErr, changeResult) => {
+			socket.emit('room description change response', { err: changeErr, result: changeResult })
+			bcToServer(changeErr, changeResult)
+		})
 
 		function bcToServer(changeErr, changeResult) {
 			if (!changeErr) {
 				// Broadcast update to server
-				ioChat.emit('room description changed', input)
+				var bcChange = {
+					room: input.room,
+					description: changeResult.recordset[0].Description
+				}
+				ioChat.emit('room description changed', bcChange)
 
 				// Broadcast message to room
 				userData = (typeof socket.handshake.session.userData.permaid === "undefined" ? null : socket.handshake.session.userData)
-				var extra = '{ "accountPermaId": "' + userData.permaid + '", '
-				extra += '"customId": "' + userData.username + '", '
-				extra += '"displayName": "' + userData.displayas + '", '
-				extra += '"newDescription": "' + input.description + '" }'
+				var extra = {
+					accountPermaId: userData.permaid,
+					customId: userData.username,
+					displayName: userData.displayas,
+					newDescription: changeResult.recordset[0].Description
+				}
+				extra = JSON.stringify(extra)
 				var msgContent = '~ {player} changed room description ~\nNew description: <span style="font-weight: normal">{newDescription}</span>'
 				var smp = { room: input.room, content: msgContent, extra: extra }
 				chatAddSystemMessage(smp, (msgErr, msgResult) => {
@@ -874,7 +879,7 @@ function chatAddNormalMessage(input, socket, overrideFrom) {
 		// Update users object
 		accountsInChat[permaid].forSystemMessage.lastEvent = "chat"
 		// Check krisbot responses
-		if (permaid !== 69) {
+		if (input.from !== 69) {
 			checkKrisbot(input.content, input.room)
 		}
 	})

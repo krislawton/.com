@@ -211,8 +211,10 @@
 				$('form.about-me button.submit').text("Error, try again")
 			} else {
 				$('form.about-me').hide()
-				var newAboutMe = response.params.aboutMe
-				$('button.about-me, form.about-me textarea').show().html(newAboutMe)
+				var newAboutMe = response.response.recordset[0].AboutMe
+				console.log("Setting to " + newAboutMe)
+				$('form.about-me button.submit').text("Submit")
+				$('button.about-me, form.about-me textarea').show().html(newAboutMe).val(newAboutMe)
 			}
 		}
 	})

@@ -13,6 +13,7 @@
     "express-socket.io-session": "^1.3.2",
     "greenlock-express": "^2.0.12",
     "https": "^1.0.0",
+    "jsdom": "^11.10.0",
     "le-challenge-fs": "^2.0.8",
     "le-challenge-sni": "^2.0.1",
     "le-store-certbot": "^2.0.5",
