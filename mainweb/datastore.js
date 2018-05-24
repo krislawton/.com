@@ -1,6 +1,5 @@
-﻿// Module for parsing DOM
-const jsdom = require("jsdom")
-const { JSDOM } = jsdom;
+﻿// Helpers, jeepers
+const helpers = require('./helpers.js')
 
 // DB Configuration and connection string
 const sql = require('mssql/msnodesqlv8')
@@ -111,39 +110,6 @@ function helperGrid(iResult, iModel) {
 
 	var fret = { result: resultPassback, model: modelPassback }
 	return fret
-}
-
-// Function for sanitizing sensitive elements from DOM inputs
-function sanitizeSensitiveDom(toSanitize) {
-
-	var tags = [ "script", "iframe" ]
-
-	for (i in tags) {
-		var itMax = 2000
-		while (itMax > 0 && hasTags(tags[i], toSanitize)) {
-
-			var tagLocs = hasTags(tags[i], toSanitize)
-			var splicing = toSanitize.split("")
-			splicing.splice(tagLocs.startOffset, tagLocs.endOffset - tagLocs.startOffset)
-			toSanitize = splicing.join("")
-
-			itMax--
-		}
-	}
-
-	function hasTags(tag, dom) {
-		var inputDom = new JSDOM(toSanitize, { includeNodeLocations: true })
-		var document = inputDom.window.document
-		if (document.querySelector(tag)) {
-			return inputDom.nodeLocation(document.querySelector(tag))
-		} else {
-			return null
-		}
-	}
-
-	var out = toSanitize
-
-	return out
 }
 
 // Now the actual data store
@@ -420,10 +386,11 @@ module.exports = {
 		},
 		rootUserChangePassword: (params, callback) => {
 			permaid = typeof params.session.userData.permaid === "undefined" ? null : params.session.userData.permaid
+			var obf = helpers.obfuscateV1(permaid, params.password)
 			pool.request()
 				.input("AccountPermaId", sql.Int, permaid)
 				.input("SettingType", sql.VarChar, "password")
-				.input("ChangeTo", sql.VarChar, params.password)
+				.input("ChangeTo", sql.NVarChar, obf)
 				.execute("spAccountUpdateSettings", (err, result) => {
 					callback(err, result)
 				})
@@ -448,7 +415,7 @@ module.exports = {
 				})
 		},
 		rootUserChangeAboutme: (params, callback) => {
-			var sanitized = sanitizeSensitiveDom(params.aboutMe)
+			var sanitized = helpers.sanitizeSensitiveDom(params.aboutMe)
 			permaid = typeof params.session.userData.permaid === "undefined" ? null : params.session.userData.permaid
 			pool.request()
 				.input("AccountPermaId", sql.Int, permaid)
@@ -507,7 +474,7 @@ module.exports = {
 				})
 		},
 		chatRoomChangeDescription: (params, callback) => {
-			var sanitized = sanitizeSensitiveDom(params.description)
+			var sanitized = helpers.sanitizeSensitiveDom(params.description)
 			pool.request()
 				.input("Room", sql.VarChar, params.room)
 				.input("NewDescription", sql.VarChar, sanitized)

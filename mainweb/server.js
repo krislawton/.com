@@ -88,6 +88,8 @@ function distributeAchievementUpdate(accountPermaId, called) {
 		}
 	}
 }
+// Global helpers
+const helpers = require('./helpers.js')
 
 /* ================== */
 /* SETTING UP MODULES */
@@ -291,7 +293,7 @@ io.on('connection', function (socket) {
 			function dbUsername() {
 				pool.request()
 					.input("CustomId", sql.VarChar, input.username)
-					.query("select AccountPermaId, DisplayName, Pw from Accounts where CustomId = @CustomId", (err, result) => {
+					.query("select AccountPermaId, DisplayName, PwObfuscated from Accounts where CustomId = @CustomId", (err, result) => {
 						if (!err) {
 							var usernames = result.recordset
 							checkUsernames(usernames)
@@ -313,7 +315,8 @@ io.on('connection', function (socket) {
 			}
 
 			function checkPassword(userInfo) {
-				if (input.password === userInfo.Pw) {
+				var unobf = helpers.unobfuscateV1(userInfo.AccountPermaId, userInfo.PwObfuscated)
+				if (input.password === unobf) {
 					ret.result = "Login successful but we haven't implemented it yet."
 					socket.handshake.session.maxAge = 666 * 864e5
 					socket.handshake.session.userData = {
@@ -432,10 +435,12 @@ io.on('connection', function (socket) {
 			}
 
 			function insertDb() {
+				var obf = helpers.obfuscateV1(newid, input.password)
 				pool.request()
 					.input("AccountPermaId", sql.VarChar, newid)
 					.input("CustomId", sql.VarChar, input.username)
 					.input("Pw", sql.VarChar, input.password)
+					.input("PwObfuscated", sql.NVarChar, obf)
 					.execute("spAccountCreate", (err, result) => {
 						if (err) {
 							throw err
@@ -1009,7 +1014,7 @@ function checkKrisbot(msgContent, room) {
 		// For each possible lookfor, perform a search
 		for (i in lookFors) {
 			var reg = new RegExp(lookFors[i].lookFor)
-			var matches = msgContent.match(reg)
+			var matches = msgContent.match(reg, 'i')
 			if (matches) {
 				// Gather the different responses and pick one
 				var splitted = (lookFors[i].responses).split("\n")

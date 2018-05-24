@@ -45,6 +45,7 @@
     <Compile Include="devorlive.js">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="helpers.js" />
     <Compile Include="model.js">
       <SubType>Code</SubType>
     </Compile>
