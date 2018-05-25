@@ -1013,8 +1013,8 @@ function checkKrisbot(msgContent, room) {
 
 		// For each possible lookfor, perform a search
 		for (i in lookFors) {
-			var reg = new RegExp(lookFors[i].lookFor)
-			var matches = msgContent.match(reg, 'i')
+			var reg = new RegExp(lookFors[i].lookFor, 'i')
+			var matches = msgContent.match(reg)
 			if (matches) {
 				// Gather the different responses and pick one
 				var splitted = (lookFors[i].responses).split("\n")
@@ -1029,7 +1029,7 @@ function checkKrisbot(msgContent, room) {
 				}
 				setTimeout(am, 10 + Math.pow(Math.random(), 2.2) * 2000, msgToAdd)
 				function am(input) {
-						chatAddNormalMessage(input, null, 69)
+					chatAddNormalMessage(input, null, 69)
 				}
 			}
 		}
