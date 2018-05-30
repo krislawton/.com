@@ -4,14 +4,10 @@
 	const socketChat = io('/chat')
 
 	// On socket noconnect
-	var storedText = ""
-	var hasBeenDisconnected = false
 	var checksum = null
+	var hasBeenDisconnected = false
 	socketChat.on('connect_error', (e) => {
-		var msg = "Connection error. The server is probably down."
-		var ite = $('#sendContainer textarea').val()
-		storedText = (ite !== msg ? ite : storedText)
-		$('#sendContainer textarea').addClass("error").prop("disabled", true).val(msg)
+		statusMessageConnectionError(true)
 		hasBeenDisconnected = true
 	})
 	socketChat.on('connect', () => {
@@ -19,20 +15,17 @@
 			console.log("checking sync")
 			socketChat.emit('sync check', checksum)
 		} else {
-			$('#sendContainer textarea').val("" + storedText).removeClass("error").prop("disabled", false)
+			// Only do when not checking desync
+			statusMessageConnectionError(false)
 		}
 	})
 	socketChat.on('sync result', (response) => {
-		if (response === false) {
-			storedText = $('#sendContainer textarea').val()
-			$('#sendContainer textarea').addClass("click-to-refresh", true).val("Desync detected. Click to refresh chat.").prop("disabled", false)
+		statusMessageConnectionError(false)
+		if (!response) {
+			statusMessageDesycn(true)
 		} else {
-			$('#sendContainer textarea').val("" + storedText).removeClass("error").prop("disabled", false)
+			statusMessageDesycn(false)
 		}
-	})
-	$(document).on("click", "textarea.click-to-refresh", (e) => {
-		$('#sendContainer textarea').removeClass("error").removeClass("click-to-refresh").prop("disabled", false).val("" + storedText)
-		$('button.room[data-roomid="' + viewingRoom + '"]').trigger("click")
 	})
 
 	// Get players
@@ -40,7 +33,7 @@
 	// And rooms please
 	function refreshRooms() {
 		socket.emit('data request', { request: "chatRoomsLoad" })
-	} 
+	}
 	refreshRooms() // onload
 	// And load main chat when everything is done
 	function checkIfDone() {
@@ -61,7 +54,12 @@
 		stars = {},
 		viewingAsPermaId = $('#accountPermaId').attr('data-permaid'),
 		contentLog = {},
-		canSeeCurrent = true
+		canSeeCurrent = true,
+		statusMessages = {
+			priority1: [],
+			priority2: [],
+			priority3: []
+		}
 
 	// Socket responses
 	socket.on('data response', (response) => {
@@ -152,28 +150,49 @@
 		// On receive rooms list
 		if (response.input.request === "chatRoomsLoad") {
 			if (!response.err) {
-				var dbRooms = response.recordset.recordset
+				var dbRooms = response.recordset.recordsets[0]
+				var dbGraph = response.recordset.recordsets[1]
 
-				var toAppend = ""
+				var delay = 0
 				for (r in dbRooms) {
+					var roomId = dbRooms[r].RoomPermanentId
 					// Global rooms obj
-					rooms[dbRooms[r].RoomPermanentId] = {
+					rooms[roomId] = {
 						name: dbRooms[r].RoomName,
 						archived: dbRooms[r].Archived,
+						partOf: dbRooms[r].IsPartOf,
 						createdBy: dbRooms[r].CreatedBy,
 						createdDate: dbRooms[r].CreatedDate,
 						description: dbRooms[r].Description,
 						lastMessageId: dbRooms[r].LastMessageId,
-						lastTimestamp: dbRooms[r].LastSentDate
+						lastTimestamp: dbRooms[r].LastSentDate,
 					}
+					// Graph info
+					var graphInfo = []
+					for (gi in dbGraph) {
+						if (dbGraph[gi].Room === roomId) {
+							var graphRow = {
+								hourBlock: dbGraph[gi].HourBlock,
+								count: dbGraph[gi].MessageCount
+							}
+							graphInfo.push(graphRow)
+						}
+					}
+					rooms[roomId].graphInfo = graphInfo
 					// Button in #chats
-					if (!dbRooms[r].Archived) {
-						toAppend += '<button class="room" data-roomid="' + dbRooms[r].RoomPermanentId + '">#' + dbRooms[r].RoomName + '</button>'
+					var chatButton = document.createElement("button")
+					chatButton.className = "room"
+					chatButton.className += dbRooms[r].Archived || !dbRooms[r].IsPartOf ? " temporary" : ""
+					chatButton.dataset.roomid = roomId
+					chatButton.innerText = "#" + dbRooms[r].RoomName
+					chatButton.style.display = "none"
+					$('#chats .rooms').append(chatButton)
+
+					if (!dbRooms[r].Archived && dbRooms[r].IsPartOf) {
+						setTimeout(animateRoom, delay, roomId)
+						delay += 30
 					}
 				}
-				$('#chats .rooms').html(toAppend)
-				$('#chats .addRoom').remove()
-				$('#chats').append('<button class="addRoom">(+) Add room</button>')
 				refreshRoomHighlight()
 
 				// Refresh chat on first load
@@ -219,10 +238,12 @@
 	// Helper for re-rendering hot
 	function renderHot(dbHot) {
 		$('#hot > *').remove()
-		for (var i = 0; i <= 6; i++) {
-			dbHot[i].rank = i * 1 + 1
-			var ho = hotMsg(dbHot[i])
-			$('#hot').append(ho)
+		for (i in dbHot) {
+			if (i <= 6) {
+				dbHot[i].rank = i * 1 + 1
+				var ho = hotMsg(dbHot[i])
+				$('#hot').append(ho)
+			}
 		}
 
 	}
@@ -361,7 +382,7 @@
 			}
 		} else {
 			$('#nostars').show()
-		}	
+		}
 	}
 	// Handle unstar message
 	$(document).on("click", '#starred button.unstar', (e) => {
@@ -595,6 +616,15 @@
 		if (!response.err) {
 			var r = response.fromDb.recordset[0]
 
+			// Check if last message on screen is current
+			if (rooms[viewingRoom].lastMessageId == $('#logContainer .achat').eq(-1).attr('data-messageid')) {
+				canSeeCurrent = true
+				$('#logContainer .showLater').hide()
+			} else {
+				canSeeCurrent = false
+				$('#logContainer .showLater').show().appendTo('#logContainer')
+			}
+
 			// Update rooms object to store latest message
 			if (rooms[r.Room].lastTimestamp < r.SentDate) {
 				rooms[r.Room].lastMessageId = r.MessageId
@@ -615,39 +645,43 @@
 				}
 			}
 
-			// Play sound
-			var msgsound
-			if (r.MessageType === "Action") {
-				if ((r.Content).match(/is now looking at chat/gi) !== null) {
-					msgsound = new Audio('/c/SoundCiv4War.mp3')
-				} else if ((r.Content).match(/left. Huh./gi) !== null) {
-					msgsound = new Audio('/c/SoundCiv4LossMiddle.mp3')
-				} else {
-					msgsound = new Audio('/c/SoundCiv4Border.mp3')
-				}
-			} else {
-				msgsound = new Audio("/c/SoundCiv4StarterSfx.mp3")
-			}
-			msgsound.play()
+			// Only if they're part of the room...
+			if (rooms[r.Room].partOf) {
 
-			// Send notification
-			if (viewingAsPermaId != r.SenderAccountId) {
-				if (Notification.permission === "granted") {
-					var nopt = {
-						body: r.SenderDisplayName + ": " + r.Content,
-						icon: "/c/Logo.png",
+				// Play sound
+				var msgsound
+				if (r.MessageType === "Action") {
+					if ((r.Content).match(/is now looking at chat/gi) !== null) {
+						msgsound = new Audio('/c/SoundCiv4War.mp3')
+					} else if ((r.Content).match(/left. Huh./gi) !== null) {
+						msgsound = new Audio('/c/SoundCiv4LossMiddle.mp3')
+					} else {
+						msgsound = new Audio('/c/SoundCiv4Border.mp3')
 					}
-					var n = new Notification('krislawton.com #' + r.Room, nopt)
-					setTimeout(n.close.bind(n), 4000);
-				} else if (Notification.permission !== 'denied') {
-					Notification.requestPermission(function (permission) {
-						if (permission === "granted") {
-							var notification = new Notification("Notifications enabled, are you seeing this?!");
-						}
-					});
+				} else {
+					msgsound = new Audio("/c/SoundCiv4StarterSfx.mp3")
 				}
-			}
-		}
+				msgsound.play()
+
+				// Send notification
+				if (viewingAsPermaId != r.SenderAccountId) {
+					if (Notification.permission === "granted") {
+						var nopt = {
+							body: r.SenderDisplayName + ": " + r.Content,
+							icon: "/c/Logo.png",
+						}
+						var n = new Notification('krislawton.com #' + r.Room, nopt)
+						setTimeout(n.close.bind(n), 4000);
+					} else if (Notification.permission !== 'denied') {
+						Notification.requestPermission(function (permission) {
+							if (permission === "granted") {
+								var notification = new Notification("Notifications enabled, are you seeing this?!");
+							}
+						});
+					}
+				} //End notification
+			} // End if part of room
+		} // End if not error
 	}
 
 	// Send message helper
@@ -686,7 +720,7 @@
 			var last4 = ""
 			if (c >= 3) {
 				last4 = inArr[c - 3] + inArr[c - 2] + inArr[c - 1] + inArr[c]
-				if (last4 =='http') {
+				if (last4 == 'http') {
 					possiblyInUrl = true
 				}
 				if (possiblyInUrl && !(inArr[c]).match(/[-a-z0-9@:;%_\+.~#?&//=]/gi)) {
@@ -713,7 +747,7 @@
 				// Clear all other layers
 				layers.splice(0)
 			}
-			
+
 			// Italics: _
 			if (inArr[c] === "_" && !possiblyInUrl) {
 				var italicsIndex = null
@@ -744,7 +778,7 @@
 					if (layers[li].type === "bold") {
 						boldIndex = li
 						li = layers.length
-					}					
+					}
 				}
 
 				if (boldIndex !== null) {
@@ -887,35 +921,74 @@
 	})
 
 	// On room change
-	$(document).on("click", "button.room", (e) => {
+	$(document).on("click", "#chats button", (e) => {
 		// Get room just clicked
 		var room = $(e.target).attr('data-roomid')
-		viewingRoom = room
+		if (room) {
+			// REGULAR CHATOROOM
+			viewingRoom = room
 
-		// Clear chat
-		contentLog = {}
-		$('#logContainer > .achat, #logContainer > .diffSeparator, #logContainer > .dateHeader').remove()
-		// Loop through chat of room and add
-		socket.emit('data request', { request: "chatMessagesLoad", params: { earlier: true, room: viewingRoom, when: "now" } })
+			// Clear chat
+			contentLog = {}
+			$('#logContainer > .achat, #logContainer > .diffSeparator, #logContainer > .dateHeader').remove()
+			// Clear forms and show log port
+			$('.addRoomForm, #center .all-rooms').remove()
+			$('#logViewPort, #sendContainer').show()
+			// Loop through chat of room and add
+			socket.emit('data request', { request: "chatMessagesLoad", params: { earlier: true, room: viewingRoom, when: "now" } })
 
-		// Clear hot
-		$('#hot > *').remove()
-		// Get new hot
-		socket.emit('data request', { request: "chatHotMessagesLoad", params: { asOf: "now", room: viewingRoom } })
-		hotInterval()
+			// Clear hot
+			$('#hot > *').remove()
+			// Get new hot
+			socket.emit('data request', { request: "chatHotMessagesLoad", params: { asOf: "now", room: viewingRoom } })
+			hotInterval()
 
-		// Render room card
-		$('.card.room h2').text('#' + rooms[room].name)
-		var desc = rooms[room].description || '<span style="font-style: italic">No description</span>'
-		$('#room .description').html(desc)
+			// Render room card
+			$('.card.room h2').text('#' + rooms[room].name)
+			var desc = rooms[room].description || '<span style="font-style: italic">No description</span>'
+			$('#room .description').html(desc)
+			// Consider presence of archive and leave buttons
+			considerRoomOptions()
 
-		// Refresh room highlight
-		refreshRoomHighlight()
+			// Refresh room highlight
+			refreshRoomHighlight()
+
+			// Remove temporary, non-current rooms
+			$('#chats .rooms button.room.temporary').not('[data-roomid="' + viewingRoom + '"]').hide()
+
+			// Consider status message for room
+			statusMessageRoom(viewingRoom)
+		} else {
+			// ALL ROOMS / ADD ROOM
+
+			if (e.target.dataset.function === "add") {
+				renderAddRoom()
+			} else if (e.target.dataset.function === "all") {
+				renderAllRooms()
+			}
+
+			// Refresh highlight
+			refreshRoomHighlight(e.target.dataset.function)
+		}
 	})
 	// Highlight chosen room
-	function refreshRoomHighlight() {
-		$('button.room').removeClass('active')
-		$('button.room[data-roomid="' + viewingRoom + '"]').addClass('active')
+	function refreshRoomHighlight(room) {
+		var selector
+		if (room) {
+			var selectors = {
+				all: 'button.chatRooms',
+				add: 'button.addRoom'
+			}
+			selector = selectors[room] || ""
+		} else {
+			selector = 'button.room[data-roomid="' + viewingRoom + '"]'
+		}
+		$('#chats button').removeClass('active')
+		$('#chats ' + selector).addClass('active')
+	}
+	// Helper for animating room list
+	function animateRoom(roomId) {
+		$('#chats button.room[data-roomid="' + roomId + '"]').slideDown(150, "easeOutCirc")
 	}
 
 	// Helper for name tags
@@ -928,7 +1001,7 @@
 		anchor.href = "/user/" + permaid + "-" + users[permaid].username
 		anchor.target = "_blank"
 		anchor.innerHTML = (typeof displayName === "string" ? displayName : users[permaid].displayName)
-		
+
 		nametag.appendChild(anchor)
 
 		return nametag
@@ -981,6 +1054,12 @@
 			$(e.target).parents('.card').children().not('button.collapser').slideUp(150, "easeOutCirc")
 			$(e.target).parents('.card').addClass("collapsed")
 		}
+	})
+	// Listen for hovering over room to color leave button
+	$('.card.room').hover(() => {
+		$('#leave-room, #archive-room').addClass('negative').removeClass('smol')
+	}, () => {
+		$('#leave-room, #archive-room').removeClass('negative').addClass('smol')
 	})
 	// Listen for date searching
 	$(document).on("click", '#chatSearch button.search', (e) => {
@@ -1069,19 +1148,18 @@
 	})
 
 	// Adding a new room
-	$(document).on("click", 'button.addRoom', () => {
+	function renderAddRoom() {
 		$('#center .addRoomForm').remove()
 
 		var html = '<div class="addRoomForm">'
 		html += '<div><input type="text" name="roomName" placeholder="Room name"/></div>'
 		html += '<div><button class="button raised colored addRoomSubmit">Add room</button></div>'
-		html += '<div><button class="button raised addRoomCancel">Cancel</button></div>'
 		html += '<div><div class="error" style="display: none"></div></div>'
 		html += '</form>'
 
 		$('#center > *').hide()
 		$('#center').append(html)
-	})
+	}
 	// Handle submit
 	$(document).on("click", '.addRoomSubmit', () => {
 		var room = $('[name="roomName"]').val()
@@ -1094,11 +1172,6 @@
 			room = room.slice(1)
 			socketChat.emit('room add', { roomName: room })
 		}
-	})
-	// Handle cancel
-	$(document).on("click", '.addRoomCancel', () => {
-		closeAddRoomForm()
-		reconsiderSend()
 	})
 	// Always prepend hashtag to room title
 	$(document).on("keypress", '[name="roomName"]', () => {
@@ -1125,7 +1198,134 @@
 		$('#center > *').removeAttr('style')
 	}
 
-	// Handle name being changed
+	// Showing the "all rooms" screen
+	function renderAllRooms() {
+		var container = document.createElement("div")
+		container.className = "all-rooms"
+
+		var heading = document.createElement("h2")
+		heading.innerText = "All chat rooms"
+		container.appendChild(heading)
+
+		// From hourly messages, build day graph
+		var dayGraphData = {}
+		for (r in rooms) {
+			dayGraphData[r] = {}
+			for (gi in rooms[r].graphInfo) {
+				var gir = rooms[r].graphInfo[gi]
+				var dateObj = new Date(gir.hourBlock)
+				var dateString = dateObj.getFullYear()
+				dateString += "-" + zeroPad(dateObj.getMonth())
+				dateString += "-" + zeroPad(dateObj.getDate())
+
+				if (typeof dayGraphData[r][dateString] !== "undefined") {
+					dayGraphData[r][dateString] += gir.count
+				} else {
+					dayGraphData[r][dateString] = gir.count
+				}
+			}
+		}
+		// Calculate most messages sent in a room in a day
+		var maxestMessages = 0
+		for (r in dayGraphData) {
+			for (i in dayGraphData[r]) {
+				maxestMessages = dayGraphData[r][i] > maxestMessages ? dayGraphData[r][i] : maxestMessages
+			}
+		}
+
+		// Rooms you are part of
+		var roomsActive = document.createElement("div")
+		roomsActive.className = "rooms-container"
+		roomsActive.dataset.type = "active"
+		for (r in rooms) {
+			if (!rooms[r].archived && rooms[r].partOf) {
+				var roomBox = buildRoomBox(r)
+				roomsActive.appendChild(roomBox)				
+			}
+		}
+		container.appendChild(roomsActive)
+
+		// Rooms you are NOT part of
+		var roomsAvailableHeading = document.createElement("h3")
+		roomsAvailableHeading.innerText = "Available to join"
+		container.appendChild(roomsAvailableHeading)
+		var roomsAvailable = document.createElement("div")
+		roomsAvailable.className = "rooms-container"
+		roomsAvailable.dataset.type = "available"
+		for (r in rooms) {
+			if (!rooms[r].archived && !rooms[r].partOf) {
+				var roomBox = buildRoomBox(r)
+				roomsAvailable.appendChild(roomBox)
+			}
+		}
+		container.appendChild(roomsAvailable)
+
+		// Rooms archived
+		var roomsArchivedHeading = document.createElement("h3")
+		roomsArchivedHeading.innerText = "Archived rooms"
+		container.appendChild(roomsArchivedHeading)
+		var roomsArchived = document.createElement("div")
+		roomsArchived.className = "rooms-container"
+		roomsArchived.dataset.type = "archived"
+		for (r in rooms) {
+			if (rooms[r].archived) {
+				var roomBox = buildRoomBox(r)
+				roomsArchived.appendChild(roomBox)
+			}
+		}
+		container.appendChild(roomsArchived)
+
+		// Render
+		$('#center .all-rooms').remove()
+		$('#center > *').hide()
+		$('#center').append(container)
+
+		// Helper for room graph activity
+		function buildRoomBox(r) {
+			var roomBox = document.createElement("div")
+			roomBox.className = "room-box"
+
+			var title = document.createElement("button")
+			title.innerText = '#' + rooms[r].name
+			title.dataset.roomid = r
+			roomBox.appendChild(title)
+			var description = document.createElement("div")
+			description.className = "description"
+			description.innerText = rooms[r].description
+			roomBox.appendChild(description)
+
+			var gc = document.createElement("div")
+			gc.className = "graph-container"
+			gc.title = "Activity over the past 14 days"
+
+			for (i in dayGraphData[r]) {
+				var barContainer = document.createElement("div")
+				barContainer.className = "bar-container"
+				var bar = document.createElement("div")
+				bar.className = "bar"
+				var dateString = dataTransformer("date long", i)
+				bar.title = dateString += ": " + dayGraphData[r][i] + " messages"
+				var percentage = Math.pow(dayGraphData[r][i] / maxestMessages, 0.5) * 100
+				bar.style.height = percentage + "%"
+				barContainer.appendChild(bar)
+				gc.appendChild(barContainer)
+			}
+
+			roomBox.appendChild(gc)
+
+			return roomBox
+		}
+	}
+	// Handling room navigations on "all rooms"
+	$(document).on("click", '.all-rooms .room-box button', (e) => {
+		var roomId = $(e.target).attr('data-roomid')
+
+		console.log($('#chats .rooms [data-roomid="' + roomId + '"]'))
+		
+		$('#chats .rooms [data-roomid="' + roomId + '"]').show().trigger("click")
+	})
+
+	// Handle user display name being changed
 	socketChat.on('display name changed', (response) => {
 		checksum = response.checksum
 		if (typeof users[response.permaid] === "object") {
@@ -1176,6 +1376,167 @@
 			$('#centerModal').hide()
 			$('#centerModal *:not(.persistent)').remove()
 		})
+	})
+
+	// Status messages for send container
+	// Helper for showing displaying interface message on send container
+	function considerSendContainer() {
+		if (typeof statusMessages.priority1[0] !== "undefined") {
+			// Priority 1: Errors
+			$('#sendContainer textarea').hide().prop("disabled", true)
+			$('#sendContainer .clickable-message').hide()
+			$('#sendContainer .error-custom').show().html(statusMessages.priority1[0].msg)
+		} else if (typeof statusMessages.priority2[0] !== "undefined") {
+			// Priority 2: Desyncs
+			var p2 = statusMessages.priority2[0]
+			$('#sendContainer textarea').hide().prop("disabled", true)
+			$('#sendContainer .clickable-message').show().html(p2.msg).attr('data-key', p2.key)
+			$('#sendContainer .error-custom').hide()
+		} else if (typeof statusMessages.priority3[0] !== "undefined") {
+			// Priority 3: You cannot chat
+			var p3 = statusMessages.priority3[0]
+			$('#sendContainer textarea').hide().prop("disabled", true)
+			$('#sendContainer .clickable-message').show().html(p3.msg).attr('data-key', p3.key)
+			$('#sendContainer .error-custom').hide()
+		} else {
+			// You can chat
+			$('#sendContainer textarea').show().prop("disabled", false)
+			$('#sendContainer .clickable-message').hide()
+			$('#sendContainer .error-custom').hide()
+		}
+	}
+	// Helper for general message objects
+	function statusMessageObject(type, msg, key) {
+		var r = { type: type, msg: msg }
+		if (type === "message") {
+			r.key = key
+		}
+		return r
+	}
+	// There's a connection error
+	function statusMessageConnectionError(isError) {
+		if (isError) {
+			statusMessages.priority1 = [ statusMessageObject("error", "Connection error. The server is probably down") ]
+		} else {
+			statusMessages.priority1 = []
+		}
+		considerSendContainer()
+	}
+	// There's a desync
+	function statusMessageDesycn(isDesync) {
+		if (isDesync) {
+			statusMessages.priority2 = [ statusMessageObject("message", "Chat has become desynced. Click to refresh", "desync") ]
+		} else {
+			statusMessages.priority2 = []
+		}
+		considerSendContainer()
+	}
+	// Helper for clicking a desync message
+	$(document).on("click", '#sendContainer .clickable-message[data-key="desync"]', (e) => {
+		$('button.room[data-roomid="' + viewingRoom + '"]').trigger("click")
+		statusMessageDesycn(false)
+	})
+	// You're not part of the room for some reason
+	function statusMessageRoom(room) {
+		var ro = rooms[room]
+		statusMessages.priority3 = []
+		if (ro.archived) {
+			statusMessages.priority3 = [statusMessageObject("message", "This room is archived. Click to unarchive.", "archive")]
+		} else if (!ro.partOf) {
+			statusMessages.priority3 = [statusMessageObject("message", "You are not part of this chat room. Click to join.", "available")]
+		}
+		considerSendContainer()
+	}
+	// Joining the room
+	$(document).on("click", '#sendContainer .clickable-message[data-key="available"]', (e) => {
+		socketChat.emit('room join', { room: viewingRoom })
+	})
+	socketChat.on('room joined', (response) => {
+		console.log(response)
+		
+		if (response.success) {
+			$('#chats .rooms button[data-roomid="' + response.room + '"]').removeClass("temporary").show()
+			rooms[response.room].partOf = true
+			statusMessageRoom(viewingRoom)
+			considerRoomOptions()
+		}
+	})
+	// Leaving the room
+	$(document).on("click", '#leave-room', (e) => {
+		socketChat.emit('room leave', { room: viewingRoom })
+	})
+	socketChat.on('room left', (response) => {
+		console.log(response)
+
+		if (response.success) {
+			$('#chats .rooms button[data-roomid="' + response.room + '"]').addClass("temporary")
+			if (viewingRoom !== response.room) {
+				$('#chats .rooms button[data-roomid="' + response.room + '"]').hide()
+			}
+			rooms[response.room].partOf = false
+			statusMessageRoom(viewingRoom)
+			considerRoomOptions()
+		}
+	})
+	// Helper for considering the presence of the leave room button
+	function considerRoomOptions() {
+		if (rooms[viewingRoom].partOf && viewingRoom !== "tournytime") {
+			$('#leave-room').show()
+		} else {
+			$('#leave-room').hide()
+		}
+		$('#archive-room').prop("disabled", false).html("Archive room")
+		if (!rooms[viewingRoom].archived && viewingRoom !== "tournytime") {
+			$('#archive-room').show()
+		} else {
+			$('#archive-room').hide()
+		}
+	}
+	// Archiving a room
+	$(document).on("click", '#archive-room', (e) => {
+		$('#archive-room').prop("disabled", true)
+		socketChat.emit('room archive', { room: viewingRoom })
+	})
+	socketChat.on('room archived', (response) => {
+		console.log(response)
+		$('#archive-room').prop("disabled", false)
+		if (response.success) {
+			$('#archive-room').html("Archive room")
+		} else {
+			$('#archive-room').html("Error archiving")
+		}
+	})
+	socketChat.on('room archived global', (response) => {
+		console.log(response)
+		if (response.success) {
+			rooms[response.room].archived = true
+			$('#chats .rooms button[data-roomid="' + response.room + '"]').addClass("temporary")
+			if (response.room === viewingRoom) {
+				statusMessageRoom(viewingRoom)
+				considerRoomOptions()
+			} else {
+				$('#chats .rooms button[data-roomid="' + response.room + '"]').hide()
+			}
+		}
+	})
+	// Unarchiving a room
+	$(document).on("click", '#sendContainer .clickable-message[data-key="archive"]', (e) => {
+		socketChat.emit('room unarchive', { room: viewingRoom })
+	})
+	socketChat.on('room unarchived', (response) => {
+		console.log(response)
+	})
+	socketChat.on('room unarchived global', (response) => {
+		console.log(response)
+		if (response.success) {
+			console.log("Unarchive success, are " + response.room + " and " + viewingRoom + " the same?")
+			rooms[response.room].archived = false
+			$('#chats .rooms button[data-roomid="' + response.room + '"]').removeClass("temporary").show()
+			if (response.room === viewingRoom) {
+				statusMessageRoom(viewingRoom)
+				considerRoomOptions()
+			}
+		}
 	})
 
 	/***********************/

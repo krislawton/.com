@@ -108,27 +108,33 @@ body {
 	transition: all 0.3s;
 	box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.1);
 }
+#sendContainer > * {
+	padding: 5px;
+	width: 100%;
+	height: 100%;
+}
 #sendContainer textarea {
 	font-family: inherit;
 	font-size: inherit;
 	resize: none;
 	box-sizing: border-box;
 	border: 0;
-	width: 100%;
-	padding: 5px;
-	height: 100%;
 }
 #sendContainer textarea:focus {
 	outline: 0;
 }
-textarea.click-to-refresh {
-	cursor: pointer;
+#sendContainer .error-custom {
+	background: hsl(0, 64%, 90%);
 }
-textarea.click-to-refresh:hover {
+#sendContainer .clickable-message {
+	cursor: pointer;
 	background: rgba(0, 0, 0, 0.05);
 }
-textarea.click-to-refresh:active {
-	background: rgba(0, 0, 0, 0.1);
+#sendContainer .clickable-message:hover {
+	background: rgba(0, 0, 0, 0.10);
+}
+#sendContainer .clickable-message:active {
+	background: rgba(0, 0, 0, 0.15);
 }
 
 /* Chat log */
@@ -398,7 +404,7 @@ div.options button.option:active {
 	padding: 10px;
 }
 #chats button {
-	width: 100%;
+	width: 180px;
 	padding: 4px 8px;
 	text-align: left;
 	word-break: break-all;
@@ -424,6 +430,7 @@ div.options button.option:active {
 #info {
 	padding: 15px;
 	overflow-y: auto;
+	overflow-x: hidden;
 }
 #info .card {
 	padding: 10px;
@@ -431,6 +438,7 @@ div.options button.option:active {
 	background: white;
 	box-shadow: 0 0 10px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.08);
 	transition: padding 0.15s;
+	min-width: 300px;
 }
 #info .card.collapsed {
 	padding: 10px 10px 0;
@@ -492,6 +500,19 @@ div.options button.option:active {
 }
 .description-edit .button {
 	margin: 10px 0 0 10px;
+}
+#room > .buttons {
+	margin-top: 10px;
+}
+#room > .buttons > * + * {
+	margin-left: 10px;
+}
+#leave-room, #archive-room {
+	opacity: 0.4;
+	transition: opacity 0.15s, background 0.15s, color 0.15s, padding 0.15s;
+}
+.card.room:hover #leave-room, .card.room:hover #archive-room {
+	opacity: 1;
 }
 /* Users */
 #users {
@@ -608,6 +629,77 @@ div.options button.option:active {
 	display: block;
 }
 
+/* All rooms form */
+.all-rooms {
+	padding: 10px;
+	height: 100%;
+	overflow-y: scroll;
+}
+.all-rooms .rooms-container {
+	display: flex;
+	flex-wrap: wrap;
+	margin: -5px;
+}
+.all-rooms .room-box {
+	display: flex;
+	flex-wrap: wrap;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.08);
+	padding: 10px;
+	margin: 5px;
+	flex-grow: 1;
+	flex-basis: 0;
+	min-width: 300px;
+	max-width: 400px;
+}
+.room-box > * {
+	width: 100%;
+	text-align: left;
+	align-self: flex-start;
+}
+.room-box button {
+	font-weight: bold;
+	word-break: break-all;
+}
+.room-box .description {
+	font-size: small;
+	color: rgba(0, 0, 0, 0.5);
+}
+.room-box .graph-container {
+	display: flex;
+	align-self: flex-end;
+	margin-top: 4px;
+}
+.room-box .bar-container:nth-child(2n + 1) {
+	background: hsla(216, 31%, 39%, 0.02);
+}
+.room-box .bar-container:nth-child(2n) {
+	background: hsla(216, 31%, 39%, 0.03);
+}
+.room-box .bar-container {
+	display: inline-block;
+	flex-grow: 1;
+	height: 50px;
+	position: relative;
+	margin-right: 1px;
+}
+.room-box .bar {
+	background: hsla(216, 41%, 85%);
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+	transition: box-shadow 0.15s;
+}
+.room-box .bar:hover {
+	box-shadow: inset 0 0 12px hsl(216, 31%, 76%)
+}
+.rooms-container[data-type="archived"] .room-box {
+	opacity: 0.3;
+	transition: opacity 0.15s;
+}
+.rooms-container[data-type="archived"] .room-box:hover {
+	opacity: 1;
+}
 /* Add room form */
 .addRoomForm {
 	display: flex;

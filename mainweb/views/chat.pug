@@ -20,7 +20,9 @@ html
         | Toggle info 
         span.chevron &lt;
     div#chats
+      button.chatRooms(data-function="all") Chat rooms
       div.rooms
+      button.addRoom(data-function="add") (+) Add room
     div#info
       div.card.room
         button.collapser
@@ -34,6 +36,9 @@ html
               div.buttons
                 button.button.raised.cancel Cancel
                 button.button.raised.colored.submit Submit
+            div.buttons
+              button.button.raised.smol#leave-room Leave room
+              button.button.raised.smol#archive-room Archive room
       div.card
         button.collapser
           h2 Users
@@ -77,3 +82,5 @@ html
           button.loadChat.showLater(style="display: none") Try to get me some more recent chat
       div#sendContainer
         textarea(autofocus)
+        div.error-custom(style="display: none")
+        div.clickable-message(style="display: none")

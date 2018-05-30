@@ -626,13 +626,6 @@ ioChat.on('connection', (socket) => {
 
 	// Track new connections
 	if (typeof accountsInChat[permaid] === "undefined") {
-		var ej = {
-			accountPermaId: permaid,
-			customId: socket.handshake.session.userData.username,
-			displayName: socket.handshake.session.userData.displayas
-		}
-		// Add enter message after 5 minutes of lurking, if no message already sent
-		setTimeout(considerAddingEntryMessage, 3e5, ej)
 		accountsInChat[permaid] = {
 			connectionCount: 1,
 			forSystemMessage: {
@@ -646,6 +639,13 @@ ioChat.on('connection', (socket) => {
 	} else {
 		accountsInChat[permaid].connectionCount++
 	}
+	// Add enter message after 5 minutes of lurking, if no message already sent
+	var ej = {
+		accountPermaId: permaid,
+		customId: socket.handshake.session.userData.username,
+		displayName: socket.handshake.session.userData.displayas
+	}
+	setTimeout(considerAddingEntryMessage, 3e5, ej)
 
 	socket.on('chat send', (input) => {
 		try {
@@ -837,6 +837,176 @@ ioChat.on('connection', (socket) => {
 			accs[i] = accountsInChat[i].forActivityIndicator.status
 		}
 		socket.emit('activity all repsonse', accs)
+	})
+	socket.on('room join', (input) => {
+		var params = input
+		params.session = socket.handshake.session
+		datastore.procedure.chatRoomJoin(params, (err, result) => {
+			socket.emit('room joined', { room: input.room, success: err ? false : true })
+			if (!err) {
+				var userData = socket.handshake.session.userData
+				var ej = {
+					accountPermaId: userData.permaid,
+					customId: userData.username,
+					displayName: userData.displayas
+				}
+				var smp = {
+					room: input.room,
+					content: "~ {player} has joined this room ~",
+					extra: JSON.stringify(ej)
+				}
+				chatAddSystemMessage(smp, (msgErr, msgResult) => {
+					if (!msgErr) {
+						chatChecksum = generateSessionId()
+						var retchat = {
+							input: input,
+							err: msgErr,
+							fromDb: msgResult,
+							checksum: chatChecksum
+						}
+						ioChat.emit('chat sent', retchat)
+					}
+				})
+			}
+		})
+	})
+	socket.on('room leave', (input) => {
+		var params = input
+		params.session = socket.handshake.session
+		datastore.procedure.chatRoomLeave(params, (err, result) => {
+			socket.emit('room left', { room: input.room, success: err ? false : true })
+			if (!err) {
+				var userData = socket.handshake.session.userData
+				var ej = {
+					accountPermaId: userData.permaid,
+					customId: userData.username,
+					displayName: userData.displayas
+				}
+				var smp = {
+					room: input.room,
+					content: "~ {player} has left this room ~",
+					extra: JSON.stringify(ej)
+				}
+				chatAddSystemMessage(smp, (msgErr, msgResult) => {
+					if (!msgErr) {
+						chatChecksum = generateSessionId()
+						var retchat = {
+							input: input,
+							err: msgErr,
+							fromDb: msgResult,
+							checksum: chatChecksum
+						}
+						ioChat.emit('chat sent', retchat)
+					}
+				})
+			}
+		})
+	})
+	socket.on('room archive', (input) => {
+		var params = input
+		params.session = socket.handshake.session
+		datastore.procedure.chatRoomArchive(params, (err, result) => {
+			socket.emit('room archived', { room: input.room, success: err ? false : true })
+			ioChat.emit('room archived global', { room: input.room, success: err ? false : true })
+			if (!err) {
+				var userData = socket.handshake.session.userData
+				var ej = {
+					accountPermaId: userData.permaid,
+					customId: userData.username,
+					displayName: userData.displayas,
+					room: input.room
+				}
+				// Local room message
+				var localSmp = {
+					room: input.room,
+					content: "~ {player} archived this room ~",
+					extra: JSON.stringify(ej)
+				}
+				chatAddSystemMessage(localSmp, (localErr, localResult) => {
+					if (!localErr) {
+						chatChecksum = generateSessionId()
+						var retchat = {
+							input: input,
+							err: localErr,
+							fromDb: localResult,
+							checksum: chatChecksum
+						}
+						ioChat.emit('chat sent', retchat)
+					}
+				})
+				// Tournytime message
+				var ttSmp = {
+					room: 'tournytime',
+					content: "~ {player} archived {room} ~",
+					extra: JSON.stringify(ej)
+				}
+				chatAddSystemMessage(ttSmp, (ttErr, ttResult) => {
+					if (!ttErr) {
+						chatChecksum = generateSessionId()
+						var retchat = {
+							input: input,
+							err: ttErr,
+							fromDb: ttResult,
+							checksum: chatChecksum
+						}
+						ioChat.emit('chat sent', retchat)
+					}
+				})
+			}
+		})
+	})
+	socket.on('room unarchive', (input) => {
+		var params = input
+		params.session = socket.handshake.session
+		datastore.procedure.chatRoomUnarchive(params, (err, result) => {
+			socket.emit('room unarchived', { room: input.room, success: err ? false : true })
+			ioChat.emit('room unarchived global', { room: input.room, success: err ? false : true })
+			if (!err) {
+				var userData = socket.handshake.session.userData
+				var ej = {
+					accountPermaId: userData.permaid,
+					customId: userData.username,
+					displayName: userData.displayas,
+					room: input.room
+				}
+				// Local room message
+				var localSmp = {
+					room: input.room,
+					content: "~ {player} unarchived this room ~",
+					extra: JSON.stringify(ej)
+				}
+				chatAddSystemMessage(localSmp, (localErr, localResult) => {
+					if (!localErr) {
+						chatChecksum = generateSessionId()
+						var retchat = {
+							input: input,
+							err: localErr,
+							fromDb: localResult,
+							checksum: chatChecksum
+						}
+						ioChat.emit('chat sent', retchat)
+					}
+				})
+				// Tournytime message
+				var ttSmp = {
+					room: 'tournytime',
+					content: "~ {player} unarchived {room} ~",
+					extra: JSON.stringify(ej)
+				}
+				chatAddSystemMessage(ttSmp, (ttErr, ttResult) => {
+					if (!ttErr) {
+						chatChecksum = generateSessionId()
+						var retchat = {
+							input: input,
+							err: ttErr,
+							fromDb: ttResult,
+							checksum: chatChecksum
+						}
+						ioChat.emit('chat sent', retchat)
+					}
+				})
+			}
+		})
 	})
 	socket.on('disconnect', () => {
 		if (accountsInChat[permaid] !== "undefined") {

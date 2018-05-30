@@ -287,6 +287,12 @@ module.exports = {
 					callback(err, { recordset: result })
 				})
 		},
+		mcmForMatchmaking: (params, callback) => {
+			dbmcm.request()
+				.query("select * from Players; select * from GameServers", (err, result) => {
+					callback(err, { recordset: result })
+				})
+		},
 		mcmMatchInfo: (params, callback) => {
 			dbmcm.request()
 				.input("MatchId", sql.VarChar, params.MatchId)
@@ -415,7 +421,7 @@ module.exports = {
 				})
 		},
 		rootUserChangeAboutme: (params, callback) => {
-			var sanitized = helpers.sanitizeSensitiveDom(params.aboutMe)
+			var sanitized = helpers.sanitizeSensitiveHtml(params.aboutMe)
 			permaid = typeof params.session.userData.permaid === "undefined" ? null : params.session.userData.permaid
 			pool.request()
 				.input("AccountPermaId", sql.Int, permaid)
@@ -474,11 +480,47 @@ module.exports = {
 				})
 		},
 		chatRoomChangeDescription: (params, callback) => {
-			var sanitized = helpers.sanitizeSensitiveDom(params.description)
+			var sanitized = helpers.sanitizeSensitiveHtml(params.description)
 			pool.request()
 				.input("Room", sql.VarChar, params.room)
 				.input("NewDescription", sql.VarChar, sanitized)
 				.execute("spChatRoomChangeDescription", (err, result) => {
+					callback(err, result)
+				})
+		},
+		chatRoomJoin: (params, callback) => {
+			permaid = typeof params.session.userData.permaid === "undefined" ? null : params.session.userData.permaid
+			pool.request()
+				.input("AccountPermaId", sql.Int, permaid)
+				.input("Room", sql.VarChar, params.room)
+				.execute("spChatRoomJoin", (err, result) => {
+					callback(err, result)
+				})
+		},
+		chatRoomLeave: (params, callback) => {
+			permaid = typeof params.session.userData.permaid === "undefined" ? null : params.session.userData.permaid
+			pool.request()
+				.input("AccountPermaId", sql.Int, permaid)
+				.input("Room", sql.VarChar, params.room)
+				.execute("spChatRoomLeave", (err, result) => {
+					callback(err, result)
+				})
+		},
+		chatRoomArchive: (params, callback) => {
+			permaid = typeof params.session.userData.permaid === "undefined" ? null : params.session.userData.permaid
+			pool.request()
+				.input("AccountPermaId", sql.Int, permaid)
+				.input("Room", sql.VarChar, params.room)
+				.execute("spChatRoomArchive", (err, result) => {
+					callback(err, result)
+				})
+		},
+		chatRoomUnarchive: (params, callback) => {
+			permaid = typeof params.session.userData.permaid === "undefined" ? null : params.session.userData.permaid
+			pool.request()
+				.input("AccountPermaId", sql.Int, permaid)
+				.input("Room", sql.VarChar, params.room)
+				.execute("spChatRoomUnarchive", (err, result) => {
 					callback(err, result)
 				})
 		},
