@@ -1,22 +1,31 @@
 ﻿// Helpers, jeepers
 const helpers = require('./helpers.js')
+const seecret = require('./seecret.js')
 
 // DB Configuration and connection string
-const sql = require('mssql/msnodesqlv8')
-const dbconfig = {
-    user: 'sa',
-    password: 'StopChanging9000',
-    server: '.',
+const sql = require('mssql')
+const dbconfigWeb = {
+	user: seecret.dbUser,
+	password: seecret.dbPassword,
+	server: seecret.dbServer,
     database: 'Website',
     options: {
         charset: 'Latin1_General_CI_AS'
 	},
 	requestTimeout: 30000
 }
-const dbconstr = "Driver=msnodesqlv8;Server=(local);Database=Website;Trusted_Connection=yes;TrustServerCertificate=yes;Encrypt=yes;"
-const dbconstrmcm = "Driver=msnodesqlv8;Server=(local);Database=MCM;Trusted_Connection=yes;TrustServerCertificate=yes;Encrypt=yes;"
+const dbconfigMcm = {
+	user: seecret.dbUser,
+	password: seecret.dbPassword,
+	server: seecret.dbServer,
+	database: 'Website',
+	options: {
+		charset: 'Latin1_General_CI_AS'
+	},
+	requestTimeout: 30000
+}
 // Create connection pool
-const pool = new sql.ConnectionPool(dbconfig, err => {
+const pool = new sql.ConnectionPool(dbconfigWeb, err => {
     if (err) {
         console.log("Database error: " + err["name"])
         console.log(err)
@@ -24,7 +33,7 @@ const pool = new sql.ConnectionPool(dbconfig, err => {
 		console.log("Data store db connection test successful")
     }
 })
-const dbmcm = new sql.ConnectionPool(dbconstrmcm, err => {
+const dbmcm = new sql.ConnectionPool(dbconfigMcm, err => {
 	if (err) {
 		console.log("Database error: " + err["name"])
 		console.log(err)

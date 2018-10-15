@@ -62,7 +62,7 @@ const server = app.listen(port, (err) => {
 // Other modules
 const path = require("path")
 
-const sql = require("mssql/msnodesqlv8")
+const sql = require("mssql")
 const model = require("./model.js")
 
 const session = require("express-session")
@@ -115,7 +115,6 @@ const dbconfig = {
 	},
 	requestTimeout: 30000
 }
-const dbconstr = "Driver=msnodesqlv8;Server=(local);Database=Website;Trusted_Connection=yes;TrustServerCertificate=yes;Encrypt=yes;"
 // Create connection pool
 const pool = new sql.ConnectionPool(dbconfig, err => {
     if (err) {

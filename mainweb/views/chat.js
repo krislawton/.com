@@ -86,7 +86,7 @@
 					// Only render chats once (since having more than
 					// one reaction means the results obj has more 
 					// than one row)
-					if (jrc[i].ReactionOrder === 1) {
+					if (jrc[i].ReactionOrder == 1) {
 						addChatToView(jrc[i], p.earlier ? "top" : "bottom")
 					}
 					// now handle reaction

@@ -1,6 +1,6 @@
 ﻿// SQL connection
 const seecret = require("./seecret.js")
-const sql = require('mssql/msnodesqlv8')
+const sql = require('mssql')
 const dbconfig = {
 	user: seecret.dbUser,
 	password: seecret.dbPassword,

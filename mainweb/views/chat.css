@@ -683,7 +683,7 @@ div.options button.option:active {
 	margin-right: 1px;
 }
 .room-box .bar {
-	background: hsla(216, 41%, 85%);
+	background: hsl(216, 41%, 85%);
 	position: absolute;
 	bottom: 0;
 	left: 0;
