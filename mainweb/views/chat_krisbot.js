@@ -11,7 +11,14 @@
 	socket.on('data response', (response) => {
 		console.log(response)
 		if (response.input.request === "chatKrisbotResponsesGet" && !response.err) {
+			// Hide loading
 			$('.loading').hide()
+			// Mark old responses to-be-removed
+			$('#responses form.response').addClass('to-be-removed')
+			// Remember scroll position
+			var rememberScroll = document.body.scrollTop
+
+			// Build and render new responses
 			gResponses = {}
 			var db = response.recordset.recordset
 			for (i in db) {
@@ -80,6 +87,11 @@
 				sh = sh > 1500 ? 1500 : sh
 				$(els[i]).height(sh)
 			}
+
+			// Remove old responses
+			$('#responses form.response.to-be-removed').remove()
+			// Scroll to old position
+			document.body.scrollTop = rememberScroll
 		}
 	})
 

@@ -2,62 +2,43 @@
 /* LOADING MODULES AND SETTING UP SERVER */
 /* ===================================== */
 const devOrLive = require("./devorlive.js")
-const http = require('http')
+const isDev = devOrLive.dev
 const port = devOrLive.usePort
 
-// SSL / HTTPS
-//const https = require('https')
-//const httpsredir = require('redirect-https')
-//const letscert = require('le-store-certbot')
-//const lex = require('greenlock-express').create({
-//	// https://acme-v01.api.letsencrypt.org/directory or staging
-//	server: 'staging',
-//	approveDomains: approveDomains,
-//	challenges: {
-//		'http-01': require('le-challenge-fs').create({ webrootPath: '/tmp/acme-challenges' }),
-//		'tls-sni-01': require('le-challenge-sni').create({ webrootPath: '/tmp/acme-challenges' }),
-//	},
-//	store: letscert.create({
-//		webrootPath: '/tmp/acme-challenges',
-//		 configDir: '/etc/letsencrypt',
-//		privkeyPath: ':configDir/live/:hostname/privkey.pem',
-//		fullchainPath: ':configDir/live/:hostname/fullchain.pem',
-//		certPath: ':configDir/live/:hostname/cert.pem',
-//		chainPath: ':configDir/live/:hostname/chain.pem',
-//		workDir: '/var/lib/letsencrypt',
-//		logsDir: '/var/log/letsencrypt',
-//		debug: true
-//	}),
-//});
-//function approveDomains(opts, certs, callback) {
-//	if (certs) {
-//		opts.domains = ['n.krislawton.com']
-//	} else {
-//		opts.email = 'kris.lawton@gmail.com';
-//		opts.agreeTos = true;
-//	}
-//	callback(null, { options: opts, certs: certs })
-//}
-
-// HTTP requests (inc for cert)
-//http.createServer(lex.middleware(require('redirect-https')())).listen(80, function () {
-//	console.log("Listening for ACME http - 01 challenges on", this.address())
-//})
 // Enter express
 const express = require("express")
 const app = express()
-// HTTPS requests (all redirected)
-//const server = https.createServer(lex.httpsOptions, lex.middleware(app)).listen(443, function () {
-//	console.log("Listening for ACME tls-sni-01 challenges and serve app on", this.address())
-//})
 
 // Run server
-const server = app.listen(port, (err) => {
-	if (err) {
-		return console.log("Sum ting wong", err)
+var serverOptions = {},
+	server
+if (isDev) {
+	// If we're dev, just normal HTTP
+	server = app.listen(port, (err) => {
+		if (err) {
+			return console.log("Sum ting wong", err)
+		}
+		console.log(`Server is listening on port ${port}`)
+	})
+} else {
+	// If we're live, server is HTTPS and requires ceritifcates
+	const https = require("https")
+	const fs = require("fs")
+	const key = fs.readFileSync('/srv/certs/privkey.pem')
+	const cert = fs.readFileSync('/srv/certs/cert.pem')
+	const ca = fs.readFileSync('/srv/certs/chain.pem')
+	serverOptions = {
+		key: key,
+		cert: cert,
+		ca: ca
 	}
-	console.log(`Server is listening on port ${port}`)
-})
+	server = https.createServer(serverOptions, app).listen(port, (err) => {
+		if (err) {
+			return console.log("Sum ting wong", err);
+		}
+		console.log(`Server is listening on port ${port}`);
+	})
+}
 
 // Other modules
 const path = require("path")
@@ -627,9 +608,6 @@ ioChat.on('connection', (socket) => {
 	if (typeof accountsInChat[permaid] === "undefined") {
 		accountsInChat[permaid] = {
 			connectionCount: 1,
-			forSystemMessage: {
-				lastEvent: "first connection"
-			},
 			forActivityIndicator: {
 				lastActive: new Date(),
 				status: "active"
@@ -644,7 +622,6 @@ ioChat.on('connection', (socket) => {
 		customId: socket.handshake.session.userData.username,
 		displayName: socket.handshake.session.userData.displayas
 	}
-	setTimeout(considerAddingEntryMessage, 3e5, ej)
 
 	socket.on('chat send', (input) => {
 		try {
@@ -1050,8 +1027,6 @@ function chatAddNormalMessage(input, socket, overrideFrom) {
 				}
 			})
 		}
-		// Update users object
-		accountsInChat[permaid].forSystemMessage.lastEvent = "chat"
 		// Check krisbot responses
 		if (input.from !== 69) {
 			checkKrisbot(input.content, input.room)
@@ -1072,52 +1047,6 @@ function chatAddSystemMessage(params, callback) {
 			console.log("add system message done")
 			callback(err, result)
 		})
-}
-// Chat hepler for considering whether a "x entered/left" message is needed
-function considerAddingEntryMessage(objIn) {
-	// If user is no longer in chat or has already sent a message, don't send enter
-	var acobj = accountsInChat[objIn.accountPermaId]
-	if (acobj.connectionCount === 0 || acobj.forSystemMessage.lastEvent === "chat") {
-		return 
-	}
-	var p = { room: "tournytime", content: "~ {player} is now looking at chat. Welcome! ~", extra: JSON.stringify(objIn) }
-	chatAddSystemMessage(p, (err, result) => {
-		if (!err) {
-			acobj.forSystemMessage.lastEvent = "chat"
-			chatChecksum = generateSessionId()
-			var ret = {
-				err: err,
-				fromDb: result,
-				checksum: chatChecksum
-			}
-			ioChat.emit('chat sent', ret)
-		} else {
-			console.log(err)
-		}
-	})
-}
-function considerAddingLeaveMessage(objIn) {
-	var acobj = accountsInChat[objIn.accountPermaId]
-	if (acobj.connectionCount === 0 && acobj.forSystemMessage.lastEvent === "chat") {
-		var ej = {
-			accountPermaId: objIn.accountPermaId,
-			customId: objIn.customId,
-			displayName: objIn.DisplayName
-		}
-		var p = { room: "tournytime", content: "~ {player} left. Huh. ~", extra: JSON.stringify(objIn) }
-		chatAddSystemMessage(p, (err, result) => {
-			if (!err) {
-				acobj.forSystemMessage.lastEvent = "offline message"
-				chatChecksum = generateSessionId()
-				var ret = {
-					err: err,
-					fromDb: result,
-					checksum: chatChecksum
-				}
-				ioChat.emit('chat sent', ret)
-			}
-		})
-	}
 }
 // Chat helper for tracking activity and sending out updates
 var chatActivityChecker = setInterval(() => {

@@ -651,13 +651,7 @@
 				// Play sound
 				var msgsound
 				if (r.MessageType === "Action") {
-					if ((r.Content).match(/is now looking at chat/gi) !== null) {
-						msgsound = new Audio('/c/SoundCiv4War.mp3')
-					} else if ((r.Content).match(/left. Huh./gi) !== null) {
-						msgsound = new Audio('/c/SoundCiv4LossMiddle.mp3')
-					} else {
-						msgsound = new Audio('/c/SoundCiv4Border.mp3')
-					}
+					msgsound = new Audio('/c/SoundCiv4Border.mp3')
 				} else {
 					msgsound = new Audio("/c/SoundCiv4StarterSfx.mp3")
 				}
