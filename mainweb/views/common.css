@@ -12,6 +12,7 @@
 body {
 	margin: 0;
 	font-family: "Fira Sans", "Arial", sans;
+	line-height: 22px;
 	background: hsl(216,45%,92%);
 }
 
@@ -240,11 +241,11 @@ main.default {
 	font-weight: normal;
 }
 .recent-achievements .ach-badge {
-	padding: 4px 8px 4px 22px;
+	padding: 4px 8px 3px 22px;
 }
 .recent-achievements .ach-badge::before {
 	left: 9px;
-	top: 7px;
+	top: 10px;
 }
 
 /*********************/
@@ -342,7 +343,7 @@ button.button.raised.negative:active, a.button.raised.negative:active, input.but
 	background: #f0f0f0;
 	font-weight: normal;
 	border: 1px solid #c0c0c0;
-	padding: 5px 10px 5px 30px;
+	padding: 6px 10px 5px 30px;
 	border-radius: 4px;
 	position: relative;
 }
@@ -354,7 +355,7 @@ button.button.raised.negative:active, a.button.raised.negative:active, input.but
 	content: " ";
 	position: absolute;
 	left: 12px;
-	top: 10px;
+	top: 12px;
 	background: black;
 }
 .ach-badge.lvl1::before {
